@@ -472,6 +472,7 @@
         <button class="mobile-nav-btn active" id="mobBtnMain" onclick="switchView('main')"><span>📝</span>תקציב</button>
         <button class="mobile-nav-btn" id="mobBtnStats" onclick="switchView('stats')"><span>📊</span>דוחות</button>
         <button class="mobile-nav-btn" style="color:var(--success);" onclick="askCameraPermission()"><span>📷</span>סריקה</button>
+        <button class="mobile-nav-btn" onclick="openUserInboxModal()" style="position:relative;"><span>💬</span>פניות<span class="js-user-inq-badge inq-badge" style="position:absolute; top:-2px; left:8px;"></span></button>
         <button class="mobile-nav-btn" id="mobBtnAbout" onclick="switchView('about')"><span>ℹ️</span>מידע</button>
         <button class="mobile-nav-btn" onclick="openProfileUpdateModal()"><span>⚙️</span>הגדרות</button>
     </div>
@@ -698,7 +699,7 @@
         // מפתח ה-API של המערכת (גוגל AI)
         // ==========================================
         // אם תגדיר כתובת proxy (Cloudflare Worker) המפתח יישאר בצד השרת ולא ייחשף בקוד. אם ריק - המפתח משמש ישירות.
-        const GEMINI_PROXY_URL = ""; // לדוגמה: "https://budget-proxy.your-name.workers.dev"
+        const GEMINI_PROXY_URL = "https://budget-ai-proxy.danielhajbi13.workers.dev"; // ה-proxy שלך (Cloudflare Worker) - המפתח מוסתר בצד השרת
         const GEMINI_API_KEY = ""; // אם תרצה דיוק AI גבוה יותר, הדבק כאן מפתח תקין מ-aistudio.google.com (מתחיל ב-AIza). לא חובה - האפליקציה עובדת גם בלי.
         const GEMINI_MODELS = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-flash-latest"];
 
