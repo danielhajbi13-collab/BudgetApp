@@ -246,6 +246,10 @@
             <div class="input-group"><input type="email" id="signupEmail" class="input-field" placeholder="אימייל (אופציונלי)"></div>
             <div class="input-group"><input type="tel" id="signupPhone" class="input-field" placeholder="טלפון נייד (לשחזור)" maxlength="10"></div>
             <div class="input-group"><input type="password" id="signupPin" class="input-field" placeholder="בחר קוד סודי (4 ספרות)" maxlength="4" style="text-align: center; letter-spacing: 8px;"></div>
+            <div class="input-group">
+                <input type="text" id="signupGroupCode" class="input-field" placeholder="קוד קבוצה (אם יש)" maxlength="6" style="text-align:center; letter-spacing:4px; text-transform:uppercase;" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+                <p style="font-size:0.78rem; color:var(--text-light); margin-top:6px; text-align:right;">משתייך לקבוצה של מנהל? הזן את הקוד שקיבלת. אם לא — השאר ריק.</p>
+            </div>
             <button class="btn-primary" onclick="processSignup()">צור חשבון והיכנס</button>
             <a class="auth-toggle-link" onclick="switchAuthMode('login')">חזור להתחברות</a>
         </div>
@@ -275,10 +279,74 @@
                     <p style="color:var(--text-light);">לקוחות רשומים: <strong id="adminUserCount">0</strong></p>
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button onclick="openCreateManagerModal()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">➕ מנהל חדש</button>
                     <button onclick="openAdminInboxModal()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 תיבת פניות <span class="js-admin-inq-badge inq-badge"></span></button>
                     <button onclick="handleLogout()" class="btn-outline">🚪 יציאה</button>
                 </div>
             </div>
+
+            <div style="background:#faf5ff; border:1px solid #e9d5ff; border-radius:16px; padding:1.2rem; margin-bottom:1.5rem;">
+                <h3 style="color:var(--admin); font-size:1.1rem; margin-bottom:0.8rem;">👥 קבוצות ומנהלים (<span id="adminManagerCount">0</span>)</h3>
+                <div class="table-responsive-wrapper">
+                    <table style="width:100%; min-width:600px;">
+                        <thead><tr style="background:#f3e8ff;">
+                            <th style="text-align:right;">שם המנהל</th>
+                            <th style="text-align:right;">שם הקבוצה</th>
+                            <th style="text-align:center;">קוד קבוצה</th>
+                            <th style="text-align:center;">חברים</th>
+                            <th style="text-align:center;">פעולות</th>
+                        </tr></thead>
+                        <tbody id="adminManagerTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h3 style="font-size:1.1rem; margin-bottom:0.8rem; color:var(--text-dark);">📋 כל המשתמשים</h3>
+            <div class="table-responsive-wrapper">
+                <table style="width:100%; min-width:780px;">
+                    <thead><tr style="background:#f8fafc;">
+                        <th style="text-align:right;">שם מלא</th>
+                        <th style="text-align:right;">ת.ז.</th>
+                        <th style="text-align:right;">טלפון</th>
+                        <th style="text-align:right;">אימייל</th>
+                        <th style="text-align:right;">קבוצה</th>
+                        <th style="text-align:center;">פעולה</th>
+                    </tr></thead>
+                    <tbody id="adminUserTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="managerPanel" style="display:none; width:100%; max-width:1000px; align-self:start; flex-direction:column; gap:2rem;">
+        <div style="background:var(--surface); border-radius:24px; box-shadow:var(--shadow); padding:2rem; border-top:6px solid var(--admin);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <h2 style="color:var(--admin); font-size:1.7rem; font-weight:700;">🛡️ פאנל מנהל קבוצה</h2>
+                    <p style="color:var(--text-light);">שלום, <strong id="managerName"></strong></p>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button id="managerBackToAdminBtn" onclick="loginAsAdmin()" style="display:none; background:#f1f5f9; color:var(--text-dark); border:1.5px solid var(--border); border-radius:12px; padding:0.8rem 1.5rem; font-weight:600; cursor:pointer;">← חזרה לפאנל הראשי</button>
+                    <button onclick="openManagerInboxModal()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 פניות הקבוצה <span class="js-mgr-inq-badge inq-badge"></span></button>
+                    <button onclick="handleLogout()" class="btn-outline">🚪 יציאה</button>
+                </div>
+            </div>
+
+            <div style="background:linear-gradient(135deg,#faf5ff,#eff6ff); border:1px solid #e9d5ff; border-radius:16px; padding:1.2rem 1.4rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <div style="font-size:0.85rem; color:var(--text-light);">הקבוצה שלך</div>
+                    <div style="font-size:1.3rem; font-weight:700; color:var(--text-dark);" id="managerGroupName">—</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.85rem; color:var(--text-light); margin-bottom:4px;">קוד להצטרפות (שתף עם החברים)</div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span id="managerGroupCode" style="font-size:1.5rem; font-weight:800; letter-spacing:6px; color:var(--admin); background:#fff; border:1.5px dashed var(--admin); border-radius:10px; padding:0.4rem 1rem;">—</span>
+                        <button class="btn-outline" style="padding:0.5rem 0.8rem;" onclick="copyGroupCode()">📋 העתק</button>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="font-size:1.1rem; margin-bottom:0.8rem; color:var(--text-dark);">חברי הקבוצה (<span id="managerMemberCount">0</span>)</h3>
             <div class="table-responsive-wrapper">
                 <table style="width:100%; min-width:700px;">
                     <thead><tr style="background:#f8fafc;">
@@ -288,7 +356,7 @@
                         <th style="text-align:right;">אימייל</th>
                         <th style="text-align:center;">פעולה</th>
                     </tr></thead>
-                    <tbody id="adminUserTable"></tbody>
+                    <tbody id="managerMemberTable"></tbody>
                 </table>
             </div>
         </div>
@@ -596,6 +664,35 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="managerInboxModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header"><h3 style="color:#8b5cf6;">📬 פניות מחברי הקבוצה</h3><button class="btn-close-modal" onclick="closeManagerInboxModal()">✕</button></div>
+            <div class="modal-body" style="background:#f4f7fb;">
+                <div id="managerInboxBody" style="display:flex; flex-direction:column; gap:1rem;">
+                    <p style="text-align:center;">טוען...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="createManagerModal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header"><h3 style="color:var(--admin);">➕ יצירת מנהל וקבוצה חדשה</h3><button class="btn-close-modal" onclick="closeCreateManagerModal()">✕</button></div>
+            <div class="modal-body">
+                <div class="input-group" style="margin:0;"><label>שם המנהל</label><input type="text" id="mgrName" class="input-field" placeholder="שם מלא"></div>
+                <div class="input-group" style="margin:0;"><label>שם הקבוצה</label><input type="text" id="mgrGroupName" class="input-field" placeholder="לדוגמה: צוות מכירות"></div>
+                <div class="input-group" style="margin:0;"><label>תעודת זהות של המנהל</label><input type="text" id="mgrId" class="input-field" placeholder="9 ספרות" maxlength="9" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                <div class="input-group" style="margin:0;"><label>טלפון (אופציונלי)</label><input type="tel" id="mgrPhone" class="input-field" placeholder="לשחזור" maxlength="10"></div>
+                <div class="input-group" style="margin:0;"><label>קוד סודי למנהל (PIN)</label><input type="password" id="mgrPin" class="input-field" placeholder="4 ספרות" maxlength="4" style="text-align:center; letter-spacing:6px;" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                <p style="font-size:0.8rem; color:var(--text-light);">קוד הקבוצה ייווצר אוטומטית. המנהל יתחבר עם ת.ז + קוד סודי, ויראה רק את חברי הקבוצה שלו.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeCreateManagerModal()">ביטול</button>
+                <button class="btn-primary" style="margin:0; background:linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow:none;" onclick="createManager()">צור מנהל</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="reportsModal">
         <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header"><h3 style="color: #6d28d9;">הפקת דוחות (רבעוני / שנתי)</h3><button class="btn-close-modal" onclick="closeReportsModal()">✕</button></div>
@@ -663,6 +760,16 @@
                 <div class="input-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
                     <label style="color: var(--primary);">קוד סודי חדש (PIN)</label>
                     <input type="password" id="updatePin" class="input-field" placeholder="השאר ריק אם אינך רוצה לשנות" maxlength="4" style="text-align: center; letter-spacing: 5px;">
+                </div>
+
+                <div class="input-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                    <label style="color: var(--admin);">👥 קבוצה / מנהל</label>
+                    <div id="currentGroupBox" style="background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:0.9rem 1rem; margin-bottom:10px; font-size:0.9rem; color:var(--text-dark);">טוען...</div>
+                    <input type="text" id="joinGroupCode" class="input-field" placeholder="הזן קוד קבוצה להצטרפות" maxlength="6" style="text-align:center; letter-spacing:4px; text-transform:uppercase;" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button class="btn-outline" style="flex:1; justify-content:center; color:var(--success); border-color:#a7f3d0;" onclick="joinGroup()">הצטרף / החלף קבוצה</button>
+                        <button class="btn-outline" style="flex:1; justify-content:center; color:var(--danger); border-color:#fecaca;" onclick="leaveGroup()">עזוב קבוצה</button>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer" style="flex-wrap:wrap; justify-content:center;">
@@ -777,7 +884,7 @@
             const savedSession = localStorage.getItem('budget_active_session');
             if (savedSession) { 
                 tempUserSession = JSON.parse(savedSession); 
-                if(localStorage.getItem('admin_impersonating') === 'true') isImpersonating = true;
+                if(localStorage.getItem('admin_impersonating') === 'true' || localStorage.getItem('manager_return')) isImpersonating = true;
                 loginAsUser(tempUserSession); 
             }
             
@@ -848,43 +955,183 @@
             const { data, error } = await _supabase.from('users').select('*').eq('user_id', id);
             if (error || !data || data.length === 0) return alert("שגיאה: חשבון לא קיים.");
             if (data[0].pin !== pin) return alert("קוד סודי שגוי.");
-            isImpersonating = false; localStorage.removeItem('admin_impersonating'); loginAsUser(data[0]);
+            isImpersonating = false; localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return');
+            if (data[0].role === 'manager') { loginAsManager(data[0]); return; }
+            loginAsUser(data[0]);
         }
-        
+
+        // ====== מנהל בכיר: ניהול קבוצות ומנהלים ======
+        function generateGroupCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = '';
+            for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+            return s;
+        }
+        async function findGroupByCode(code) {
+            if (!code) return null;
+            const { data } = await _supabase.from('users').select('user_id,username,group_code,group_name,role').eq('group_code', code).eq('role', 'manager');
+            return (data && data[0]) || null;
+        }
+
+        function openCreateManagerModal() {
+            ['mgrName','mgrGroupName','mgrId','mgrPhone','mgrPin'].forEach(function(idd){ var el=document.getElementById(idd); if(el) el.value=''; });
+            document.getElementById('createManagerModal').style.display = 'flex';
+        }
+        function closeCreateManagerModal() { document.getElementById('createManagerModal').style.display = 'none'; }
+
+        async function createManager() {
+            const name = document.getElementById('mgrName').value.trim();
+            const groupName = document.getElementById('mgrGroupName').value.trim();
+            const id = document.getElementById('mgrId').value.trim();
+            const phone = document.getElementById('mgrPhone').value.trim();
+            const pin = document.getElementById('mgrPin').value.trim();
+            if (!name || !groupName || !id || !pin) return alert("מלא שם מנהל, שם קבוצה, ת.ז וקוד סודי.");
+            if (!isValidIsraeliID(id)) return alert("תעודת הזהות אינה חוקית.");
+            if (pin.length !== 4) return alert("קוד סודי חייב להיות 4 ספרות.");
+            const { data: existing } = await _supabase.from('users').select('user_id').eq('user_id', id);
+            if (existing && existing.length > 0) return alert("כבר קיים חשבון עם תעודת זהות זו.");
+            // יצירת קוד קבוצה ייחודי
+            let code = '';
+            for (let attempt = 0; attempt < 8; attempt++) {
+                code = generateGroupCode();
+                const taken = await findGroupByCode(code);
+                if (!taken) break;
+            }
+            let formattedPhone = phone ? (phone.startsWith('0') ? '+972' + phone.substring(1) : phone) : '';
+            const newMgr = { user_id: id, username: name, email: '', phone: formattedPhone, pin: pin, is_pro: true, role: 'manager', group_code: code, group_name: groupName };
+            const { error } = await _supabase.from('users').insert([newMgr]);
+            if (error) return alert("שגיאה ביצירת מנהל: " + (error.message || JSON.stringify(error)));
+            closeCreateManagerModal();
+            alert("המנהל נוצר!\nשם קבוצה: " + groupName + "\nקוד קבוצה: " + code + "\n\nמסור קוד זה למנהל ולחברי הקבוצה.");
+            loginAsAdmin();
+        }
+
+        async function deleteManager(id, code) {
+            if (!confirm("למחוק מנהל זה? החברים בקבוצה יישארו אך ללא מנהל פעיל.")) return;
+            await _supabase.from('users').delete().eq('user_id', id);
+            loginAsAdmin();
+        }
+
         async function loginAsAdmin() {
-            document.getElementById('authBox').style.display = 'none'; document.getElementById('dashboardScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'flex'; document.body.classList.remove('dashboard-active');
+            document.getElementById('authBox').style.display = 'none'; document.getElementById('dashboardScreen').style.display = 'none'; document.getElementById('managerPanel').style.display = 'none'; document.getElementById('adminPanel').style.display = 'flex'; document.body.classList.remove('dashboard-active');
             isAdminMode = true; document.getElementById('adminImpersonationBanner').style.display = 'none';
             const aiBtnAdmin = document.getElementById('aiChatToggleBtn'); if (aiBtnAdmin) aiBtnAdmin.style.display = 'none'; document.getElementById('aiChatBox').style.display = 'none';
             
             const { data } = await _supabase.from('users').select('*').order('username', { ascending: true });
-            const tbody = document.getElementById('adminUserTable'); tbody.innerHTML = '';
-            if (data && data.length > 0) {
-                data.forEach(u => {
+            const all = data || [];
+            const managers = all.filter(function(u){ return u.role === 'manager'; });
+            const regulars = all.filter(function(u){ return u.role !== 'manager'; });
+            // מפת ספירת חברים לכל קוד קבוצה
+            const groupNames = {}; const memberCounts = {};
+            managers.forEach(function(m){ groupNames[m.group_code] = m.group_name || m.username; memberCounts[m.group_code] = 0; });
+            regulars.forEach(function(u){ if (u.group_code && memberCounts.hasOwnProperty(u.group_code)) memberCounts[u.group_code]++; });
+
+            // טבלת מנהלים / קבוצות
+            const mtbody = document.getElementById('adminManagerTable'); mtbody.innerHTML = '';
+            if (managers.length > 0) {
+                managers.forEach(function(m){
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.user_id)}</td><td>${escapeHtml(u.phone || '-')}</td><td>${escapeHtml(u.email || '-')}</td><td style="text-align:center;"><button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick='impersonateUser(${JSON.stringify(u)})'>היכנס</button></td>`;
+                    tr.innerHTML = '<td>'+escapeHtml(m.username)+'</td>'
+                        + '<td>'+escapeHtml(m.group_name || '-')+'</td>'
+                        + '<td style="text-align:center;"><strong style="letter-spacing:3px; color:var(--admin);">'+escapeHtml(m.group_code || '-')+'</strong></td>'
+                        + '<td style="text-align:center;">'+(memberCounts[m.group_code] || 0)+'</td>'
+                        + '<td style="text-align:center; white-space:nowrap;"><button class="btn-outline" style="padding:0.35rem 0.7rem; font-size:0.8rem;" onclick=\'adminViewGroup('+JSON.stringify(m)+')\'>👁️ צפה בקבוצה</button> '
+                        + '<button class="btn-outline" style="padding:0.35rem 0.7rem; font-size:0.8rem; color:var(--danger); border-color:#fecaca;" onclick="deleteManager(\''+escapeHtml(m.user_id)+'\',\''+escapeHtml(m.group_code||'')+'\')">🗑️</button></td>';
+                    mtbody.appendChild(tr);
+                });
+            } else { mtbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light); padding:1rem;">אין מנהלים עדיין. לחץ "מנהל חדש" כדי ליצור.</td></tr>'; }
+            document.getElementById('adminManagerCount').innerText = managers.length;
+
+            // טבלת כל המשתמשים הרגילים
+            const tbody = document.getElementById('adminUserTable'); tbody.innerHTML = '';
+            if (regulars.length > 0) {
+                regulars.forEach(function(u){
+                    const groupLabel = u.group_code ? (groupNames[u.group_code] || u.group_code) : '—';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = '<td>'+escapeHtml(u.username)+'</td><td>'+escapeHtml(u.user_id)+'</td><td>'+escapeHtml(u.phone || '-')+'</td><td>'+escapeHtml(u.email || '-')+'</td><td>'+escapeHtml(groupLabel)+'</td><td style="text-align:center;"><button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick=\'impersonateUser('+JSON.stringify(u)+')\'>היכנס</button></td>';
                     tbody.appendChild(tr);
                 });
             }
-            document.getElementById('adminUserCount').innerText = data ? data.length : 0;
+            document.getElementById('adminUserCount').innerText = regulars.length;
             refreshAdminInquiryBadge();
             if (!window._adminInqPoll) window._adminInqPoll = setInterval(refreshAdminInquiryBadge, 30000);
         }
 
-        function impersonateUser(u) { isImpersonating = true; localStorage.setItem('admin_impersonating', 'true'); loginAsUser(u); }
-        function exitImpersonation() { isImpersonating = false; localStorage.removeItem('admin_impersonating'); tempUserSession = null; loginAsAdmin(); }
+        // ====== מנהל קבוצה ======
+        let currentManagerSession = null;
+        function adminViewGroup(managerObj) { loginAsManager(managerObj, true); }
+        async function loginAsManager(managerObj, fromSuperAdmin) {
+            currentManagerSession = managerObj;
+            isAdminMode = false;
+            const backBtn = document.getElementById('managerBackToAdminBtn');
+            if (backBtn) backBtn.style.display = fromSuperAdmin ? 'inline-flex' : 'none';
+            document.getElementById('authBox').style.display = 'none'; document.getElementById('dashboardScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'none'; document.getElementById('managerPanel').style.display = 'flex'; document.body.classList.remove('dashboard-active');
+            document.getElementById('adminImpersonationBanner').style.display = 'none';
+            const aiBtnM = document.getElementById('aiChatToggleBtn'); if (aiBtnM) aiBtnM.style.display = 'none'; const aiBox = document.getElementById('aiChatBox'); if (aiBox) aiBox.style.display = 'none';
+
+            document.getElementById('managerName').innerText = managerObj.username || '';
+            document.getElementById('managerGroupName').innerText = managerObj.group_name || '—';
+            document.getElementById('managerGroupCode').innerText = managerObj.group_code || '—';
+
+            const { data } = await _supabase.from('users').select('*').eq('group_code', managerObj.group_code).order('username', { ascending: true });
+            const members = (data || []).filter(function(u){ return u.role !== 'manager'; });
+            const tbody = document.getElementById('managerMemberTable'); tbody.innerHTML = '';
+            if (members.length > 0) {
+                members.forEach(function(u){
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = '<td>'+escapeHtml(u.username)+'</td><td>'+escapeHtml(u.user_id)+'</td><td>'+escapeHtml(u.phone || '-')+'</td><td>'+escapeHtml(u.email || '-')+'</td><td style="text-align:center;"><button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick=\'impersonateMember('+JSON.stringify(u)+')\'>היכנס</button></td>';
+                    tbody.appendChild(tr);
+                });
+            } else { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light); padding:1rem;">עדיין אין חברים בקבוצה. שתף את קוד הקבוצה.</td></tr>'; }
+            document.getElementById('managerMemberCount').innerText = members.length;
+            window._managerMemberIds = members.map(function(u){ return u.user_id; });
+            refreshManagerInquiryBadge();
+            if (window._mgrInqPoll) clearInterval(window._mgrInqPoll);
+            window._mgrInqPoll = setInterval(refreshManagerInquiryBadge, 30000);
+        }
+
+        function copyGroupCode() {
+            const code = document.getElementById('managerGroupCode').innerText;
+            if (!code || code === '—') return;
+            try { navigator.clipboard.writeText(code); alert("הקוד הועתק: " + code); }
+            catch(e){ alert("קוד הקבוצה: " + code); }
+        }
+
+        function impersonateUser(u) { isImpersonating = true; localStorage.setItem('admin_impersonating', 'true'); localStorage.removeItem('manager_return'); loginAsUser(u); }
+        function impersonateMember(u) {
+            isImpersonating = true;
+            localStorage.removeItem('admin_impersonating');
+            if (currentManagerSession) localStorage.setItem('manager_return', JSON.stringify(currentManagerSession));
+            loginAsUser(u);
+        }
+        function exitImpersonation() {
+            isImpersonating = false;
+            const mgrReturn = localStorage.getItem('manager_return');
+            localStorage.removeItem('admin_impersonating');
+            tempUserSession = null;
+            if (mgrReturn) { localStorage.removeItem('manager_return'); try { loginAsManager(JSON.parse(mgrReturn)); return; } catch(e){} }
+            loginAsAdmin();
+        }
 
         async function processSignup() {
             const name = document.getElementById('signupUsername').value.trim(); const id = document.getElementById('signupUserId').value.trim(); const email = document.getElementById('signupEmail').value.trim(); const phone = document.getElementById('signupPhone').value.trim(); const pin = document.getElementById('signupPin').value.trim();
+            const groupCode = (document.getElementById('signupGroupCode').value || '').trim().toUpperCase();
             if (!name || !id || !phone || !pin) return alert("מלא את כל השדות החובה.");
             if (!isValidIsraeliID(id)) return alert("תעודת הזהות אינה חוקית. אנא תקן.");
             if (pin.length !== 4) return alert("קוד סודי חייב להיות 4 ספרות.");
             let formattedPhone = phone.startsWith('0') ? '+972' + phone.substring(1) : phone;
             const { data: existing } = await _supabase.from('users').select('user_id').eq('user_id', id);
             if (existing && existing.length > 0) return alert("כבר קיים חשבון עם תעודת זהות זו.");
-            const newUser = { user_id: id, username: name, email: email, phone: formattedPhone, pin: pin, is_pro: true };
+            // אם הוזן קוד קבוצה - לוודא שהוא תקין
+            let groupName = '';
+            if (groupCode) {
+                const grp = await findGroupByCode(groupCode);
+                if (!grp) return alert("קוד הקבוצה אינו קיים. בדוק מול המנהל שלך, או השאר ריק אם אינך משתייך לקבוצה.");
+                groupName = grp.group_name || '';
+            }
+            const newUser = { user_id: id, username: name, email: email, phone: formattedPhone, pin: pin, is_pro: true, role: 'user', group_code: groupCode || null, group_name: groupName || null };
             const { error } = await _supabase.from('users').insert([newUser]);
-            if (error) return alert("שגיאה ביצירת חשבון בענן.");
-            alert("החשבון נוצר בהצלחה!"); isImpersonating = false; localStorage.removeItem('admin_impersonating'); loginAsUser(newUser);
+            if (error) return alert("שגיאה ביצירת חשבון בענן: " + (error.message || ''));
+            alert("החשבון נוצר בהצלחה!" + (groupCode ? "\nהצטרפת לקבוצה: " + (groupName || groupCode) : "")); isImpersonating = false; localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return'); loginAsUser(newUser);
         }
 
         async function processRecovery() {
@@ -919,9 +1166,53 @@
             if (!window._userInqPoll) window._userInqPoll = setInterval(refreshUserInquiryBadge, 30000);
         }
 
-        function handleLogout() { tempUserSession = null; localStorage.removeItem('budget_active_session'); localStorage.removeItem('admin_impersonating'); location.reload(); }
+        function handleLogout() { tempUserSession = null; localStorage.removeItem('budget_active_session'); localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return'); location.reload(); }
 
-        function openProfileUpdateModal() { document.getElementById('updateUsername').value = tempUserSession.username || ""; document.getElementById('updateEmail').value = tempUserSession.email || ""; document.getElementById('updatePhone').value = tempUserSession.phone || ""; document.getElementById('updatePin').value = ""; document.getElementById('profileUpdateModal').style.display = 'flex'; }
+        function openProfileUpdateModal() {
+            document.getElementById('updateUsername').value = tempUserSession.username || "";
+            document.getElementById('updateEmail').value = tempUserSession.email || "";
+            document.getElementById('updatePhone').value = tempUserSession.phone || "";
+            document.getElementById('updatePin').value = "";
+            document.getElementById('joinGroupCode').value = "";
+            renderCurrentGroupBox();
+            document.getElementById('profileUpdateModal').style.display = 'flex';
+        }
+
+        function renderCurrentGroupBox() {
+            const box = document.getElementById('currentGroupBox');
+            if (tempUserSession && tempUserSession.group_code) {
+                box.innerHTML = '✅ אתה משתייך לקבוצה: <strong>' + escapeHtml(tempUserSession.group_name || tempUserSession.group_code) + '</strong> (קוד: ' + escapeHtml(tempUserSession.group_code) + ')';
+            } else {
+                box.innerHTML = 'אינך משתייך לאף קבוצה כרגע. אם קיבלת קוד ממנהל — הזן אותו למטה.';
+            }
+        }
+
+        async function joinGroup() {
+            const code = (document.getElementById('joinGroupCode').value || '').trim().toUpperCase();
+            if (!code) return alert("הזן קוד קבוצה.");
+            const grp = await findGroupByCode(code);
+            if (!grp) return alert("קוד הקבוצה אינו קיים. בדוק מול המנהל שלך.");
+            const payload = { group_code: code, group_name: grp.group_name || '' };
+            const { error } = await _supabase.from('users').update(payload).eq('user_id', tempUserSession.user_id);
+            if (error) return alert("שגיאה בהצטרפות לקבוצה: " + (error.message || ''));
+            tempUserSession = { ...tempUserSession, ...payload };
+            localStorage.setItem('budget_active_session', JSON.stringify(tempUserSession));
+            document.getElementById('joinGroupCode').value = "";
+            renderCurrentGroupBox();
+            alert("הצטרפת לקבוצה: " + (grp.group_name || code));
+        }
+
+        async function leaveGroup() {
+            if (!tempUserSession.group_code) return alert("אינך משתייך לאף קבוצה.");
+            if (!confirm("לעזוב את הקבוצה? המנהל לא יוכל יותר לראות את החשבון שלך.")) return;
+            const payload = { group_code: null, group_name: null };
+            const { error } = await _supabase.from('users').update(payload).eq('user_id', tempUserSession.user_id);
+            if (error) return alert("שגיאה: " + (error.message || ''));
+            tempUserSession = { ...tempUserSession, group_code: null, group_name: null };
+            localStorage.setItem('budget_active_session', JSON.stringify(tempUserSession));
+            renderCurrentGroupBox();
+            alert("עזבת את הקבוצה.");
+        }
         function closeProfileUpdateModal() { document.getElementById('profileUpdateModal').style.display = 'none'; }
 
         // ===== מצב כהה (Dark Mode) =====
@@ -1883,6 +2174,55 @@
             if (!text) return;
             try { await appendToThread(id, { from:'admin', text:text, at:new Date().toISOString() }); loadAdminInbox(); }
             catch(e){ alert("שגיאה בשמירת התשובה: " + (e.message||e) + ""); }
+        }
+
+        // ====== תיבת פניות של מנהל קבוצה (מסונן לחברי הקבוצה בלבד) ======
+        async function loadManagerInbox(){
+            const listEl = document.getElementById('managerInboxBody');
+            listEl.innerHTML = '<p style="text-align:center;">טוען פניות...</p>';
+            const memberIds = window._managerMemberIds || [];
+            if (!memberIds.length){ listEl.innerHTML = '<p style="text-align:center; color:var(--text-light);">אין חברים בקבוצה, ולכן אין פניות.</p>'; return; }
+            try {
+                const { data, error } = await _supabase.from('feedback').select('*').in('user_id', memberIds).order('created_at', { ascending: false });
+                if (error){ listEl.innerHTML = '<p style="text-align:center;color:var(--danger);">שגיאה: '+escapeHtml(error.message||'')+'</p>'; return; }
+                if (!data || data.length === 0){ listEl.innerHTML = '<p style="text-align:center;">אין פניות מחברי הקבוצה.</p>'; return; }
+                listEl.innerHTML = data.map(function(m){
+                    const thread = normalizeThread(m);
+                    const last = thread[thread.length-1];
+                    const waiting = last && last.from === 'user';
+                    const status = waiting ? '<span style="color:#f59e0b; font-weight:bold; font-size:0.85rem;">⏳ ממתין לתשובתך</span>' : '<span style="color:#10b981; font-weight:bold; font-size:0.85rem;">✓ נענה</span>';
+                    const date = new Date(m.created_at).toLocaleString('he-IL');
+                    return '<div style="background:#fff; border:1px solid var(--border); border-radius:12px; padding:1.2rem; border-right:4px solid #8b5cf6;">'
+                        + '<div style="display:flex; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:5px;"><strong style="color:var(--text-dark);">👤 '+escapeHtml(m.username)+' (ת.ז: '+escapeHtml(m.user_id)+')</strong><span style="font-size:0.8rem; color:var(--text-light);">'+status+' | 🕐 '+date+'</span></div>'
+                        + '<div style="max-height:260px;overflow-y:auto;padding:4px;background:#f8fafc;border-radius:8px;margin-bottom:8px;">'+renderThreadBubbles(thread,'admin')+'</div>'
+                        + '<div style="display:flex;gap:6px;"><input id="mreply_'+m.id+'" class="input-field" style="margin:0;flex:1;" placeholder="כתוב תשובה לחבר הקבוצה...">'
+                        + '<button class="btn-primary" style="margin:0;width:auto;padding:0.5rem 1rem;background:#8b5cf6;" onclick="managerReplyToThread(\''+m.id+'\')">שלח</button></div>'
+                        + '</div>';
+                }).join('');
+            } catch(e){ listEl.innerHTML = '<p style="text-align:center;">שגיאה בטעינת הנתונים: '+escapeHtml(e.message||'')+'</p>'; }
+        }
+
+        function openManagerInboxModal(){ loadManagerInbox(); document.getElementById('managerInboxModal').style.display = 'flex'; try { localStorage.setItem('mgr_inbox_seen_'+(currentManagerSession&&currentManagerSession.group_code||''), new Date().toISOString()); } catch(_e){} setTimeout(refreshManagerInquiryBadge, 600); }
+        function closeManagerInboxModal(){ document.getElementById('managerInboxModal').style.display = 'none'; }
+
+        async function managerReplyToThread(id){
+            const inp = document.getElementById('mreply_'+id);
+            const text = (inp && inp.value || '').trim();
+            if (!text) return;
+            try { await appendToThread(id, { from:'admin', text:text, at:new Date().toISOString() }); loadManagerInbox(); }
+            catch(e){ alert("שגיאה בשמירת התשובה: " + (e.message||e) + ""); }
+        }
+
+        async function refreshManagerInquiryBadge(){
+            try {
+                const memberIds = window._managerMemberIds || [];
+                if (!memberIds.length){ setInquiryBadge('js-mgr-inq-badge', 0); return; }
+                const { data } = await _supabase.from('feedback').select('*').in('user_id', memberIds);
+                const seen = localStorage.getItem('mgr_inbox_seen_'+(currentManagerSession&&currentManagerSession.group_code||'')) || '';
+                let count = 0;
+                (data||[]).forEach(function(r){ const t = normalizeThread(r); const last = t[t.length-1]; if (last && last.from === 'user' && (last.at||'') > seen) count++; });
+                setInquiryBadge('js-mgr-inq-badge', count);
+            } catch(e){}
         }
     </script>
 </body>
