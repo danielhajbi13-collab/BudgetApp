@@ -14,40 +14,57 @@
     
     <style>
         :root {
-            --bg: #f4f7fb; 
+            --bg: #eef1f7; 
+            --bg-gradient: radial-gradient(1200px 600px at 100% -10%, #e9eefc 0%, rgba(233,238,252,0) 55%), radial-gradient(1000px 500px at -10% 0%, #eef6f1 0%, rgba(238,246,241,0) 50%), linear-gradient(180deg, #f3f6fb 0%, #eef1f7 100%);
             --surface: #ffffff; 
-            --primary: #2563eb; 
-            --primary-hover: #1d4ed8;
-            --primary-light: #eff6ff;
+            --surface-2: #f7f9fc;
+            --primary: #4f46e5; 
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
             --text-dark: #0f172a; 
             --text-light: #64748b; 
-            --border: #e2e8f0;
-            --success: #10b981; 
+            --border: #e7ebf2;
+            --hairline: rgba(15,23,42,0.06);
+            --success: #0ea66e; 
             --danger: #ef4444; 
-            --admin: #8b5cf6; 
-            --pro: #f59e0b;
-            --radius: 16px; 
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-            --shadow-float: 0 20px 40px -10px rgba(37, 99, 235, 0.2);
+            --admin: #7c3aed; 
+            --pro: #c79a3a;
+            --gold: #c79a3a;
+            --gold-soft: #f6edd8;
+            --radius: 20px; 
+            --shadow: 0 1px 2px rgba(16,24,40,0.04), 0 12px 30px -12px rgba(16,24,40,0.12);
+            --shadow-lg: 0 2px 4px rgba(16,24,40,0.04), 0 24px 48px -16px rgba(16,24,40,0.18);
+            --shadow-float: 0 20px 40px -10px rgba(79, 70, 229, 0.28);
         }
 
         html[data-theme="dark"] {
             --bg: #0b1220;
+            --bg-gradient: radial-gradient(1200px 600px at 100% -10%, #16213b 0%, rgba(11,18,32,0) 55%), linear-gradient(180deg, #0c1322 0%, #0b1220 100%);
             --surface: #131c2e;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
+            --surface-2: #0f1828;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
             --primary-light: #1e293b;
             --text-dark: #e8edf5;
             --text-light: #94a3b8;
             --border: #28344a;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --hairline: rgba(255,255,255,0.06);
+            --gold: #d9b75f;
+            --gold-soft: #2a2418;
+            --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 18px 40px -16px rgba(0,0,0,0.55);
+            --shadow-lg: 0 2px 4px rgba(0,0,0,0.35), 0 28px 56px -18px rgba(0,0,0,0.6);
             --shadow-float: 0 20px 40px -10px rgba(0,0,0,0.5);
         }
         html[data-theme="dark"] .input-field { background: #0f1626; }
         html[data-theme="dark"] body { background-color: var(--bg); }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Rubik', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg); color: var(--text-dark); min-height: 100vh; padding: 2rem 1rem; display: flex; justify-content: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Rubik', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body { background-color: var(--bg); color: var(--text-dark); min-height: 100vh; padding: 2rem 1rem; display: flex; justify-content: center; font-size: 16px; line-height: 1.55; letter-spacing: 0.1px; font-weight: 400; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+        input, textarea, select, button { font-family: inherit; letter-spacing: inherit; }
+        h1, h2, h3, h4, h5 { line-height: 1.25; letter-spacing: -0.2px; }
+        p { line-height: 1.6; }
+        button { letter-spacing: 0.2px; }
 
         @keyframes scanLaser { 0% { top: 0; } 100% { top: 95%; } }
 
@@ -213,6 +230,82 @@
             #statisticsSection { display: block !important; }
         }
         .inq-badge { display:none; min-width:18px; height:18px; padding:0 5px; background:#ef4444; color:#fff; border-radius:9px; font-size:0.7rem; font-weight:700; align-items:center; justify-content:center; line-height:1; box-shadow:0 1px 3px rgba(0,0,0,0.25); }
+
+        /* ===================== ערכת עיצוב יוקרתית ===================== */
+        body { background: var(--bg-gradient); background-attachment: fixed; }
+
+        /* משטחים מוגבהים עם מסגרת דקה והרמה עדינה */
+        .auth-wrapper, .summary-card, .sidebar, .top-bar, .table-section, .chart-container {
+            border: 1px solid var(--hairline) !important;
+            box-shadow: var(--shadow);
+        }
+        .summary-card, .table-section { border-radius: var(--radius); transition: transform .25s ease, box-shadow .25s ease; }
+        .summary-card:hover, .table-section:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .summary-card strong { letter-spacing: -1px; }
+        .summary-card::before { width: 5px; opacity: .9; }
+
+        /* כותרות עם נופך יוקרתי */
+        .auth-wrapper h1 { background: linear-gradient(120deg, var(--text-dark), #475569); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .greeting h2 { font-weight: 700; }
+
+        /* כפתורים מלוטשים */
+        .btn-primary { border-radius: 14px; box-shadow: 0 8px 18px -6px rgba(79,70,229,0.5); transition: transform .2s, box-shadow .2s, filter .2s; }
+        .btn-primary:hover { filter: brightness(1.04); box-shadow: 0 12px 24px -8px rgba(79,70,229,0.55); }
+        .btn-outline { border-radius: 12px; background: var(--surface); border-color: var(--border); transition: all .2s ease; }
+        .btn-outline:hover { background: var(--surface-2); border-color: #cdd5e3; transform: translateY(-1px); }
+        .input-field:focus { box-shadow: 0 0 0 4px rgba(79,70,229,0.12); }
+
+        /* תפריט צד */
+        .sidebar-btn.active { background: linear-gradient(135deg, #1e293b, #0f172a); box-shadow: 0 8px 18px -8px rgba(15,23,42,0.6); }
+
+        /* תגיות זהב ליוקרה */
+        .current-month-badge { background: linear-gradient(135deg, var(--gold-soft), #fff); color: #9a7b2e; border: 1px solid #ecdcb3; }
+
+        /* פאנל ניהול/מנהל – פחות צפוף, רחב יותר */
+        #adminPanel, #managerPanel { max-width: 1180px; gap: 1.5rem; }
+        #adminPanel > div, #managerPanel > div { border: 1px solid var(--hairline); }
+        #adminPanel table, #managerPanel table { min-width: 560px; }
+        #adminPanel th, #managerPanel th { color: var(--text-light); }
+        #adminPanel tr:hover td, #managerPanel tr:hover td { background: var(--surface-2); }
+
+        /* מודאל מלוטש */
+        .modal-content { border: 1px solid var(--hairline); box-shadow: var(--shadow-lg); }
+
+        /* ===================== התאמה לנייד ===================== */
+        @media (max-width: 920px) {
+            #adminPanel, #managerPanel { max-width: 100%; }
+            #adminPanel > div, #managerPanel > div { padding: 1.3rem !important; border-radius: 18px !important; }
+            #adminPanel h2, #managerPanel h2 { font-size: 1.35rem !important; }
+            /* כותרות הפאנל: כפתורים נפרשים יפה */
+            #adminPanel > div > div:first-child, #managerPanel > div > div:first-child { flex-direction: column; align-items: stretch !important; gap: 0.9rem !important; }
+            #adminPanel > div > div:first-child > div, #managerPanel > div > div:first-child > div { width: 100%; }
+            #adminPanel > div > div:first-child button, #managerPanel > div > div:first-child button { width: 100%; justify-content: center; padding: 0.85rem 1rem !important; }
+        }
+        @media (max-width: 768px) {
+            .auth-wrapper h1 { font-size: 1.7rem; }
+            /* כרטיס קוד הקבוצה אצל המנהל – ממורכז ונערם */
+            #managerGroupName { font-size: 1.15rem !important; }
+            #managerGroupCode { font-size: 1.2rem !important; letter-spacing: 4px !important; }
+            /* שורת חיפוש/הוספת חבר נערמת */
+            #mgrMemberSearchRow { flex-direction: column; align-items: stretch !important; }
+            #mgrMemberSearchRow input { max-width: 100% !important; }
+            #mgrAddMemberBox { flex-direction: column; align-items: stretch !important; }
+            #mgrAddMemberBox input, #mgrAddMemberBox button { width: 100%; }
+            /* טפסים ושדות בגודל קריא בנייד (מונע זום אוטומטי ב-iOS) */
+            .input-field, select.input-field, textarea.input-field { font-size: 16px; }
+            /* מודאלים כמעט מסך מלא */
+            .modal-content { width: calc(100% - 20px) !important; margin: 10px !important; max-height: 92vh; border-radius: 22px; }
+            .modal-header { padding: 1.1rem 1.3rem; }
+            .modal-body { padding: 1.3rem; gap: 1.1rem; }
+            .modal-header h3 { font-size: 1.05rem; }
+            /* צ'אט קהילה במסך מלא נוח */
+            #groupChatModal .modal-content { height: 92vh !important; max-height: 92vh !important; }
+        }
+        @media (max-width: 480px) {
+            #adminPanel > div, #managerPanel > div { padding: 1.05rem !important; }
+            #adminPanel h2, #managerPanel h2 { font-size: 1.2rem !important; }
+            .summary-card strong { font-size: 1.7rem; }
+        }
     </style>
 </head>
 <body>
@@ -280,8 +373,26 @@
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <button onclick="openCreateManagerModal()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">➕ מנהל חדש</button>
+                    <button onclick="openAdminManagersChat()" style="background:linear-gradient(135deg,#0ea5e9,#0369a1);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(14,165,233,0.2);">💬 צ'אט עם המנהלים</button>
                     <button onclick="openAdminInboxModal()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 תיבת פניות <span class="js-admin-inq-badge inq-badge"></span></button>
                     <button onclick="handleLogout()" class="btn-outline">🚪 יציאה</button>
+                </div>
+            </div>
+
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:16px; padding:1.2rem; margin-bottom:1.5rem;">
+                <h3 style="color:#2563eb; font-size:1.1rem; margin-bottom:0.3rem;">🏛️ קבוצה מרכזית — משתמשים ללא קבוצה (<span id="adminCentralCount">0</span>)</h3>
+                <p style="font-size:0.82rem; color:var(--text-light); margin-bottom:0.8rem;">לקוחות שאינם משויכים לאף מנהל. גישה לקבוצה זו נתונה להנהלה הבכירה בלבד.</p>
+                <div class="table-responsive-wrapper">
+                    <table style="width:100%; min-width:620px;">
+                        <thead><tr style="background:#dbeafe;">
+                            <th style="text-align:right;">שם מלא</th>
+                            <th style="text-align:right;">ת.ז.</th>
+                            <th style="text-align:right;">טלפון</th>
+                            <th style="text-align:center;">שייך לקבוצה (קוד)</th>
+                            <th style="text-align:center;">פעולה</th>
+                        </tr></thead>
+                        <tbody id="adminCentralTable"></tbody>
+                    </table>
                 </div>
             </div>
 
@@ -301,7 +412,10 @@
                 </div>
             </div>
 
-            <h3 style="font-size:1.1rem; margin-bottom:0.8rem; color:var(--text-dark);">📋 כל המשתמשים</h3>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:0.8rem;">
+                <h3 style="font-size:1.1rem; margin:0; color:var(--text-dark); flex:1;">📋 כל המשתמשים</h3>
+                <input id="adminUserSearch" class="input-field" style="margin:0; max-width:320px;" placeholder="🔍 חיפוש לפי ת.ז, שם, טלפון או קבוצה" oninput="filterAdminUsers()">
+            </div>
             <div class="table-responsive-wrapper">
                 <table style="width:100%; min-width:780px;">
                     <thead><tr style="background:#f8fafc;">
@@ -327,15 +441,22 @@
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <button id="managerBackToAdminBtn" onclick="loginAsAdmin()" style="display:none; background:#f1f5f9; color:var(--text-dark); border:1.5px solid var(--border); border-radius:12px; padding:0.8rem 1.5rem; font-weight:600; cursor:pointer;">← חזרה לפאנל הראשי</button>
-                    <button onclick="openManagerInboxModal()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 פניות הקבוצה <span class="js-mgr-inq-badge inq-badge"></span></button>
+                    <button id="managerToBudgetBtn" onclick="managerSwitchToBudget()" style="display:none; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:12px; padding:0.8rem 1.5rem; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(16,185,129,0.2);">💼 לחשבון שלי</button>
+                    <button id="mgrInboxBtn" onclick="openManagerInboxModal()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 פניות הקבוצה <span class="js-mgr-inq-badge inq-badge"></span></button>
+                    <button id="mgrAdminsChatBtn" onclick="openManagerAdminsChat()" style="background:linear-gradient(135deg,#0ea5e9,#0369a1);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(14,165,233,0.2);">💬 צ'אט עם ההנהלה</button>
                     <button onclick="handleLogout()" class="btn-outline">🚪 יציאה</button>
                 </div>
             </div>
 
             <div style="background:linear-gradient(135deg,#faf5ff,#eff6ff); border:1px solid #e9d5ff; border-radius:16px; padding:1.2rem 1.4rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-                <div>
-                    <div style="font-size:0.85rem; color:var(--text-light);">הקבוצה שלך</div>
-                    <div style="font-size:1.3rem; font-weight:700; color:var(--text-dark);" id="managerGroupName">—</div>
+                <div style="display:flex; align-items:center; gap:14px; min-width:0;">
+                    <div id="mgrPanelAvatar" style="width:64px; height:64px; min-width:64px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:1.7rem; font-weight:700; color:#fff; background-size:cover; background-position:center; box-shadow:0 6px 16px -6px rgba(124,58,237,0.5);"></div>
+                    <div style="min-width:0;">
+                        <div style="font-size:0.85rem; color:var(--text-light);">הקבוצה שלך</div>
+                        <div style="font-size:1.3rem; font-weight:700; color:var(--text-dark);" id="managerGroupName">—</div>
+                        <div id="mgrPanelDesc" style="font-size:0.85rem; color:var(--text-light); margin-top:2px;"></div>
+                        <button id="mgrEditProfileBtn" class="btn-outline" style="margin-top:8px; padding:0.35rem 0.8rem; font-size:0.82rem; color:var(--admin); border-color:#e9d5ff;" onclick="openGroupProfileModal()">✏️ ערוך פרופיל קבוצה</button>
+                    </div>
                 </div>
                 <div style="text-align:center;">
                     <div style="font-size:0.85rem; color:var(--text-light); margin-bottom:4px;">קוד להצטרפות (שתף עם החברים)</div>
@@ -346,18 +467,40 @@
                 </div>
             </div>
 
-            <h3 style="font-size:1.1rem; margin-bottom:0.8rem; color:var(--text-dark);">חברי הקבוצה (<span id="managerMemberCount">0</span>)</h3>
-            <div class="table-responsive-wrapper">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:1.2rem;">
+                <button id="mgrCommunityChatBtn" onclick="openGroupChatFromManager()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:white; border:none; border-radius:12px; padding:0.8rem 1.4rem; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">💬 פתח צ'אט קהילה</button>
+                <label style="display:flex; align-items:center; gap:8px; background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:0.6rem 1rem; cursor:pointer; font-size:0.9rem; font-weight:600; color:var(--text-dark);">
+                    <input type="checkbox" id="managerShareToggle" style="width:20px; height:20px; accent-color:var(--admin); cursor:pointer;" onchange="toggleShareData(this.checked)">
+                    שתף את נתוני הקבוצה עם ההנהלה הבכירה
+                </label>
+            </div>
+
+            <div id="mgrAddMemberBox" style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:14px; padding:1rem 1.2rem; margin-bottom:1.2rem; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <span style="font-weight:600; color:var(--text-dark);">➕ הוסף חבר קיים לקבוצה:</span>
+                <input id="mgrAddMemberId" class="input-field" style="margin:0; flex:1; min-width:180px;" placeholder="תעודת זהות של לקוח קיים" maxlength="9" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                <button class="btn-add" onclick="managerAddMember()">הוסף</button>
+            </div>
+
+            <div id="mgrMemberSearchRow" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:0.8rem;">
+                <h3 style="font-size:1.1rem; margin:0; color:var(--text-dark); flex:1;">חברי הקבוצה (<span id="managerMemberCount">0</span>)</h3>
+                <input id="memberSearch" class="input-field" style="margin:0; max-width:280px;" placeholder="🔍 חיפוש לפי תעודת זהות (או שם)" oninput="filterMembers()">
+            </div>
+            <div id="mgrMemberTableWrap" class="table-responsive-wrapper">
                 <table style="width:100%; min-width:700px;">
                     <thead><tr style="background:#f8fafc;">
                         <th style="text-align:right;">שם מלא</th>
                         <th style="text-align:right;">ת.ז.</th>
                         <th style="text-align:right;">טלפון</th>
                         <th style="text-align:right;">אימייל</th>
-                        <th style="text-align:center;">פעולה</th>
+                        <th style="text-align:center;">פעולות</th>
                     </tr></thead>
                     <tbody id="managerMemberTable"></tbody>
                 </table>
+            </div>
+            <div id="mgrPrivacyNotice" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:16px; padding:1.6rem; text-align:center; color:#92400e;">
+                <div style="font-size:2rem; margin-bottom:0.4rem;">🔒</div>
+                <div style="font-weight:700; font-size:1.05rem; margin-bottom:0.3rem;">קבוצה פרטית</div>
+                <p style="font-size:0.92rem; color:#b45309;">מנהל הקבוצה בחר שלא לחשוף את פרטי החברים. ניתן לראות שיש בקבוצה <strong id="mgrPrivacyCount">0</strong> חברים, אך לא את התיקים האישיים שלהם.</p>
             </div>
         </div>
     </div>
@@ -393,6 +536,10 @@
                     <span>💬</span> הודעות ופניות <span class="js-user-inq-badge inq-badge"></span>
                 </button>
 
+                <button id="userCommunityChatBtn" onclick="openGroupChatFromUser()" style="display:none; margin-top: 0.5rem; background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; align-items: center; gap: 8px; justify-content: center; width: 100%;">
+                    <span>🏘️</span> צ'אט הקהילה <span class="js-chat-badge inq-badge"></span>
+                </button>
+
                 <h4>היסטוריית חודשים</h4>
                 <ul class="month-history-list" id="historyList"></ul>
             </div>
@@ -406,6 +553,7 @@
                     <div class="actions-bar">
                         <div class="current-month-badge">חודש פעיל: <span id="currentMonthTxt"></span></div>
                         <span id="saveStatusIndicator" style="font-size: 0.85rem; color: var(--success); font-weight: 600; display: none;">✓ ענן מעודכן</span>
+                        <button class="btn-outline" id="toManagerPanelBtn" style="display:none; color:var(--admin); border-color:#e9d5ff;" onclick="userSwitchToManager()">🛡️ ניהול הקהילה</button>
                         <button class="btn-outline" onclick="openProfileUpdateModal()">✏️ פרופיל</button>
                         <button class="btn-outline" id="themeToggleBtn" onclick="toggleTheme()" title="מצב כהה/בהיר">🌙</button>
                         <button class="btn-outline" style="color:var(--danger); border-color:#fecaca;" onclick="handleLogout()">התנתק</button>
@@ -413,24 +561,53 @@
                 </div>
 
                 <div id="aboutSection" style="display:none; background:var(--surface); border-radius:24px; box-shadow:var(--shadow); padding:2.5rem; border:1px solid rgba(255,255,255,0.8);">
-                    <h3 style="font-size: 1.8rem; margin-bottom: 1rem; color: var(--text-dark);">ברוכים הבאים ל"הכיס שלי" 💼</h3>
-                    <p style="color: var(--text-light); font-size: 1.05rem; line-height: 1.6; margin-bottom: 1.5rem;">
-                        המערכת נועדה לעזור לכם לנהל את התקציב החודשי בצורה חכמה, לעקוב אחרי הוצאות ולחסוך כסף בקלות.
+                    <h3 style="font-size: 1.8rem; margin-bottom: 0.6rem; color: var(--text-dark);">ברוכים הבאים ל"הכיס שלי" 💼</h3>
+                    <p style="color: var(--text-light); font-size: 1.05rem; line-height: 1.7; margin-bottom: 1.8rem;">
+                        מערכת חכמה לניהול התקציב החודשי — מעקב אחרי הכנסות והוצאות, חיסכון מתוכנן, וכלי בינה מלאכותית שחוסכים לכם זמן. אפשר להשתמש לבד, או כחלק מקהילה בניהול של מנהל שמלווה אתכם.
                     </p>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem; padding: 0;">
-                        <li style="background: #f8fafc; padding: 1rem; border-radius: 12px; border-right: 4px solid var(--primary);">
-                            <strong>📝 ניהול תקציב:</strong> הזינו את ההכנסות שלכם, קבעו יעדים להוצאות קבועות ומשתנות, ועקבו בזמן אמת כמה נשאר לכם בכל סעיף. הוסיפו את ההוצאות היומיומיות תחת הסעיפים בלחיצה על כפתור הפלוס הירוק (+).
+
+                    <h4 style="font-size:1.15rem; color:var(--text-dark); margin:0 0 0.8rem;">💰 ניהול התקציב</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.9rem; padding: 0; margin-bottom:1.8rem;">
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid var(--primary);">
+                            <strong>📝 הכנסות, הוצאות קבועות ומשתנות:</strong> הזינו הכנסות, קבעו יעדים לכל סעיף, ועקבו בזמן אמת כמה נשאר. הוסיפו הוצאות יומיומיות תחת כל סעיף בלחיצה על הפלוס הירוק (+).
                         </li>
-                        <li style="background: #f8fafc; padding: 1rem; border-radius: 12px; border-right: 4px solid var(--success);">
-                            <strong>📷 סורק קבלות חכם (AI):</strong> צילמתם קבלה? הבינה המלאכותית שלנו תחלץ את הסכום, תזהה את החנות ותסווג את ההוצאה לקטגוריה המתאימה אוטומטית.
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid var(--success);">
+                            <strong>🎯 יעדי חיסכון וחיסכון שנתי:</strong> הגדירו יעדים אישיים ויעד שנתי. המערכת צוברת אוטומטית את החיסכון של כל חודש שמסתיים ומציגה התקדמות.
                         </li>
-                        <li style="background: #f8fafc; padding: 1rem; border-radius: 12px; border-right: 4px solid #f59e0b;">
-                            <strong>📥 ייבוא דף בנק:</strong> הורידו קובץ (CSV או Excel) מהבנק או מחברת האשראי והעלו אותו. אנחנו נזהה את התנועות ונסווג אותן למקומן. תומך גם בפורמטים מיושנים של בנקים ישראלים!
-                        </li>
-                        <li style="background: #f8fafc; padding: 1rem; border-radius: 12px; border-right: 4px solid #8b5cf6;">
-                            <strong>💬 פניות ויועץ AI:</strong> יש לכם יועץ פיננסי חכם בצ'אט שעונה על כל שאלה (הכפתור הסגול למטה), ותיבת פניות ישירה לצוות מנהלי המערכת.
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #0ea5e9;">
+                            <strong>📊 סטטיסטיקות וגרפים:</strong> סקירת הכנסות מול הוצאות, מעקב הוצאות לפי ימים, וייצוא ל-PDF / Excel, הדפסת דוח, וגיבוי ושחזור נתונים.
                         </li>
                     </ul>
+
+                    <h4 style="font-size:1.15rem; color:var(--text-dark); margin:0 0 0.8rem;">🤖 כלי בינה מלאכותית</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.9rem; padding: 0; margin-bottom:1.8rem;">
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #f59e0b;">
+                            <strong>📷 סורק קבלות:</strong> צילמתם קבלה? הבינה המלאכותית מחלצת את הסכום, מזהה את החנות ומסווגת את ההוצאה אוטומטית.
+                        </li>
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #f59e0b;">
+                            <strong>📥 ייבוא דף בנק:</strong> העלו קובץ CSV או Excel מהבנק/אשראי — המערכת מזהה ומסווגת את התנועות, כולל פורמטים ישנים של בנקים בישראל.
+                        </li>
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #8b5cf6;">
+                            <strong>🧠 יועץ פיננסי ותובנות:</strong> צ'אט ייעוץ חכם (הכפתור הסגול למטה) ותובנות אוטומטיות על ההתנהלות הכספית שלכם.
+                        </li>
+                    </ul>
+
+                    <h4 style="font-size:1.15rem; color:var(--text-dark); margin:0 0 0.8rem;">🏘️ קהילות וקבוצות</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.9rem; padding: 0; margin-bottom:1.8rem;">
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid var(--admin);">
+                            <strong>👥 הצטרפות לקבוצה:</strong> קיבלתם קוד ממנהל? הזינו אותו בהרשמה או בכל עת דרך הפרופיל (✏️ פרופיל ← קבוצה). אפשר גם לעזוב קבוצה בכל רגע.
+                        </li>
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid var(--admin);">
+                            <strong>💬 צ'אט הקהילה:</strong> חברי קבוצה משוחחים יחד, והמנהל יכול לשתף תכנים, קישורים וקבצים — הכל במקום אחד.
+                        </li>
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #2563eb;">
+                            <strong>✉️ פניות:</strong> מתיבת ההודעות אפשר לפנות גם למנהל הקבוצה שלכם וגם להנהלת האתר — ולקבל מענה ישירות בצ'אט הפנייה.
+                        </li>
+                    </ul>
+
+                    <div style="background: linear-gradient(135deg, var(--gold-soft), #fff); border:1px solid #ecdcb3; padding: 1rem 1.2rem; border-radius: 14px; color:#7a5f23; font-size:0.95rem;">
+                        🔒 <strong>פרטיות:</strong> הנתונים האישיים שלכם שמורים. מנהל קבוצה שמסמן את הקבוצה כ"פרטית" מסתיר את התיקים האישיים של החברים גם מההנהלה הבכירה — שתראה רק את מספר החברים.
+                    </div>
                 </div>
 
                 <div id="statisticsSection" style="display:none;">
@@ -642,8 +819,15 @@
             <div class="modal-body" style="padding:1.5rem; background:#f8fafc;">
                 <div style="background:var(--surface); padding:1.2rem; border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:1.5rem; border:1px solid var(--border);">
                     <h4 style="margin-bottom:10px; font-size:1rem;">פנייה חדשה</h4>
+                    <div class="input-group" id="feedbackTargetWrap" style="margin-bottom:10px; display:none;">
+                        <label style="font-size:0.85rem;">למי לשלוח?</label>
+                        <select id="feedbackTarget" class="input-field">
+                            <option value="admin">📮 הנהלת האתר (הצוות הראשי)</option>
+                            <option value="manager">🛡️ מנהל הקבוצה שלי</option>
+                        </select>
+                    </div>
                     <textarea id="feedbackText" class="input-field" rows="3" placeholder="יש לך שאלה? תקלה? הצעת ייעול? כתוב לנו כאן..."></textarea>
-                    <button class="btn-primary" style="margin-top:10px; padding:0.8rem;" onclick="submitFeedback()">שלח פנייה לצוות</button>
+                    <button class="btn-primary" style="margin-top:10px; padding:0.8rem;" onclick="submitFeedback()">שלח פנייה</button>
                 </div>
                 <h4 style="margin-bottom:10px; font-size:1rem; color:var(--text-light);">היסטוריית הפניות שלי</h4>
                 <div id="userMessagesList" style="display:flex; flex-direction:column; gap:12px; max-height:250px; overflow-y:auto; padding-right:5px;">
@@ -675,6 +859,82 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="groupChatModal">
+        <div class="modal-content" style="max-width: 560px; height:86vh; max-height:86vh;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); align-items:center; gap:10px;">
+                <div id="groupChatAvatar" style="width:46px; height:46px; min-width:46px; border-radius:50%; background:rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size:1.3rem; font-weight:700; color:#fff; background-size:cover; background-position:center;"></div>
+                <div style="flex:1; min-width:0;">
+                    <h3 style="color:#fff; font-size:1.1rem; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="groupChatTitle"></h3>
+                    <div id="groupChatDesc" style="color:rgba(255,255,255,0.85); font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+                </div>
+                <button class="btn-close-modal" style="color:#fff;" onclick="closeGroupChat()">✕</button>
+            </div>
+            <div class="modal-body" id="groupChatBody" style="background:#f4f7fb; padding:1rem; gap:0.6rem; flex:1; overflow-y:auto;">
+                <p style="text-align:center; color:var(--text-light);">טוען הודעות...</p>
+            </div>
+            <div style="padding:0.8rem 1rem; border-top:1px solid var(--border); background:var(--surface); display:flex; flex-direction:column; gap:8px;">
+                <input id="groupChatLink" class="input-field" style="margin:0; font-size:0.9rem;" placeholder="קישור / לינק לקובץ (אופציונלי)">
+                <div style="display:flex; gap:8px;">
+                    <input id="groupChatInput" class="input-field" style="margin:0; flex:1;" placeholder="כתוב הודעה לקהילה..." onkeydown="if(event.key==='Enter'){sendGroupChat();}">
+                    <button class="btn-primary" style="margin:0; width:auto; padding:0.7rem 1.3rem;" onclick="sendGroupChat()">שלח</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="managerComposeModal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header"><h3 style="color:var(--primary);">✉️ הודעה לחבר הקבוצה</h3><button class="btn-close-modal" onclick="closeManagerCompose()">✕</button></div>
+            <div class="modal-body">
+                <p style="color:var(--text-light); font-size:0.9rem; margin:0;">נשלח אל: <strong id="composeMemberName" style="color:var(--text-dark);"></strong></p>
+                <textarea id="composeText" class="input-field" rows="4" placeholder="כתוב את ההודעה שלך לחבר..." style="margin:0;"></textarea>
+                <p style="font-size:0.8rem; color:var(--text-light); margin:0;">החבר יקבל את ההודעה בתיבת הפניות שלו ויוכל להגיב, והשיחה תופיע ב"פניות הקבוצה".</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeManagerCompose()">ביטול</button>
+                <button class="btn-primary" style="margin:0; width:auto; padding:0.7rem 1.5rem;" onclick="sendManagerCompose()">שלח הודעה</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="groupProfileModal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header"><h3 style="color:var(--admin);">🏘️ פרופיל הקבוצה</h3><button class="btn-close-modal" onclick="closeGroupProfileModal()">✕</button></div>
+            <div class="modal-body" style="align-items:center; text-align:center;">
+                <div id="profileAvatarPreview" style="width:110px; height:110px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:2.6rem; font-weight:700; color:#fff; background-size:cover; background-position:center; box-shadow:0 8px 20px -6px rgba(124,58,237,0.5);"></div>
+                <input type="file" id="groupAvatarInput" accept="image/*" style="display:none;" onchange="processAvatarFile(this)">
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-outline" onclick="document.getElementById('groupAvatarInput').click()">📷 העלה תמונה</button>
+                    <button class="btn-outline" style="color:var(--danger); border-color:#fecaca;" onclick="clearAvatar()">הסר תמונה</button>
+                </div>
+                <div class="input-group" style="width:100%; margin:0; text-align:right;">
+                    <label>שם הקבוצה</label>
+                    <input type="text" id="profileGroupName" class="input-field" placeholder="שם הקבוצה">
+                </div>
+                <div class="input-group" style="width:100%; margin:0; text-align:right;">
+                    <label>תיאור הקבוצה</label>
+                    <textarea id="profileGroupDesc" class="input-field" rows="3" placeholder="כמה מילים על הקבוצה, מטרות, וכו'..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeGroupProfileModal()">ביטול</button>
+                <button class="btn-primary" style="margin:0; width:auto; padding:0.7rem 1.5rem; background:linear-gradient(135deg,#8b5cf6,#6d28d9);" onclick="saveGroupProfile()">שמור</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="hatChoiceModal">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header"><h3 style="color:var(--admin);">באיזה כובע להתחבר?</h3></div>
+            <div class="modal-body" style="text-align:center;">
+                <p style="color:var(--text-light);">שלום <strong id="hatChoiceName" style="color:var(--text-dark);"></strong>, יש לך גם חשבון אישי וגם ניהול קבוצה (<strong id="hatChoiceGroup" style="color:var(--admin);"></strong>). מה תרצה לעשות עכשיו?</p>
+                <button class="btn-primary" style="margin-top:0.5rem; background:linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow:none;" onclick="chooseHatManager()">🛡️ ניהול הקהילה שלי</button>
+                <button class="btn-primary" style="margin-top:0.8rem; background:linear-gradient(135deg,#10b981,#059669); box-shadow:none;" onclick="chooseHatClient()">💼 החשבון שלי (תקציב חודשי)</button>
+                <a class="auth-toggle-link" style="display:block; margin-top:1rem; color:var(--text-light);" onclick="closeHatChoiceModal()">ביטול</a>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="createManagerModal">
         <div class="modal-content" style="max-width: 440px;">
             <div class="modal-header"><h3 style="color:var(--admin);">➕ יצירת מנהל וקבוצה חדשה</h3><button class="btn-close-modal" onclick="closeCreateManagerModal()">✕</button></div>
@@ -684,7 +944,7 @@
                 <div class="input-group" style="margin:0;"><label>תעודת זהות של המנהל</label><input type="text" id="mgrId" class="input-field" placeholder="9 ספרות" maxlength="9" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
                 <div class="input-group" style="margin:0;"><label>טלפון (אופציונלי)</label><input type="tel" id="mgrPhone" class="input-field" placeholder="לשחזור" maxlength="10"></div>
                 <div class="input-group" style="margin:0;"><label>קוד סודי למנהל (PIN)</label><input type="password" id="mgrPin" class="input-field" placeholder="4 ספרות" maxlength="4" style="text-align:center; letter-spacing:6px;" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-                <p style="font-size:0.8rem; color:var(--text-light);">קוד הקבוצה ייווצר אוטומטית. המנהל יתחבר עם ת.ז + קוד סודי, ויראה רק את חברי הקבוצה שלו.</p>
+                <p style="font-size:0.8rem; color:var(--text-light);">קוד הקבוצה ייווצר אוטומטית. אם תעודת הזהות כבר רשומה כלקוח — החשבון הקיים יהפוך <strong>גם</strong> למנהל (שם וקוד סודי לא נדרשים, התקציב שלו נשמר). לחשבון חדש — מלא שם וקוד סודי. בכל מקרה, בעל החשבון יישאל בהתחברות לאיזה כובע להיכנס.</p>
             </div>
             <div class="modal-footer">
                 <button class="btn-outline" onclick="closeCreateManagerModal()">ביטול</button>
@@ -948,6 +1208,10 @@
             document.getElementById('recoveryResetSection').style.display = mode === 'recoveryReset' ? 'block' : 'none';
         }
 
+        // האם החשבון הוא גם מנהל? נקבע לפי manager_code (הקבוצה שהוא מנהל)
+        function isManagerAccount(u) { return !!(u && u.manager_code); }
+
+        let pendingHatUser = null;
         async function processLoginDetails() {
             const id = document.getElementById('loginUserId').value.trim(); const pin = document.getElementById('loginPin').value.trim();
             if (!id || !pin) return alert("הזן תעודת זהות וקוד סודי.");
@@ -956,9 +1220,21 @@
             if (error || !data || data.length === 0) return alert("שגיאה: חשבון לא קיים.");
             if (data[0].pin !== pin) return alert("קוד סודי שגוי.");
             isImpersonating = false; localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return');
-            if (data[0].role === 'manager') { loginAsManager(data[0]); return; }
+            // אם לחשבון יש קבוצה בניהולו - הוא גם מנהל וגם לקוח, נשאל באיזה "כובע" להתחבר
+            if (isManagerAccount(data[0])) { askHatChoice(data[0]); return; }
             loginAsUser(data[0]);
         }
+
+        // ====== בחירת "כובע" למי שהוא גם מנהל וגם לקוח ======
+        function askHatChoice(userObj) {
+            pendingHatUser = userObj;
+            document.getElementById('hatChoiceName').innerText = userObj.username || '';
+            document.getElementById('hatChoiceGroup').innerText = userObj.manager_group_name || userObj.manager_code || '';
+            document.getElementById('hatChoiceModal').style.display = 'flex';
+        }
+        function closeHatChoiceModal() { document.getElementById('hatChoiceModal').style.display = 'none'; }
+        function chooseHatManager() { const u = pendingHatUser; closeHatChoiceModal(); if (u) loginAsManager(u); }
+        function chooseHatClient() { const u = pendingHatUser; closeHatChoiceModal(); if (u) loginAsUser(u); }
 
         // ====== מנהל בכיר: ניהול קבוצות ומנהלים ======
         function generateGroupCode() {
@@ -966,10 +1242,13 @@
             for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
             return s;
         }
+        // מציאת הקבוצה לפי קוד = החשבון שמנהל אותה (manager_code)
         async function findGroupByCode(code) {
             if (!code) return null;
-            const { data } = await _supabase.from('users').select('user_id,username,group_code,group_name,role').eq('group_code', code).eq('role', 'manager');
-            return (data && data[0]) || null;
+            const { data } = await _supabase.from('users').select('user_id,username,manager_code,manager_group_name').eq('manager_code', code);
+            if (!data || !data[0]) return null;
+            const m = data[0];
+            return { user_id: m.user_id, username: m.username, group_code: m.manager_code, group_name: m.manager_group_name };
         }
 
         function openCreateManagerModal() {
@@ -984,11 +1263,9 @@
             const id = document.getElementById('mgrId').value.trim();
             const phone = document.getElementById('mgrPhone').value.trim();
             const pin = document.getElementById('mgrPin').value.trim();
-            if (!name || !groupName || !id || !pin) return alert("מלא שם מנהל, שם קבוצה, ת.ז וקוד סודי.");
+            if (!groupName || !id) return alert("מלא לפחות שם קבוצה ותעודת זהות.");
             if (!isValidIsraeliID(id)) return alert("תעודת הזהות אינה חוקית.");
-            if (pin.length !== 4) return alert("קוד סודי חייב להיות 4 ספרות.");
-            const { data: existing } = await _supabase.from('users').select('user_id').eq('user_id', id);
-            if (existing && existing.length > 0) return alert("כבר קיים חשבון עם תעודת זהות זו.");
+
             // יצירת קוד קבוצה ייחודי
             let code = '';
             for (let attempt = 0; attempt < 8; attempt++) {
@@ -996,18 +1273,35 @@
                 const taken = await findGroupByCode(code);
                 if (!taken) break;
             }
+
+            const { data: existing } = await _supabase.from('users').select('*').eq('user_id', id);
+            if (existing && existing.length > 0) {
+                // החשבון כבר קיים כלקוח -> הופכים אותו גם למנהל (בלי לפגוע בנתוני התקציב)
+                if (existing[0].manager_code) return alert("חשבון זה כבר מנהל קבוצה (" + (existing[0].manager_group_name || existing[0].manager_code) + ").");
+                const { error: upErr } = await _supabase.from('users').update({ manager_code: code, manager_group_name: groupName }).eq('user_id', id);
+                if (upErr) return alert("שגיאה בשדרוג לקוח למנהל: " + (upErr.message || ''));
+                closeCreateManagerModal();
+                alert("הלקוח הקיים '" + existing[0].username + "' הפך גם למנהל! ✅\nשם קבוצה: " + groupName + "\nקוד קבוצה: " + code + "\n\nהוא ישמור על חשבון התקציב שלו, ובהתחברות יישאל לאיזה כובע להיכנס.");
+                loginAsAdmin();
+                return;
+            }
+
+            // חשבון חדש לגמרי -> חובה שם + קוד סודי
+            if (!name || !pin) return alert("חשבון חדש: יש למלא גם שם מנהל וגם קוד סודי (4 ספרות).");
+            if (pin.length !== 4) return alert("קוד סודי חייב להיות 4 ספרות.");
             let formattedPhone = phone ? (phone.startsWith('0') ? '+972' + phone.substring(1) : phone) : '';
-            const newMgr = { user_id: id, username: name, email: '', phone: formattedPhone, pin: pin, is_pro: true, role: 'manager', group_code: code, group_name: groupName };
+            const newMgr = { user_id: id, username: name, email: '', phone: formattedPhone, pin: pin, is_pro: true, role: 'manager', manager_code: code, manager_group_name: groupName };
             const { error } = await _supabase.from('users').insert([newMgr]);
             if (error) return alert("שגיאה ביצירת מנהל: " + (error.message || JSON.stringify(error)));
             closeCreateManagerModal();
-            alert("המנהל נוצר!\nשם קבוצה: " + groupName + "\nקוד קבוצה: " + code + "\n\nמסור קוד זה למנהל ולחברי הקבוצה.");
+            alert("המנהל נוצר! ✅\nשם קבוצה: " + groupName + "\nקוד קבוצה: " + code + "\n\nלחשבון יש גם תקציב אישי וגם ניהול קבוצה. מסור את הקוד לחברי הקבוצה.");
             loginAsAdmin();
         }
 
+        // ביטול ניהול קבוצה (החשבון נשאר לקוח עם התקציב שלו)
         async function deleteManager(id, code) {
-            if (!confirm("למחוק מנהל זה? החברים בקבוצה יישארו אך ללא מנהל פעיל.")) return;
-            await _supabase.from('users').delete().eq('user_id', id);
+            if (!confirm("לבטל את ניהול הקבוצה עבור חשבון זה?\nהחשבון יישאר כלקוח רגיל עם התקציב שלו, והחברים יישארו ללא מנהל פעיל.")) return;
+            await _supabase.from('users').update({ manager_code: null, manager_group_name: null }).eq('user_id', id);
             loginAsAdmin();
         }
 
@@ -1018,45 +1312,104 @@
             
             const { data } = await _supabase.from('users').select('*').order('username', { ascending: true });
             const all = data || [];
-            const managers = all.filter(function(u){ return u.role === 'manager'; });
-            const regulars = all.filter(function(u){ return u.role !== 'manager'; });
-            // מפת ספירת חברים לכל קוד קבוצה
-            const groupNames = {}; const memberCounts = {};
-            managers.forEach(function(m){ groupNames[m.group_code] = m.group_name || m.username; memberCounts[m.group_code] = 0; });
-            regulars.forEach(function(u){ if (u.group_code && memberCounts.hasOwnProperty(u.group_code)) memberCounts[u.group_code]++; });
+            const managers = all.filter(function(u){ return !!u.manager_code; });
+            // מפת שמות, ספירת חברים, ומצב שיתוף לכל קוד קבוצה
+            const groupNames = {}; const memberCounts = {}; const shareByCode = {};
+            managers.forEach(function(m){ groupNames[m.manager_code] = m.manager_group_name || m.username; memberCounts[m.manager_code] = 0; shareByCode[m.manager_code] = (m.manager_share_data !== false); });
+            all.forEach(function(u){ if (u.group_code && memberCounts.hasOwnProperty(u.group_code)) memberCounts[u.group_code]++; });
 
             // טבלת מנהלים / קבוצות
             const mtbody = document.getElementById('adminManagerTable'); mtbody.innerHTML = '';
             if (managers.length > 0) {
                 managers.forEach(function(m){
+                    const priv = (m.manager_share_data === false) ? ' <span style="background:#fee2e2;color:#ef4444;font-size:0.68rem;font-weight:700;padding:1px 6px;border-radius:6px;">פרטי</span>' : '';
                     const tr = document.createElement('tr');
                     tr.innerHTML = '<td>'+escapeHtml(m.username)+'</td>'
-                        + '<td>'+escapeHtml(m.group_name || '-')+'</td>'
-                        + '<td style="text-align:center;"><strong style="letter-spacing:3px; color:var(--admin);">'+escapeHtml(m.group_code || '-')+'</strong></td>'
-                        + '<td style="text-align:center;">'+(memberCounts[m.group_code] || 0)+'</td>'
+                        + '<td>'+escapeHtml(m.manager_group_name || '-')+priv+'</td>'
+                        + '<td style="text-align:center;"><strong style="letter-spacing:3px; color:var(--admin);">'+escapeHtml(m.manager_code || '-')+'</strong></td>'
+                        + '<td style="text-align:center;">'+(memberCounts[m.manager_code] || 0)+'</td>'
                         + '<td style="text-align:center; white-space:nowrap;"><button class="btn-outline" style="padding:0.35rem 0.7rem; font-size:0.8rem;" onclick=\'adminViewGroup('+JSON.stringify(m)+')\'>👁️ צפה בקבוצה</button> '
-                        + '<button class="btn-outline" style="padding:0.35rem 0.7rem; font-size:0.8rem; color:var(--danger); border-color:#fecaca;" onclick="deleteManager(\''+escapeHtml(m.user_id)+'\',\''+escapeHtml(m.group_code||'')+'\')">🗑️</button></td>';
+                        + '<button class="btn-outline" style="padding:0.35rem 0.7rem; font-size:0.8rem; color:var(--danger); border-color:#fecaca;" onclick="deleteManager(\''+escapeHtml(m.user_id)+'\',\''+escapeHtml(m.manager_code||'')+'\')">בטל ניהול</button></td>';
                     mtbody.appendChild(tr);
                 });
             } else { mtbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light); padding:1rem;">אין מנהלים עדיין. לחץ "מנהל חדש" כדי ליצור.</td></tr>'; }
             document.getElementById('adminManagerCount').innerText = managers.length;
 
-            // טבלת כל המשתמשים הרגילים
-            const tbody = document.getElementById('adminUserTable'); tbody.innerHTML = '';
-            if (regulars.length > 0) {
-                regulars.forEach(function(u){
-                    const groupLabel = u.group_code ? (groupNames[u.group_code] || u.group_code) : '—';
+            // טבלת כל המשתמשים (כולם לקוחות; מנהלים מסומנים) — עם חיפוש גלובלי
+            window._adminAllUsers = all;
+            window._adminGroupNames = groupNames;
+            window._adminShareByCode = shareByCode;
+            const aSearch = document.getElementById('adminUserSearch'); if (aSearch) aSearch.value = '';
+            renderAdminUsers(all);
+            document.getElementById('adminUserCount').innerText = all.length;
+
+            // קבוצה מרכזית - משתמשים ללא קבוצה (ואינם מנהלים)
+            const central = all.filter(function(u){ return !u.group_code && !u.manager_code; });
+            const ctbody = document.getElementById('adminCentralTable'); ctbody.innerHTML = '';
+            if (central.length > 0) {
+                central.forEach(function(u){
                     const tr = document.createElement('tr');
-                    tr.innerHTML = '<td>'+escapeHtml(u.username)+'</td><td>'+escapeHtml(u.user_id)+'</td><td>'+escapeHtml(u.phone || '-')+'</td><td>'+escapeHtml(u.email || '-')+'</td><td>'+escapeHtml(groupLabel)+'</td><td style="text-align:center;"><button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick=\'impersonateUser('+JSON.stringify(u)+')\'>היכנס</button></td>';
-                    tbody.appendChild(tr);
+                    tr.innerHTML = '<td>'+escapeHtml(u.username)+'</td><td>'+escapeHtml(u.user_id)+'</td><td>'+escapeHtml(u.phone || '-')+'</td>'
+                        + '<td style="text-align:center; white-space:nowrap;"><input id="assign_'+escapeHtml(u.user_id)+'" class="input-field" style="margin:0; width:110px; display:inline-block; text-align:center; letter-spacing:3px; text-transform:uppercase;" maxlength="6" placeholder="קוד"> <button class="btn-outline" style="padding:0.4rem 0.7rem; font-size:0.8rem;" onclick="adminAssignToGroup(\''+escapeHtml(u.user_id)+'\')">שייך</button></td>'
+                        + '<td style="text-align:center;"><button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick=\'impersonateUser('+JSON.stringify(u)+')\'>היכנס</button></td>';
+                    ctbody.appendChild(tr);
                 });
-            }
-            document.getElementById('adminUserCount').innerText = regulars.length;
+            } else { ctbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light); padding:1rem;">אין כרגע משתמשים ללא קבוצה.</td></tr>'; }
+            document.getElementById('adminCentralCount').innerText = central.length;
+
             refreshAdminInquiryBadge();
             if (!window._adminInqPoll) window._adminInqPoll = setInterval(refreshAdminInquiryBadge, 30000);
         }
 
-        // ====== מנהל קבוצה ======
+        // המנהל הבכיר משייך משתמש מהקבוצה המרכזית לקבוצה לפי קוד
+        async function adminAssignToGroup(userId) {
+            const inp = document.getElementById('assign_'+userId);
+            const code = (inp && inp.value || '').trim().toUpperCase();
+            if (!code) return alert("הזן קוד קבוצה.");
+            const grp = await findGroupByCode(code);
+            if (!grp) return alert("קוד הקבוצה אינו קיים.");
+            const { error } = await _supabase.from('users').update({ group_code: code, group_name: grp.group_name || '' }).eq('user_id', userId);
+            if (error) return alert("שגיאה בשיוך: " + (error.message || ''));
+            alert("המשתמש שויך לקבוצה: " + (grp.group_name || code));
+            loginAsAdmin();
+        }
+
+        // חיפוש גלובלי של משתמשים אצל המנהל הבכיר (כל קבוצה + מי שאין לו קבוצה)
+        function renderAdminUsers(list) {
+            const tbody = document.getElementById('adminUserTable'); if (!tbody) return;
+            const groupNames = window._adminGroupNames || {};
+            const shareByCode = window._adminShareByCode || {};
+            tbody.innerHTML = '';
+            if (!list || !list.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-light); padding:1rem;">לא נמצאו משתמשים תואמים.</td></tr>';
+                return;
+            }
+            list.forEach(function(u){
+                const groupLabel = u.group_code ? (groupNames[u.group_code] || u.group_code) : '— ללא קבוצה —';
+                const mgrBadge = u.manager_code ? ' <span style="background:#f3e8ff; color:var(--admin); font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:6px;">מנהל</span>' : '';
+                const isPrivateMember = u.group_code && shareByCode[u.group_code] === false && !u.manager_code;
+                const actionCell = isPrivateMember
+                    ? '<span title="המנהל בחר לא לשתף נתונים" style="color:var(--text-light); font-size:0.85rem;">🔒 פרטי</span>'
+                    : '<button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick=\'impersonateUser('+JSON.stringify(u)+')\'>היכנס</button>';
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td>'+escapeHtml(u.username)+mgrBadge+'</td><td>'+escapeHtml(u.user_id)+'</td><td>'+escapeHtml(u.phone || '-')+'</td><td>'+escapeHtml(u.email || '-')+'</td><td>'+escapeHtml(groupLabel)+'</td><td style="text-align:center;">'+actionCell+'</td>';
+                tbody.appendChild(tr);
+            });
+        }
+        function filterAdminUsers() {
+            const term = (document.getElementById('adminUserSearch').value || '').trim().toLowerCase();
+            const all = window._adminAllUsers || [];
+            const groupNames = window._adminGroupNames || {};
+            if (!term) { renderAdminUsers(all); return; }
+            const filtered = all.filter(function(u){
+                const gl = u.group_code ? (groupNames[u.group_code] || u.group_code) : 'ללא קבוצה';
+                return String(u.user_id||'').toLowerCase().indexOf(term) !== -1
+                    || String(u.username||'').toLowerCase().indexOf(term) !== -1
+                    || String(u.phone||'').toLowerCase().indexOf(term) !== -1
+                    || String(gl).toLowerCase().indexOf(term) !== -1;
+            });
+            renderAdminUsers(filtered);
+        }
         let currentManagerSession = null;
         function adminViewGroup(managerObj) { loginAsManager(managerObj, true); }
         async function loginAsManager(managerObj, fromSuperAdmin) {
@@ -1069,24 +1422,309 @@
             const aiBtnM = document.getElementById('aiChatToggleBtn'); if (aiBtnM) aiBtnM.style.display = 'none'; const aiBox = document.getElementById('aiChatBox'); if (aiBox) aiBox.style.display = 'none';
 
             document.getElementById('managerName').innerText = managerObj.username || '';
-            document.getElementById('managerGroupName').innerText = managerObj.group_name || '—';
-            document.getElementById('managerGroupCode').innerText = managerObj.group_code || '—';
+            document.getElementById('managerGroupName').innerText = managerObj.manager_group_name || '—';
+            document.getElementById('managerGroupCode').innerText = managerObj.manager_code || '—';
+            setAvatarEl(document.getElementById('mgrPanelAvatar'), managerObj.manager_group_avatar, managerObj.manager_group_name || 'ק');
+            const descEl2 = document.getElementById('mgrPanelDesc'); if (descEl2) descEl2.innerText = managerObj.manager_group_desc || '';
+            const editBtn = document.getElementById('mgrEditProfileBtn'); if (editBtn) editBtn.style.display = fromSuperAdmin ? 'none' : 'inline-flex';
+            // מצב שיתוף נתונים עם ההנהלה הבכירה (ברירת מחדל: משתף)
+            const shareTgl = document.getElementById('managerShareToggle');
+            if (shareTgl) { shareTgl.checked = (managerObj.manager_share_data !== false); shareTgl.disabled = !!fromSuperAdmin; }
+            // כפתור מעבר לחשבון/תקציב האישי של המנהל (אותו חשבון)
+            const toBudgetBtn = document.getElementById('managerToBudgetBtn');
+            if (toBudgetBtn) toBudgetBtn.style.display = fromSuperAdmin ? 'none' : 'inline-flex';
 
-            const { data } = await _supabase.from('users').select('*').eq('group_code', managerObj.group_code).order('username', { ascending: true });
-            const members = (data || []).filter(function(u){ return u.role !== 'manager'; });
-            const tbody = document.getElementById('managerMemberTable'); tbody.innerHTML = '';
-            if (members.length > 0) {
-                members.forEach(function(u){
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = '<td>'+escapeHtml(u.username)+'</td><td>'+escapeHtml(u.user_id)+'</td><td>'+escapeHtml(u.phone || '-')+'</td><td>'+escapeHtml(u.email || '-')+'</td><td style="text-align:center;"><button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick=\'impersonateMember('+JSON.stringify(u)+')\'>היכנס</button></td>';
-                    tbody.appendChild(tr);
-                });
-            } else { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light); padding:1rem;">עדיין אין חברים בקבוצה. שתף את קוד הקבוצה.</td></tr>'; }
+            // קבוצה פרטית שנצפית ע"י המנהל הבכיר: לחסום גישה לתיקים האישיים
+            const restricted = !!fromSuperAdmin && (managerObj.manager_share_data === false);
+            window._mgrRestricted = restricted;
+            const addBox = document.getElementById('mgrAddMemberBox'); if (addBox) addBox.style.display = restricted ? 'none' : 'flex';
+            const searchRow = document.getElementById('mgrMemberSearchRow'); if (searchRow) searchRow.style.display = restricted ? 'none' : 'flex';
+            const chatBtnM = document.getElementById('mgrCommunityChatBtn'); if (chatBtnM) chatBtnM.style.display = restricted ? 'none' : 'inline-flex';
+            const inboxBtnM = document.getElementById('mgrInboxBtn'); if (inboxBtnM) inboxBtnM.style.display = restricted ? 'none' : 'inline-flex';
+            const adminsChatBtnM = document.getElementById('mgrAdminsChatBtn'); if (adminsChatBtnM) adminsChatBtnM.style.display = fromSuperAdmin ? 'none' : 'inline-flex';
+            const tableWrap = document.getElementById('mgrMemberTableWrap'); if (tableWrap) tableWrap.style.display = restricted ? 'none' : 'block';
+            const notice = document.getElementById('mgrPrivacyNotice'); if (notice) notice.style.display = restricted ? 'block' : 'none';
+
+            const ownCode = managerObj.manager_code;
+            const { data } = await _supabase.from('users').select('*').eq('group_code', ownCode).order('username', { ascending: true });
+            const members = (data || []).filter(function(u){ return u.user_id !== managerObj.user_id; });
+            window._mgrMembersData = members;
+            const srch = document.getElementById('memberSearch'); if (srch) srch.value = '';
             document.getElementById('managerMemberCount').innerText = members.length;
             window._managerMemberIds = members.map(function(u){ return u.user_id; });
+            if (restricted) {
+                document.getElementById('mgrPrivacyCount').innerText = members.length;
+                const mt = document.getElementById('managerMemberTable'); if (mt) mt.innerHTML = '';
+                window._mgrMembersData = [];
+            } else {
+                renderManagerMembers(members);
+            }
             refreshManagerInquiryBadge();
             if (window._mgrInqPoll) clearInterval(window._mgrInqPoll);
             window._mgrInqPoll = setInterval(refreshManagerInquiryBadge, 30000);
+        }
+
+        // מעבר מהיר מהפאנל ניהול אל התקציב האישי של אותו חשבון
+        function managerSwitchToBudget() { if (currentManagerSession) loginAsUser(currentManagerSession); }
+
+        // ====== פרופיל הקבוצה (סגנון וואטסאפ) ======
+        let _pendingAvatar = '';
+        function openGroupProfileModal() {
+            if (!currentManagerSession) return;
+            document.getElementById('profileGroupName').value = currentManagerSession.manager_group_name || '';
+            document.getElementById('profileGroupDesc').value = currentManagerSession.manager_group_desc || '';
+            _pendingAvatar = currentManagerSession.manager_group_avatar || '';
+            setAvatarEl(document.getElementById('profileAvatarPreview'), _pendingAvatar, currentManagerSession.manager_group_name || 'ק');
+            document.getElementById('groupProfileModal').style.display = 'flex';
+        }
+        function closeGroupProfileModal() { document.getElementById('groupProfileModal').style.display = 'none'; }
+        function clearAvatar() { _pendingAvatar = ''; setAvatarEl(document.getElementById('profileAvatarPreview'), '', document.getElementById('profileGroupName').value || 'ק'); }
+        function processAvatarFile(input) {
+            const file = input.files && input.files[0]; if (!file) return;
+            if (!file.type.startsWith('image/')) { alert("יש לבחור קובץ תמונה."); return; }
+            const reader = new FileReader();
+            reader.onload = function(e){
+                const img = new Image();
+                img.onload = function(){
+                    const size = 256;
+                    const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    const min = Math.min(img.width, img.height);
+                    const sx = (img.width - min)/2, sy = (img.height - min)/2;
+                    ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+                    _pendingAvatar = canvas.toDataURL('image/jpeg', 0.72);
+                    setAvatarEl(document.getElementById('profileAvatarPreview'), _pendingAvatar, '');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+        async function saveGroupProfile() {
+            if (!currentManagerSession) return;
+            const name = document.getElementById('profileGroupName').value.trim();
+            const desc = document.getElementById('profileGroupDesc').value.trim();
+            if (!name) return alert("שם הקבוצה לא יכול להיות ריק.");
+            const payload = { manager_group_name: name, manager_group_desc: desc, manager_group_avatar: _pendingAvatar || null };
+            const { error } = await _supabase.from('users').update(payload).eq('user_id', currentManagerSession.user_id);
+            if (error) return alert("שגיאה בשמירה: " + (error.message || ''));
+            currentManagerSession.manager_group_name = name;
+            currentManagerSession.manager_group_desc = desc;
+            currentManagerSession.manager_group_avatar = _pendingAvatar || null;
+            closeGroupProfileModal();
+            document.getElementById('managerGroupName').innerText = name;
+            setAvatarEl(document.getElementById('mgrPanelAvatar'), currentManagerSession.manager_group_avatar, name || 'ק');
+            document.getElementById('mgrPanelDesc').innerText = desc;
+            alert("פרופיל הקבוצה עודכן! ✨");
+        }
+
+        // ====== המנהל שולח הודעה יזומה לחבר ======
+        let _composeMemberId = null;
+        function openManagerCompose(userId) {
+            _composeMemberId = userId;
+            const m = (window._mgrMembersData || []).find(function(x){ return x.user_id === userId; });
+            document.getElementById('composeMemberName').innerText = m ? m.username : userId;
+            document.getElementById('composeText').value = '';
+            document.getElementById('managerComposeModal').style.display = 'flex';
+        }
+        function closeManagerCompose() { document.getElementById('managerComposeModal').style.display = 'none'; }
+        async function sendManagerCompose() {
+            if (!_composeMemberId || !currentManagerSession) return;
+            const text = document.getElementById('composeText').value.trim();
+            if (!text) return alert("כתוב הודעה.");
+            const m = (window._mgrMembersData || []).find(function(x){ return x.user_id === _composeMemberId; });
+            const now = new Date().toISOString();
+            const thread = [{ from:'admin', text:text, at:now }];
+            const row = { user_id: _composeMemberId, username: (m ? m.username : ''), message: JSON.stringify(thread), created_at: now, target: 'manager', group_code: currentManagerSession.manager_code };
+            const { error } = await _supabase.from('feedback').insert([row]);
+            if (error) return alert("ההודעה לא נשלחה: " + (error.message || ''));
+            closeManagerCompose();
+            alert("ההודעה נשלחה לחבר! ✉️");
+        }
+
+        // רינדור וחיפוש חברי הקבוצה (מזהה ייחודי = ת.ז, שמות עשויים לחזור על עצמם)
+        function renderManagerMembers(list) {
+            const tbody = document.getElementById('managerMemberTable'); if (!tbody) return;
+            if (window._mgrRestricted) { tbody.innerHTML = ''; return; }
+            tbody.innerHTML = '';
+            if (!list || !list.length) {
+                const empty = (window._mgrMembersData && window._mgrMembersData.length) ? 'לא נמצאו חברים התואמים לחיפוש.' : 'עדיין אין חברים בקבוצה. שתף את קוד הקבוצה.';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light); padding:1rem;">'+empty+'</td></tr>';
+                return;
+            }
+            list.forEach(function(u){
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td>'+escapeHtml(u.username)+'</td><td>'+escapeHtml(u.user_id)+'</td><td>'+escapeHtml(u.phone || '-')+'</td><td>'+escapeHtml(u.email || '-')+'</td><td style="text-align:center; white-space:nowrap;">'
+                    + '<button class="btn-outline" style="padding:0.4rem 0.7rem; font-size:0.85rem; color:var(--primary); border-color:#c7d2fe;" onclick="openManagerCompose(\''+escapeHtml(u.user_id)+'\')">✉️ הודעה</button> '
+                    + '<button class="btn-outline" style="padding:0.4rem 0.7rem; font-size:0.85rem;" onclick=\'impersonateMember('+JSON.stringify(u)+')\'>היכנס</button> '
+                    + '<button class="btn-outline" style="padding:0.4rem 0.7rem; font-size:0.85rem; color:var(--danger); border-color:#fecaca;" onclick="managerRemoveMember(\''+escapeHtml(u.user_id)+'\')">הסר</button>'
+                    + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+        function filterMembers() {
+            const term = (document.getElementById('memberSearch').value || '').trim().toLowerCase();
+            const list = window._mgrMembersData || [];
+            if (!term) { renderManagerMembers(list); return; }
+            const filtered = list.filter(function(u){
+                return String(u.user_id || '').toLowerCase().indexOf(term) !== -1
+                    || String(u.username || '').toLowerCase().indexOf(term) !== -1;
+            });
+            renderManagerMembers(filtered);
+        }
+
+        // צ'אט בין ההנהלה הבכירה למנהלים (קוד קבוצה ייעודי)
+        const ADMINS_CHAT_CODE = '__ADMINS__';
+        function openAdminManagersChat() { openGroupChat(ADMINS_CHAT_CODE, "צ'אט הנהלה ומנהלים", true, 'ADMIN', 'הנהלה בכירה'); }
+        function openManagerAdminsChat() {
+            if (!currentManagerSession) return;
+            openGroupChat(ADMINS_CHAT_CODE, "צ'אט הנהלה ומנהלים", true, currentManagerSession.user_id, currentManagerSession.username);
+        }
+
+        // המנהל מוסיף לקוח קיים לקבוצה לפי ת.ז
+        async function managerAddMember() {
+            const code = currentManagerSession && currentManagerSession.manager_code;
+            if (!code) return;
+            const id = (document.getElementById('mgrAddMemberId').value || '').trim();
+            if (!id) return alert("הזן תעודת זהות.");
+            const { data } = await _supabase.from('users').select('*').eq('user_id', id);
+            if (!data || !data.length) return alert("לא נמצא לקוח עם תעודת זהות זו. הוא צריך להיות רשום במערכת.");
+            const u = data[0];
+            if (u.user_id === currentManagerSession.user_id) return alert("אינך יכול להוסיף את עצמך כחבר.");
+            if (u.group_code === code) return alert("הלקוח כבר חבר בקבוצה שלך.");
+            if (u.group_code) { if (!confirm("הלקוח כבר חבר בקבוצה אחרת. להעביר אותו לקבוצה שלך?")) return; }
+            const { error } = await _supabase.from('users').update({ group_code: code, group_name: currentManagerSession.manager_group_name || '' }).eq('user_id', id);
+            if (error) return alert("שגיאה בהוספה: " + (error.message || ''));
+            document.getElementById('mgrAddMemberId').value = '';
+            alert("הלקוח '" + u.username + "' נוסף לקבוצה! ✅");
+            loginAsManager(currentManagerSession, document.getElementById('managerBackToAdminBtn').style.display !== 'none');
+        }
+
+        // המנהל מסיר חבר מהקבוצה
+        async function managerRemoveMember(id) {
+            if (!confirm("להסיר את החבר מהקבוצה? הוא יישאר לקוח רגיל עם החשבון שלו.")) return;
+            const { error } = await _supabase.from('users').update({ group_code: null, group_name: null }).eq('user_id', id);
+            if (error) return alert("שגיאה בהסרה: " + (error.message || ''));
+            loginAsManager(currentManagerSession, document.getElementById('managerBackToAdminBtn').style.display !== 'none');
+        }
+
+        // המנהל בוחר אם לשתף את נתוני הקבוצה עם ההנהלה הבכירה
+        async function toggleShareData(checked) {
+            if (!currentManagerSession) return;
+            const { error } = await _supabase.from('users').update({ manager_share_data: checked }).eq('user_id', currentManagerSession.user_id);
+            if (error) { alert("שגיאה בשמירת ההגדרה: " + (error.message || '')); document.getElementById('managerShareToggle').checked = !checked; return; }
+            currentManagerSession.manager_share_data = checked;
+        }
+
+        // ====== צ'אט הקהילה ======
+        let activeChatCode = null, activeChatIsManager = false, chatPollTimer = null;
+        function setAvatarEl(el, avatar, fallback) {
+            if (!el) return;
+            if (avatar) { el.style.backgroundImage = 'url("' + avatar + '")'; el.textContent = ''; }
+            else { el.style.backgroundImage = 'none'; el.textContent = (String(fallback||'?').trim().charAt(0) || '?').toUpperCase(); }
+        }
+        // פרטי קבוצה (שם/תמונה/תיאור) לפי קוד
+        async function getGroupProfile(code) {
+            try {
+                const { data } = await _supabase.from('users').select('manager_group_name,manager_group_avatar,manager_group_desc').eq('manager_code', code);
+                if (data && data[0]) return { name: data[0].manager_group_name || '', avatar: data[0].manager_group_avatar || '', desc: data[0].manager_group_desc || '' };
+            } catch(e){}
+            return { name:'', avatar:'', desc:'' };
+        }
+        async function openGroupChatFromUser() {
+            if (!tempUserSession || !tempUserSession.group_code) return alert("אינך משתייך לקבוצה.");
+            const prof = await getGroupProfile(tempUserSession.group_code);
+            openGroupChat(tempUserSession.group_code, prof.name || tempUserSession.group_name || '', false, tempUserSession.user_id, tempUserSession.username, prof.avatar, prof.desc);
+        }
+        async function openGroupChatFromManager() {
+            if (!currentManagerSession || !currentManagerSession.manager_code) return;
+            openGroupChat(currentManagerSession.manager_code, currentManagerSession.manager_group_name || '', true, currentManagerSession.user_id, currentManagerSession.username, currentManagerSession.manager_group_avatar, currentManagerSession.manager_group_desc);
+        }
+        function openGroupChat(code, name, isManager, uid, uname, avatar, desc) {
+            activeChatCode = code; activeChatIsManager = isManager;
+            window._chatUid = uid; window._chatUname = uname;
+            document.getElementById('groupChatTitle').innerText = name || code;
+            const descEl = document.getElementById('groupChatDesc');
+            if (code === ADMINS_CHAT_CODE) { descEl.innerText = 'שיחה בין ההנהלה הבכירה למנהלי הקבוצות'; }
+            else { descEl.innerText = desc || 'צ\'אט הקהילה'; }
+            setAvatarEl(document.getElementById('groupChatAvatar'), (code === ADMINS_CHAT_CODE ? '' : avatar), (code === ADMINS_CHAT_CODE ? '🏛️' : (name||'ק')));
+            document.getElementById('groupChatInput').value = '';
+            document.getElementById('groupChatLink').value = '';
+            document.getElementById('groupChatModal').style.display = 'flex';
+            loadGroupChat(true);
+            if (chatPollTimer) clearInterval(chatPollTimer);
+            chatPollTimer = setInterval(function(){ loadGroupChat(false); }, 4000);
+        }
+        function closeGroupChat() {
+            document.getElementById('groupChatModal').style.display = 'none';
+            if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; }
+            try { localStorage.setItem('chat_seen_'+activeChatCode, new Date().toISOString()); } catch(_e){}
+            refreshChatBadge();
+        }
+        function isImageUrl(u){ return /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(u || ''); }
+        async function loadGroupChat(scrollToBottom) {
+            if (!activeChatCode) return;
+            const body = document.getElementById('groupChatBody');
+            try {
+                const { data, error } = await _supabase.from('group_chat').select('*').eq('group_code', activeChatCode).order('created_at', { ascending: true });
+                if (error){ body.innerHTML = '<p style="text-align:center;color:var(--danger);">שגיאה בטעינת הצ\'אט: '+escapeHtml(error.message||'')+'</p>'; return; }
+                if (!data || !data.length){ body.innerHTML = '<p style="text-align:center; color:var(--text-light);">עדיין אין הודעות. כתוב את הראשונה! 👋</p>'; return; }
+                const myId = window._chatUid;
+                body.innerHTML = data.map(function(m){
+                    const mine = (m.user_id === myId);
+                    const isAdmin = (m.user_id === 'ADMIN');
+                    const isMgr = !!m.is_manager && !isAdmin;
+                    const align = mine ? 'flex-end' : 'flex-start';
+                    const bg = isAdmin ? '#fffbeb' : (isMgr ? '#f3e8ff' : (mine ? '#dbeafe' : '#fff'));
+                    const bc = isAdmin ? '#f59e0b' : (isMgr ? '#8b5cf6' : (mine ? '#3b82f6' : '#e2e8f0'));
+                    const when = m.created_at ? new Date(m.created_at).toLocaleString('he-IL') : '';
+                    const badge = isAdmin
+                        ? ' <span style="background:#f59e0b;color:#fff;font-size:0.65rem;padding:1px 5px;border-radius:5px;">הנהלה בכירה</span>'
+                        : (isMgr ? ' <span style="background:#8b5cf6;color:#fff;font-size:0.65rem;padding:1px 5px;border-radius:5px;">מנהל</span>' : '');
+                    const nameLabel = escapeHtml(m.username || 'משתמש') + badge;
+                    let linkHtml = '';
+                    if (m.link) {
+                        const safe = escapeHtml(m.link);
+                        if (isImageUrl(m.link)) linkHtml = '<a href="'+safe+'" target="_blank" rel="noopener"><img src="'+safe+'" style="max-width:100%;border-radius:8px;margin-top:6px;"></a>';
+                        else linkHtml = '<a href="'+safe+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;color:#2563eb;font-weight:600;word-break:break-all;">🔗 '+safe+'</a>';
+                    }
+                    const txt = m.text ? '<div style="font-size:0.95rem;color:var(--text-dark);line-height:1.45;white-space:pre-wrap;word-break:break-word;">'+escapeHtml(m.text)+'</div>' : '';
+                    return '<div style="display:flex;justify-content:'+align+';margin-bottom:8px;">'
+                        + '<div style="max-width:80%;background:'+bg+';border:1px solid '+bc+';border-radius:14px;padding:8px 12px;">'
+                        + '<div style="font-size:0.72rem;font-weight:700;color:'+(isAdmin?'#d97706':(isMgr?'#8b5cf6':'#475569'))+';margin-bottom:3px;">'+nameLabel+'</div>'
+                        + txt + linkHtml
+                        + '<div style="font-size:0.66rem;color:#94a3b8;margin-top:4px;text-align:left;">'+when+'</div>'
+                        + '</div></div>';
+                }).join('');
+                if (scrollToBottom) body.scrollTop = body.scrollHeight;
+                else if (body.scrollHeight - body.scrollTop - body.clientHeight < 120) body.scrollTop = body.scrollHeight;
+                try { localStorage.setItem('chat_seen_'+activeChatCode, new Date().toISOString()); } catch(_e){}
+            } catch(e){ body.innerHTML = '<p style="text-align:center;">שגיאה: '+escapeHtml(e.message||'')+'</p>'; }
+        }
+        async function sendGroupChat() {
+            if (!activeChatCode) return;
+            const text = (document.getElementById('groupChatInput').value || '').trim();
+            const link = (document.getElementById('groupChatLink').value || '').trim();
+            if (!text && !link) return;
+            const row = { group_code: activeChatCode, user_id: window._chatUid, username: window._chatUname, is_manager: activeChatIsManager, text: text || null, link: link || null, created_at: new Date().toISOString() };
+            try {
+                const { error } = await _supabase.from('group_chat').insert([row]);
+                if (error){ alert("ההודעה לא נשלחה: " + (error.message || JSON.stringify(error))); return; }
+                document.getElementById('groupChatInput').value = '';
+                document.getElementById('groupChatLink').value = '';
+                loadGroupChat(true);
+            } catch(e){ alert("שגיאה בשליחה: " + (e.message||e)); }
+        }
+        async function refreshChatBadge() {
+            try {
+                if (!tempUserSession || !tempUserSession.group_code) { setInquiryBadge('js-chat-badge', 0); return; }
+                const code = tempUserSession.group_code;
+                const { data } = await _supabase.from('group_chat').select('created_at,user_id').eq('group_code', code);
+                const seen = localStorage.getItem('chat_seen_'+code) || '';
+                let count = 0;
+                (data||[]).forEach(function(r){ if (r.user_id !== tempUserSession.user_id && (r.created_at||'') > seen) count++; });
+                setInquiryBadge('js-chat-badge', count);
+            } catch(e){}
         }
 
         function copyGroupCode() {
@@ -1153,11 +1791,21 @@
 
         function loginAsUser(userObj) {
             localStorage.setItem('budget_active_session', JSON.stringify(userObj)); tempUserSession = userObj;
-            document.getElementById('authBox').style.display = 'none'; document.getElementById('adminPanel').style.display = 'none'; document.getElementById('dashboardScreen').style.display = 'block'; document.body.classList.add('dashboard-active');
+            document.getElementById('authBox').style.display = 'none'; document.getElementById('adminPanel').style.display = 'none'; document.getElementById('managerPanel').style.display = 'none'; document.getElementById('dashboardScreen').style.display = 'block'; document.body.classList.add('dashboard-active');
             
             const banner = document.getElementById('adminImpersonationBanner');
             if (isImpersonating) { banner.innerText = `אתה מחובר כעת לחשבון הלקוח: ${userObj.username} | לחץ כאן לחזרה לפאנל המנהל`; banner.style.display = 'block'; } else { banner.style.display = 'none'; }
             
+            // כפתור מעבר לניהול הקהילה - רק אם החשבון הוא גם מנהל ואיננו במצב התחזות
+            const toMgrBtn = document.getElementById('toManagerPanelBtn');
+            if (toMgrBtn) toMgrBtn.style.display = (isManagerAccount(userObj) && !isImpersonating) ? 'inline-flex' : 'none';
+            // כפתור צ'אט הקהילה - רק אם הלקוח משתייך לקבוצה
+            const chatBtn = document.getElementById('userCommunityChatBtn');
+            if (chatBtn) chatBtn.style.display = userObj.group_code ? 'flex' : 'none';
+            refreshChatBadge();
+            if (window._chatBadgePoll) clearInterval(window._chatBadgePoll);
+            if (userObj.group_code) window._chatBadgePoll = setInterval(refreshChatBadge, 15000);
+
             document.getElementById('displayUser').innerText = userObj.username; document.getElementById('displayId').innerText = userObj.user_id; document.getElementById('displayPhone').innerText = userObj.phone;
             const aiBtn = document.getElementById('aiChatToggleBtn'); if (aiBtn) aiBtn.style.display = 'flex';
             switchView('main'); initSystemDates(); loadCurrentMonthData(); fetchAllUserMonths(); 
@@ -1165,6 +1813,9 @@
             refreshUserInquiryBadge();
             if (!window._userInqPoll) window._userInqPoll = setInterval(refreshUserInquiryBadge, 30000);
         }
+
+        // מעבר מהיר מהתקציב האישי אל פאנל ניהול הקהילה (אותו חשבון)
+        function userSwitchToManager() { if (tempUserSession && isManagerAccount(tempUserSession)) loginAsManager(tempUserSession); }
 
         function handleLogout() { tempUserSession = null; localStorage.removeItem('budget_active_session'); localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return'); location.reload(); }
 
@@ -2063,6 +2714,9 @@
         // ====== צד הלקוח ======
         async function openUserInboxModal(){
             document.getElementById('feedbackText').value = '';
+            // הצגת בורר נמען רק אם הלקוח משתייך לקבוצה
+            const tgtWrap = document.getElementById('feedbackTargetWrap');
+            if (tgtWrap) tgtWrap.style.display = (tempUserSession && tempUserSession.group_code) ? 'block' : 'none';
             const listEl = document.getElementById('userMessagesList');
             listEl.innerHTML = '<p style="text-align:center;">טוען הודעות...</p>';
             document.getElementById('userInboxModal').style.display = 'flex';
@@ -2075,9 +2729,10 @@
                     const thread = normalizeThread(m);
                     const date = new Date(m.created_at).toLocaleDateString('he-IL');
                     const last = thread[thread.length-1];
-                    const tag = (last && last.from === 'admin') ? '<span style="color:#10b981;font-weight:700;font-size:0.78rem;">● תשובה חדשה מהצוות</span>' : '<span style="color:#94a3b8;font-size:0.78rem;">ממתין לתשובת הצוות...</span>';
+                    const tag = (last && last.from === 'admin') ? '<span style="color:#10b981;font-weight:700;font-size:0.78rem;">● תשובה חדשה</span>' : '<span style="color:#94a3b8;font-size:0.78rem;">ממתין לתשובה...</span>';
+                    const toLabel = (m.target === 'manager') ? '<span style="background:#f3e8ff;color:var(--admin);font-size:0.7rem;font-weight:700;padding:1px 6px;border-radius:6px;">למנהל הקבוצה</span>' : '<span style="background:#dbeafe;color:#2563eb;font-size:0.7rem;font-weight:700;padding:1px 6px;border-radius:6px;">להנהלת האתר</span>';
                     return '<div style="background:#fff; border:1px solid var(--border); padding:12px; border-radius:12px; margin-bottom:10px;">'
-                        + '<div style="display:flex;justify-content:space-between;font-size:0.78rem; color:var(--text-light); margin-bottom:8px;"><span>פנייה מתאריך '+date+'</span>'+tag+'</div>'
+                        + '<div style="display:flex;justify-content:space-between;font-size:0.78rem; color:var(--text-light); margin-bottom:8px; flex-wrap:wrap; gap:4px;"><span>פנייה מתאריך '+date+' '+toLabel+'</span>'+tag+'</div>'
                         + '<div style="max-height:240px;overflow-y:auto;padding:4px;background:#f8fafc;border-radius:8px;margin-bottom:8px;">'+renderThreadBubbles(thread,'user')+'</div>'
                         + '<div style="display:flex;gap:6px;"><input id="ureply_'+m.id+'" class="input-field" style="margin:0;flex:1;" placeholder="כתוב תגובה...">'
                         + '<button class="btn-primary" style="margin:0;width:auto;padding:0.5rem 1rem;" onclick="userReplyToThread(\''+m.id+'\')">שלח</button></div>'
@@ -2101,13 +2756,20 @@
         async function submitFeedback(){
             const msg = document.getElementById('feedbackText').value.trim();
             if (!msg) return alert("אנא כתוב הודעה לפני השליחה.");
+            const sel = document.getElementById('feedbackTarget');
+            let target = (sel && sel.value) || 'admin';
+            let grpCode = null;
+            if (target === 'manager') {
+                if (!tempUserSession.group_code) return alert("אינך משתייך לקבוצה, אז אפשר לפנות רק להנהלת האתר.");
+                grpCode = tempUserSession.group_code;
+            }
             const now = new Date().toISOString();
             const thread = [{ from:'user', text:msg, at:now }];
-            const row = { user_id: tempUserSession.user_id, username: tempUserSession.username, message: JSON.stringify(thread), created_at: now };
+            const row = { user_id: tempUserSession.user_id, username: tempUserSession.username, message: JSON.stringify(thread), created_at: now, target: target, group_code: grpCode };
             try {
                 const { error } = await _supabase.from('feedback').insert([row]);
                 if (error){ alert("הפנייה לא נשמרה: " + (error.message || JSON.stringify(error))); return; }
-                alert("הפנייה נשלחה לצוות ונשמרה!");
+                alert(target === 'manager' ? "הפנייה נשלחה למנהל הקבוצה!" : "הפנייה נשלחה להנהלת האתר!");
                 document.getElementById('feedbackText').value = '';
                 openUserInboxModal();
             } catch(e){ alert("שגיאה בשליחת פנייה: " + (e.message||e)); }
@@ -2120,9 +2782,10 @@
             try {
                 const { data, error } = await _supabase.from('feedback').select('*').order('created_at', { ascending: false });
                 if (error){ listEl.innerHTML = '<p style="text-align:center;color:var(--danger);">שגיאה: '+escapeHtml(error.message||'')+'</p>'; return; }
-                window._adminInboxData = data || [];
-                if (!data || data.length === 0){ listEl.innerHTML = '<p style="text-align:center;">אין פניות פתוחות.</p>'; return; }
-                listEl.innerHTML = data.map(function(m){
+                const adminData = (data || []).filter(function(m){ return (m.target || 'admin') === 'admin'; });
+                window._adminInboxData = adminData;
+                if (!adminData.length){ listEl.innerHTML = '<p style="text-align:center;">אין פניות פתוחות.</p>'; return; }
+                listEl.innerHTML = adminData.map(function(m){
                     const thread = normalizeThread(m);
                     const last = thread[thread.length-1];
                     const waiting = last && last.from === 'user';
@@ -2163,7 +2826,7 @@
                 const { data } = await _supabase.from('feedback').select('*');
                 const seen = localStorage.getItem('admin_inbox_seen') || '';
                 let count = 0;
-                (data||[]).forEach(function(r){ const t = normalizeThread(r); const last = t[t.length-1]; if (last && last.from === 'user' && (last.at||'') > seen) count++; });
+                (data||[]).forEach(function(r){ if ((r.target||'admin') !== 'admin') return; const t = normalizeThread(r); const last = t[t.length-1]; if (last && last.from === 'user' && (last.at||'') > seen) count++; });
                 setInquiryBadge('js-admin-inq-badge', count);
             } catch(e){}
         }
@@ -2180,10 +2843,10 @@
         async function loadManagerInbox(){
             const listEl = document.getElementById('managerInboxBody');
             listEl.innerHTML = '<p style="text-align:center;">טוען פניות...</p>';
-            const memberIds = window._managerMemberIds || [];
-            if (!memberIds.length){ listEl.innerHTML = '<p style="text-align:center; color:var(--text-light);">אין חברים בקבוצה, ולכן אין פניות.</p>'; return; }
+            const code = currentManagerSession && currentManagerSession.manager_code;
+            if (!code){ listEl.innerHTML = '<p style="text-align:center; color:var(--text-light);">לא נמצאה קבוצה.</p>'; return; }
             try {
-                const { data, error } = await _supabase.from('feedback').select('*').in('user_id', memberIds).order('created_at', { ascending: false });
+                const { data, error } = await _supabase.from('feedback').select('*').eq('group_code', code).eq('target', 'manager').order('created_at', { ascending: false });
                 if (error){ listEl.innerHTML = '<p style="text-align:center;color:var(--danger);">שגיאה: '+escapeHtml(error.message||'')+'</p>'; return; }
                 if (!data || data.length === 0){ listEl.innerHTML = '<p style="text-align:center;">אין פניות מחברי הקבוצה.</p>'; return; }
                 listEl.innerHTML = data.map(function(m){
@@ -2202,7 +2865,7 @@
             } catch(e){ listEl.innerHTML = '<p style="text-align:center;">שגיאה בטעינת הנתונים: '+escapeHtml(e.message||'')+'</p>'; }
         }
 
-        function openManagerInboxModal(){ loadManagerInbox(); document.getElementById('managerInboxModal').style.display = 'flex'; try { localStorage.setItem('mgr_inbox_seen_'+(currentManagerSession&&currentManagerSession.group_code||''), new Date().toISOString()); } catch(_e){} setTimeout(refreshManagerInquiryBadge, 600); }
+        function openManagerInboxModal(){ loadManagerInbox(); document.getElementById('managerInboxModal').style.display = 'flex'; try { localStorage.setItem('mgr_inbox_seen_'+(currentManagerSession&&currentManagerSession.manager_code||''), new Date().toISOString()); } catch(_e){} setTimeout(refreshManagerInquiryBadge, 600); }
         function closeManagerInboxModal(){ document.getElementById('managerInboxModal').style.display = 'none'; }
 
         async function managerReplyToThread(id){
@@ -2215,10 +2878,10 @@
 
         async function refreshManagerInquiryBadge(){
             try {
-                const memberIds = window._managerMemberIds || [];
-                if (!memberIds.length){ setInquiryBadge('js-mgr-inq-badge', 0); return; }
-                const { data } = await _supabase.from('feedback').select('*').in('user_id', memberIds);
-                const seen = localStorage.getItem('mgr_inbox_seen_'+(currentManagerSession&&currentManagerSession.group_code||'')) || '';
+                const code = currentManagerSession && currentManagerSession.manager_code;
+                if (!code){ setInquiryBadge('js-mgr-inq-badge', 0); return; }
+                const { data } = await _supabase.from('feedback').select('*').eq('group_code', code).eq('target', 'manager');
+                const seen = localStorage.getItem('mgr_inbox_seen_'+code) || '';
                 let count = 0;
                 (data||[]).forEach(function(r){ const t = normalizeThread(r); const last = t[t.length-1]; if (last && last.from === 'user' && (last.at||'') > seen) count++; });
                 setInquiryBadge('js-mgr-inq-badge', count);
