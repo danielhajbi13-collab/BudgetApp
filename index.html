@@ -306,6 +306,72 @@
             #adminPanel h2, #managerPanel h2 { font-size: 1.2rem !important; }
             .summary-card strong { font-size: 1.7rem; }
         }
+
+        /* ===================== תיקוני מצב לילה ===================== */
+        /* רקעים בהירים שנכתבו ישירות בקוד -> משטחים כהים, וטקסט בהיר וקריא */
+        html[data-theme="dark"] [style*="background:#fff"],
+        html[data-theme="dark"] [style*="background: #fff"],
+        html[data-theme="dark"] [style*="background:#ffffff"],
+        html[data-theme="dark"] [style*="background: #ffffff"],
+        html[data-theme="dark"] [style*="background:white"],
+        html[data-theme="dark"] [style*="background: white"],
+        html[data-theme="dark"] [style*="background:#f8fafc"],
+        html[data-theme="dark"] [style*="background: #f8fafc"],
+        html[data-theme="dark"] [style*="background:#f9fafb"],
+        html[data-theme="dark"] [style*="background: #f9fafb"],
+        html[data-theme="dark"] [style*="background:#f4f7fb"],
+        html[data-theme="dark"] [style*="background: #f4f7fb"],
+        html[data-theme="dark"] [style*="background:#f1f5f9"],
+        html[data-theme="dark"] [style*="background: #f1f5f9"] {
+            background-color: var(--surface) !important; background-image: none !important; color: var(--text-dark) !important;
+        }
+        /* גוונים כחולים */
+        html[data-theme="dark"] [style*="#eff6ff"],
+        html[data-theme="dark"] [style*="#dbeafe"] { background-color: #16213b !important; background-image: none !important; border-color: #28344a !important; }
+        /* גוונים סגולים */
+        html[data-theme="dark"] [style*="#faf5ff"],
+        html[data-theme="dark"] [style*="#f3e8ff"] { background-color: #241c3a !important; background-image: none !important; border-color: #3b2f5c !important; }
+        /* גוונים כתומים/זהב */
+        html[data-theme="dark"] [style*="#fffbeb"],
+        html[data-theme="dark"] [style*="#fef9c3"],
+        html[data-theme="dark"] [style*="var(--gold-soft)"],
+        html[data-theme="dark"] [style*="#fff7ed"] { background-color: #2a2410 !important; background-image: none !important; border-color: #4a3d18 !important; }
+        /* גוונים ירוקים */
+        html[data-theme="dark"] [style*="#dcfce7"] { background-color: #11261d !important; background-image: none !important; border-color: #1f4736 !important; }
+        /* גוונים אדומים */
+        html[data-theme="dark"] [style*="background:#fee2e2"],
+        html[data-theme="dark"] [style*="background: #fee2e2"],
+        html[data-theme="dark"] [style*="background:#fca5a5"] { background-color: #2c1618 !important; background-image: none !important; }
+
+        /* טקסט כהה שנכתב ישירות -> בהיר במצב לילה */
+        html[data-theme="dark"] [style*="color:#92400e"],
+        html[data-theme="dark"] [style*="color:#b45309"],
+        html[data-theme="dark"] [style*="color:#854d0e"],
+        html[data-theme="dark"] [style*="color:#9a7b2e"],
+        html[data-theme="dark"] [style*="color:#7a5f23"],
+        html[data-theme="dark"] [style*="color:#9a3412"],
+        html[data-theme="dark"] [style*="color:#1e293b"] { color: #e8edf5 !important; }
+        html[data-theme="dark"] [style*="color:#6d28d9"] { color: #c4b5fd !important; }
+
+        /* רכיבים מבוססי-מחלקה */
+        html[data-theme="dark"] .add-row { background: var(--surface-2) !important; border-color: var(--border); }
+        html[data-theme="dark"] .table-input { background: var(--surface-2); color: var(--text-dark); }
+        html[data-theme="dark"] .history-item { background: var(--surface-2); }
+        html[data-theme="dark"] .history-item:hover { background: var(--surface); }
+        html[data-theme="dark"] .sidebar-btn:hover { background: var(--surface-2); color: var(--text-dark); }
+        html[data-theme="dark"] .btn-outline { background: var(--surface); color: var(--text-dark); }
+        html[data-theme="dark"] .btn-outline:hover { background: var(--surface-2); }
+        html[data-theme="dark"] .ai-msg-bot { background: var(--surface-2); color: var(--text-dark); border-color: var(--border); }
+        html[data-theme="dark"] .ai-body { background: var(--surface-2); }
+        html[data-theme="dark"] .ai-footer { background: var(--surface); border-color: var(--border); }
+        html[data-theme="dark"] .ai-input { background: #0f1626; color: var(--text-dark); border-color: var(--border); }
+        html[data-theme="dark"] .status-neutral { background: var(--surface-2); color: var(--text-light); }
+        html[data-theme="dark"] .btn-delete { background: #3a1d1f; }
+        html[data-theme="dark"] .btn-delete:hover { background: #5b2a2d; }
+        html[data-theme="dark"] .btn-add { background: var(--primary); color: #fff; }
+        html[data-theme="dark"] .btn-add:hover { background: var(--primary-hover); }
+        html[data-theme="dark"] .current-month-badge { background: var(--surface-2) !important; color: var(--gold) !important; border-color: #3a3320 !important; }
+        html[data-theme="dark"] .modal-footer { background: var(--surface-2); border-color: var(--border); }
     </style>
 </head>
 <body>
