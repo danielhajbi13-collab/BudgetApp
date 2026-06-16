@@ -343,6 +343,35 @@
         html[data-theme="dark"] [style*="background: #fee2e2"],
         html[data-theme="dark"] [style*="background:#fca5a5"] { background-color: #2c1618 !important; background-image: none !important; }
 
+        /* רקעים בהירים שהוגדרו במחלקות CSS (לא ב-style ישיר) -> מונע כתב בהיר על רקע בהיר במצב לילה */
+        html[data-theme="dark"] .history-item,
+        html[data-theme="dark"] .table-input,
+        html[data-theme="dark"] .table-input:focus,
+        html[data-theme="dark"] .add-row,
+        html[data-theme="dark"] .logs-dropdown,
+        html[data-theme="dark"] .modal-footer,
+        html[data-theme="dark"] .ai-body,
+        html[data-theme="dark"] .ai-footer,
+        html[data-theme="dark"] .ai-msg-bot,
+        html[data-theme="dark"] .btn-close-modal,
+        html[data-theme="dark"] .input-field {
+            background-color: var(--surface-2) !important;
+            color: var(--text-dark) !important;
+        }
+        html[data-theme="dark"] .table-input:focus { background-color: var(--surface) !important; }
+        html[data-theme="dark"] .ai-msg-bot,
+        html[data-theme="dark"] .logs-dropdown { border-color: var(--border) !important; }
+        html[data-theme="dark"] .sidebar-btn:hover,
+        html[data-theme="dark"] .btn-outline:hover,
+        html[data-theme="dark"] .history-item:hover { background-color: var(--primary-light) !important; }
+        html[data-theme="dark"] .status-neutral { background-color: var(--surface-2) !important; color: var(--text-light) !important; }
+        /* קלט מספרים ותאריכים – שמירה על טקסט בהיר וקריא */
+        html[data-theme="dark"] input,
+        html[data-theme="dark"] select,
+        html[data-theme="dark"] textarea { color: var(--text-dark); }
+        html[data-theme="dark"] input::placeholder,
+        html[data-theme="dark"] textarea::placeholder { color: var(--text-light); }
+
         /* טקסט כהה שנכתב ישירות -> בהיר במצב לילה */
         html[data-theme="dark"] [style*="color:#92400e"],
         html[data-theme="dark"] [style*="color:#b45309"],
@@ -2173,11 +2202,23 @@
             const inc = document.getElementById('incomeBody'); const fix = document.getElementById('fixedBody'); const varb = document.getElementById('variableBody'); 
             inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = ''; 
             const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', workingMonthStr); 
+            // גיבוי מקומי – משמש כשהענן ריק (למשל נתונים שהוזנו ונסגרה האפליקציה לפני שמירה)
+            let mirror = null;
+            try { const raw = localStorage.getItem(localMirrorKey()); if (raw) mirror = JSON.parse(raw); } catch (e) {}
+            const mirrorHasContent = mirror && mirror.data && ((mirror.data.income||[]).length || (mirror.data.fixed||[]).length || (mirror.data.variable||[]).length);
+
             if (data && data.length > 0) { 
                 const d = data[0].data; dailyExpenseLogs = d.daily_logs || []; 
                 d.income.forEach(i => appendIncomeRowUI(inc, i.name, i.amount)); 
                 d.fixed.forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs)); 
                 d.variable.forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs)); 
+            } else if (mirrorHasContent) {
+                // שחזור מהגיבוי המקומי ושמירה חוזרת לענן
+                const d = mirror.data; dailyExpenseLogs = d.daily_logs || [];
+                (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
+                (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
+                (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
+                setTimeout(() => { try { saveDataToCloud(); } catch (e) {} }, 800);
             } else { 
                 dailyExpenseLogs = []; defaultIncomes.forEach(i => appendIncomeRowUI(inc, i.name, i.amount)); 
                 defaultFixed.forEach(f => appendExpenseRowUI(fix, f.name, f.target, f.actual, 'fixed', [])); 
@@ -2254,9 +2295,26 @@
             const totalExp = processExpenses('fixedBody', 'sumFixedTarget', 'sumFixedActual') + processExpenses('variableBody', 'sumVarTarget', 'sumVarActual'); 
             document.getElementById('totalIncomeTxt').innerText = `₪${incomeSum.toLocaleString()}`; document.getElementById('totalExpensesTxt').innerText = `₪${totalExp.toLocaleString()}`; document.getElementById('balanceTxt').innerText = `₪${(incomeSum - totalExp).toLocaleString()}`; document.getElementById('balanceTxt').style.color = (incomeSum - totalExp) < 0 ? 'var(--danger)' : 'var(--primary)'; 
             const statsSec = document.getElementById('statisticsSection'); if (statsSec && statsSec.style.display !== 'none') { renderMonthlyOverviewChart(incomeSum, totalExp); renderStatisticsChart(); }
-            if (shouldSave && tempUserSession) { document.getElementById('saveStatusIndicator').style.display = 'none'; clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => { saveDataToCloud(); }, 1500); } 
+            if (shouldSave && tempUserSession) { document.getElementById('saveStatusIndicator').style.display = 'none'; writeLocalMirror(); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => { saveDataToCloud(); }, 1500); } 
         }
-        
+
+        // ===== גיבוי מקומי מיידי – מונע אובדן נתונים ביציאה/סגירה לפני שמירה לענן =====
+        function localMirrorKey() { return tempUserSession ? ('mirror_' + tempUserSession.user_id + '_' + workingMonthStr) : null; }
+        function writeLocalMirror() {
+            const key = localMirrorKey(); if (!key) return;
+            try { localStorage.setItem(key, JSON.stringify({ data: getLiveSnapshot(), savedAt: Date.now() })); } catch (e) {}
+        }
+        function flushPendingSave() {
+            if (!tempUserSession) return;
+            writeLocalMirror();                 // גיבוי מקומי מיידי (סינכרוני, תמיד מצליח)
+            clearTimeout(autoSaveTimer);
+            try { saveDataToCloud(); } catch (e) {}  // ניסיון שמירה לענן
+        }
+        // שמירה אוטומטית כשהמשתמש עוזב/ממזער/סוגר את האפליקציה
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushPendingSave(); });
+        window.addEventListener('pagehide', flushPendingSave);
+        window.addEventListener('beforeunload', flushPendingSave);
+
         async function saveDataToCloud() { 
             if (!tempUserSession) return; 
             const payload = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs }; 
@@ -2460,8 +2518,25 @@
                     allRows = lines.map(l => l.split(separator).map(cell => cell.replace(/^"|"$/g, '').trim()));
                 } else {
                     const buf = await file.arrayBuffer();
-                    const wb = XLSX.read(buf, { type: 'array', cellDates: true });
-                    wb.SheetNames.forEach(sn => { const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: "" }); allRows = allRows.concat(rows); });
+                    // זיהוי קבצי "אקסל" שהם בעצם טבלת HTML (נפוץ מאוד אצל בנקים ישראליים: לאומי, פועלים, דיסקונט וכו')
+                    let sniff = "";
+                    try { sniff = new TextDecoder('utf-8').decode(buf.slice(0, 4096)).toLowerCase(); } catch (_e) {}
+                    const looksHtml = sniff.indexOf('<table') !== -1 || sniff.indexOf('<html') !== -1 || sniff.indexOf('<!doctype html') !== -1;
+                    if (looksHtml) {
+                        // קריאת כל הטקסט (תמיכה ב-UTF-8 וב-windows-1255)
+                        let html = new TextDecoder('utf-8').decode(buf);
+                        if (html.indexOf('\uFFFD') !== -1) { try { html = new TextDecoder('windows-1255').decode(buf); } catch (_e) {} }
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        doc.querySelectorAll('table tr').forEach(tr => {
+                            const cells = Array.from(tr.children)
+                                .filter(c => /^(td|th)$/i.test(c.tagName))
+                                .map(c => (c.textContent || '').replace(/\s+/g, ' ').trim());
+                            if (cells.length) allRows.push(cells);
+                        });
+                    } else {
+                        const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+                        wb.SheetNames.forEach(sn => { const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: "" }); allRows = allRows.concat(rows); });
+                    }
                 }
 
                 const txs = extractTransactions(allRows);
@@ -2474,45 +2549,81 @@
         }
 
         function extractTransactions(rows) {
+            const round1 = n => Math.round(n * 10) / 10;
             const dateKw = ["תאריך","מועד","יום ערך","יום עסקה"];
-            const descKw = ["תיאור","פירוט","שם בית","בית עסק","עסק","שם הספק"];
-            const amtKw  = ["זכות/חובה","סכום","חיוב","סך","חובה"];
+            const descKw = ["תיאור","פירוט","שם בית","בית עסק","עסק","שם הספק","פעולה"];
+            // עמודת סכום בודדת (חתומה / משולבת)
+            const amtKw  = ["זכות/חובה","חובה/זכות","סכום","סך"];
+            // עמודות נפרדות של חובה (הוצאה) וזכות (הכנסה) — נפוץ בבנק לאומי/פועלים/דיסקונט
+            const debitKw  = ["בחובה","חובה","חיוב","debit"];
+            const creditKw = ["בזכות","זכות","credit","הפקדה","זיכוי"];
 
-            const matchIdx = (cells, kws, exclude = []) => cells.findIndex((c, idx) => !exclude.includes(idx) && kws.some(k => String(c).includes(k)));
-            let headerRowIdx = -1, dCol = -1, nCol = -1, aCol = -1; let isZchutHova = false;
+            const has = (c, kws) => kws.some(k => String(c).includes(k));
+            const matchIdx = (cells, kws, exclude = []) => cells.findIndex((c, idx) => !exclude.includes(idx) && has(c, kws));
+
+            let headerRowIdx = -1, dCol = -1, nCol = -1, aCol = -1, debCol = -1, credCol = -1;
+            let isZchutHova = false, dualMode = false;
 
             const scan = Math.min(rows.length, 40);
             for (let i = 0; i < scan; i++) {
                 const cells = (rows[i] || []).map(c => (c === null || c === undefined) ? "" : String(c).trim());
-                const di = matchIdx(cells, dateKw); const ai = matchIdx(cells, amtKw, [di]); const ni = matchIdx(cells, descKw, [di, ai]);       
-                if ((di > -1 ? 1 : 0) + (ni > -1 ? 1 : 0) + (ai > -1 ? 1 : 0) >= 2) { 
-                    headerRowIdx = i; dCol = di; nCol = ni; aCol = ai; 
-                    if(ai > -1 && cells[ai].includes("זכות/חובה")) isZchutHova = true;
-                    break; 
+                const di = matchIdx(cells, dateKw);
+                // זיהוי שתי עמודות נפרדות: "חובה" ללא "זכות" מול "זכות" ללא "חובה"
+                const dbi = cells.findIndex(c => has(c, debitKw) && !String(c).includes("זכות") && !String(c).includes("יתרה"));
+                const cri = cells.findIndex((c, idx) => idx !== dbi && has(c, creditKw) && !String(c).includes("חובה") && !String(c).includes("יתרה"));
+                const ai = matchIdx(cells, amtKw, [di, dbi, cri]);
+                const ni = matchIdx(cells, descKw, [di, ai, dbi, cri]);
+
+                const haveDual = dbi > -1 && cri > -1;
+                const score = (di > -1 ? 1 : 0) + (ni > -1 ? 1 : 0) + (haveDual ? 2 : (ai > -1 ? 1 : 0));
+                if (score >= 2 && (haveDual || ai > -1)) {
+                    headerRowIdx = i; dCol = di; nCol = ni;
+                    if (haveDual) { dualMode = true; debCol = dbi; credCol = cri; }
+                    else { aCol = ai; if (String(cells[ai]).includes("זכות") && String(cells[ai]).includes("חובה")) isZchutHova = true; }
+                    break;
                 }
             }
 
+            const parseNum = v => {
+                let s = String(v == null ? "" : v).replace(/[^\d.,\-]/g, '').replace(/,/g, '');
+                if (s === '' || s === '-' || s === '.') return NaN;
+                return parseFloat(s);
+            };
+            const isSummaryRow = descStr => ["סה\"כ","סהכ","סך הכל","סך הכול","יתרת פתיחה","יתרת סגירה","יתרה לתאריך","total","balance"].some(k => descStr.includes(k));
+
             const txs = [];
-            if (headerRowIdx > -1 && aCol > -1) {
+            if (headerRowIdx > -1 && (dualMode || aCol > -1)) {
                 for (let i = headerRowIdx + 1; i < rows.length; i++) {
                     const r = rows[i] || [];
-                    let dateRaw = dCol > -1 ? r[dCol] : null; let desc = nCol > -1 ? r[nCol] : ""; let amtRaw = r[aCol];
-                    if (!dateRaw || amtRaw === undefined || amtRaw === null || String(amtRaw).trim() === '') continue;
-                    // דילוג על שורות סיכום/יתרה כדי למנוע ספירה כפולה
+                    const dateRaw = dCol > -1 ? r[dCol] : null;
+                    const desc = nCol > -1 ? r[nCol] : "";
+                    if (!dateRaw) continue;
                     const descStr = String(desc);
-                    if (["סה\"כ","סהכ","סך הכל","סך הכול","יתרת פתיחה","יתרת סגירה","יתרה לתאריך","total","balance"].some(k => descStr.includes(k))) continue;
-                    let amtStr = String(amtRaw).replace(/[^\d.,\-]/g, '').replace(/,/g, '');
-                    let amount = parseFloat(amtStr);
-                    if (isNaN(amount) || amount === 0) continue;
+                    if (isSummaryRow(descStr)) continue;
                     const iso = toIsoDate(dateRaw); if (!iso) continue;
 
-                    let type = amount < 0 ? 'expense' : 'income';
-                    const headerCell = String(rows[headerRowIdx][aCol] || "");
-                    if (type === 'income' && !isZchutHova && headerCell.includes('חיוב') && !headerCell.includes('זכות')) type = 'expense';
+                    let amount, type;
+                    if (dualMode) {
+                        const deb = parseNum(r[debCol]); const cred = parseNum(r[credCol]);
+                        const debV = isNaN(deb) ? 0 : Math.abs(deb);
+                        const credV = isNaN(cred) ? 0 : Math.abs(cred);
+                        if (credV > 0) { amount = credV; type = 'income'; }
+                        else if (debV > 0) { amount = debV; type = 'expense'; }
+                        else continue;
+                    } else {
+                        const amtRaw = r[aCol];
+                        if (amtRaw === undefined || amtRaw === null || String(amtRaw).trim() === '') continue;
+                        const val = parseNum(amtRaw);
+                        if (isNaN(val) || val === 0) continue;
+                        type = val < 0 ? 'expense' : 'income';
+                        const headerCell = String(rows[headerRowIdx][aCol] || "");
+                        if (type === 'income' && !isZchutHova && headerCell.includes('חיוב') && !headerCell.includes('זכות')) type = 'expense';
+                        amount = Math.abs(val);
+                    }
 
-                    const absAmt = Math.round(Math.abs(amount) * 100) / 100;
-                    
-                    // שינוי קריטי: כל שורה מקבלת include: true כברירת מחדל
+                    // עיגול לספרה עשרונית אחת (54.5 ולא 54.52)
+                    const absAmt = round1(amount);
+                    if (absAmt === 0) continue;
                     txs.push({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt, type: type, category: null, include: true });
                 }
             }
