@@ -1163,7 +1163,7 @@
         // אם תגדיר כתובת proxy (Cloudflare Worker) המפתח יישאר בצד השרת ולא ייחשף בקוד. אם ריק - המפתח משמש ישירות.
         const GEMINI_PROXY_URL = "https://budget-ai-proxy.danielhajbi13.workers.dev"; // ה-proxy שלך (Cloudflare Worker) - המפתח מוסתר בצד השרת
         const GEMINI_API_KEY = ""; // אם תרצה דיוק AI גבוה יותר, הדבק כאן מפתח תקין מ-aistudio.google.com (מתחיל ב-AIza). לא חובה - האפליקציה עובדת גם בלי.
-        const GEMINI_MODELS = ["gemini-1.5-flash"];
+        const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
         // האם קיים חיבור AI תקין? (מפתח שמתחיל ב-AIza או proxy)
         function hasAiKey() { return (GEMINI_PROXY_URL && GEMINI_PROXY_URL.length > 8) || (GEMINI_API_KEY && GEMINI_API_KEY.indexOf("AIza") === 0); }
