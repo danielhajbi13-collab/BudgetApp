@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>הכיס שלי - ניהול תקציב חכם</title>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -142,7 +145,7 @@
         .logs-wrapper { margin-top: 6px; }
         .btn-toggle-logs { background: none; border: none; color: var(--primary); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 6px; }
         .btn-toggle-logs:hover { background: var(--primary-light); }
-        .logs-dropdown { margin-top: 5px; background: #f8fafc; border-radius: 8px; padding: 10px; display: none; flex-direction: column; gap: 8px; border: 1px solid var(--border); }
+        .logs-dropdown { margin-top: 5px; background: #f8fafc; border-radius: 8px; padding: 10px; display: none; flex-direction: column; gap: 8px; border: 1px solid var(--border); min-width: 240px; word-break: break-word; overflow-wrap: anywhere; }
         .log-item { display: flex; justify-content: space-between; font-size: 0.85rem; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
         .log-item:last-child { border-bottom: none; padding-bottom: 0; }
 
@@ -823,6 +826,8 @@
             <div class="modal-body">
                 <div class="input-group"><label>סכום (₪)</label><input type="number" id="logAmount" class="input-field" style="font-size:1.5rem; font-weight:bold; text-align:center;"></div>
                 <div class="input-group"><label>שם החנות (אופציונלי)</label><input type="text" id="logStore" class="input-field" placeholder="לדוגמה: תחנת דלק פז..."></div>
+                <div class="input-group"><label>קטגוריה</label><select id="logCategory" class="input-field" onchange="toggleNewCatInput()"></select></div>
+                <div class="input-group" id="logNewCategoryWrap" style="display:none;"><label>שם הקטגוריה החדשה</label><input type="text" id="logNewCategory" class="input-field" placeholder="לדוגמה: צעצועים לילדים"></div>
                 <div class="input-group"><label>תאריך</label><input type="date" id="logDate" class="input-field"></div>
             </div>
             <div class="modal-footer">
@@ -1158,12 +1163,47 @@
 
     <script>
         // ==========================================
+        // גרסת האפליקציה + עדכון אוטומטי ללקוחות
+        // ==========================================
+        // שנֵה את המספר הזה בכל פעם שאתה מעלה גרסה חדשה (למשל התאריך). הלקוחות יקבלו הצעת רענון אוטומטית.
+        const APP_VERSION = "2026-06-18-2";
+        (function setupAutoUpdate(){
+            function showUpdateBanner(){
+                if (document.getElementById('appUpdateBanner')) return;
+                const b = document.createElement('div');
+                b.id = 'appUpdateBanner';
+                b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#4f46e5;color:#fff;text-align:center;padding:12px 16px;font-weight:600;z-index:11000;box-shadow:0 4px 12px rgba(0,0,0,0.2);cursor:pointer;font-size:0.95rem;';
+                b.innerText = '🔄 יש גרסה חדשה של "הכיס שלי" — לחץ כאן לרענון מהיר';
+                b.onclick = function(){ try{ b.innerText='מרענן...'; }catch(_e){} location.reload(); };
+                document.body.appendChild(b);
+            }
+            async function checkForUpdate(){
+                try {
+                    const url = location.href.split('#')[0].split('?')[0] + '?_v=' + Date.now();
+                    const res = await fetch(url, { cache: 'no-store' });
+                    if (!res.ok) return;
+                    const txt = await res.text();
+                    const m = txt.match(/APP_VERSION\s*=\s*"([^"]+)"/);
+                    if (m && m[1] && m[1] !== APP_VERSION) showUpdateBanner();
+                } catch(e){}
+            }
+            // בדיקה כשהדף נטען, כשחוזרים אליו, ואחת לכמה דקות
+            window.addEventListener('load', function(){ setTimeout(checkForUpdate, 4000); });
+            document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') checkForUpdate(); });
+            setInterval(checkForUpdate, 5 * 60 * 1000);
+        })();
+
+        // ==========================================
         // מפתח ה-API של המערכת (גוגל AI)
         // ==========================================
         // אם תגדיר כתובת proxy (Cloudflare Worker) המפתח יישאר בצד השרת ולא ייחשף בקוד. אם ריק - המפתח משמש ישירות.
         const GEMINI_PROXY_URL = "https://budget-ai-proxy.danielhajbi13.workers.dev"; // ה-proxy שלך (Cloudflare Worker) - המפתח מוסתר בצד השרת
         const GEMINI_API_KEY = ""; // אם תרצה דיוק AI גבוה יותר, הדבק כאן מפתח תקין מ-aistudio.google.com (מתחיל ב-AIza). לא חובה - האפליקציה עובדת גם בלי.
         const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+
+        // ===== עיגול אחיד לספרה עשרונית אחת (מונע "מלא אפסים" ומספרים ארוכים מה-AI) =====
+        function round1(n){ n = Number(n); if(!isFinite(n)) return 0; return Math.round((n + Number.EPSILON) * 10) / 10; }
+        function fmtNum(n){ return round1(n).toLocaleString('he-IL'); }
 
         // האם קיים חיבור AI תקין? (מפתח שמתחיל ב-AIza או proxy)
         function hasAiKey() { return (GEMINI_PROXY_URL && GEMINI_PROXY_URL.length > 8) || (GEMINI_API_KEY && GEMINI_API_KEY.indexOf("AIza") === 0); }
@@ -2227,20 +2267,142 @@
             calculateAll(false); 
         }
 
+        // רשימת שמות כל קטגוריות ההוצאה (קבועות + משתנות) — לשימוש בתפריט ההעברה
+        function getExpenseRowNames(excludeName){
+            const names = [];
+            document.querySelectorAll('#fixedBody tr, #variableBody tr').forEach(r => {
+                const nm = (r.querySelector('.name-input') && r.querySelector('.name-input').value || '').trim();
+                if (nm && nm !== excludeName && names.indexOf(nm) === -1) names.push(nm);
+            });
+            return names;
+        }
+        function findExpenseRowByName(name){
+            return Array.from(document.querySelectorAll('#fixedBody tr, #variableBody tr'))
+                .find(r => (r.querySelector('.name-input') && r.querySelector('.name-input').value.trim()) === name) || null;
+        }
+
         function renderLogsInsideRow(tr) {
             let logs = JSON.parse(tr.getAttribute('data-logs') || "[]"); let td = tr.children[0]; let existingWrapper = td.querySelector('.logs-wrapper');
             if (existingWrapper) existingWrapper.remove();
             if (logs.length > 0) {
-                let logsHtml = logs.map(l => {
-                    let displayStore = escapeHtml(l.store); let displayClass = "";
-                    if(displayStore.includes("[זיהוי AI]")) { displayClass = "color:var(--success); font-weight:600;"; }
-                    return `<div class="log-item"><span style="${displayClass}">${displayStore} <br><small style="color:#94a3b8;">${new Date(l.date).toLocaleDateString('he-IL')}</small></span><strong style="${displayClass}">₪${l.amount}</strong></div>`;
+                const myName = (tr.querySelector('.name-input') && tr.querySelector('.name-input').value || '').trim();
+                const others = getExpenseRowNames(myName);
+                const moveOptions = '<option value="">↪ העבר לקטגוריה...</option>' + others.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+                const moveAllOptions = '<option value="">↪ העבר את כל הפעולות לקטגוריה...</option>' + others.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+                let logsHtml = logs.map((l, idx) => {
+                    const src = logSource(l);
+                    const fullStore = escapeHtml(cleanStoreDisplay(l.store));
+                    const dateTxt = (function(){ try { return new Date(l.date).toLocaleDateString('he-IL'); } catch(_e){ return escapeHtml(String(l.date||'')); } })();
+                    return `<div class="log-item" style="flex-direction:column; align-items:stretch; gap:7px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px;">`
+                        + `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">${sourceBadge(src)}<strong style="font-size:1rem; white-space:nowrap;">₪${fmtNum(l.amount)}</strong></div>`
+                        + `<div style="font-size:0.9rem; color:var(--text-dark); font-weight:600; white-space:normal; overflow-wrap:anywhere; word-break:break-word; line-height:1.45;">${fullStore}</div>`
+                        + `<div style="font-size:0.8rem; color:var(--text-light);">📅 ${dateTxt}</div>`
+                        + `<div style="display:flex; gap:6px; align-items:center;">`
+                        + `<select onchange="moveLogToRow(this, ${idx})" style="flex:1; min-width:0; font-size:0.78rem; padding:5px 6px; border:1px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text-dark);">${moveOptions}</select>`
+                        + `<button onclick="deleteLogFromRow(this, ${idx})" title="מחק פעולה זו" style="background:#fee2e2; color:#dc2626; border:none; border-radius:8px; padding:5px 11px; font-size:0.8rem; cursor:pointer; font-weight:700; white-space:nowrap;">🗑 מחק</button>`
+                        + `</div></div>`;
                 }).join('');
-                let wrapper = document.createElement('div'); wrapper.className = 'logs-wrapper'; wrapper.innerHTML = `<button class="btn-toggle-logs" onclick="toggleLogs(this)">פירוט ההוצאות ▾</button><div class="logs-dropdown" style="display:none;">${logsHtml}</div>`;
+                // בקרת "העבר את כל הפעולות" (מופיעה כשיש לאן להעביר)
+                let moveAllBar = others.length ? `<div style="margin-bottom:4px;"><select onchange="moveAllLogsFromRow(this)" style="width:100%; font-size:0.78rem; padding:5px 6px; border:1px dashed var(--primary); border-radius:8px; background:var(--primary-light); color:var(--primary); font-weight:600;">${moveAllOptions}</select></div>` : '';
+                let wrapper = document.createElement('div'); wrapper.className = 'logs-wrapper'; wrapper.innerHTML = `<button class="btn-toggle-logs" onclick="toggleLogs(this)">פירוט ההוצאות (${logs.length}) ▾</button><div class="logs-dropdown" style="display:none;">${moveAllBar}${logsHtml}</div>`;
                 td.appendChild(wrapper);
             }
         }
         function toggleLogs(btn) { let dd = btn.nextElementSibling; if (dd.style.display === 'none' || dd.style.display === '') { dd.style.display = 'flex'; btn.innerText = btn.innerText.replace('▾', '▴'); } else { dd.style.display = 'none'; btn.innerText = btn.innerText.replace('▴', '▾'); } }
+
+        // מחיקת פעולה בודדת מתוך קטגוריה
+        function deleteLogFromRow(btn, index) {
+            const tr = btn.closest('tr'); if (!tr) return;
+            let logs = JSON.parse(tr.getAttribute('data-logs') || "[]");
+            if (index < 0 || index >= logs.length) return;
+            const removed = logs.splice(index, 1)[0];
+            tr.setAttribute('data-logs', JSON.stringify(logs));
+            const actualInput = tr.querySelector('.actual-val');
+            actualInput.value = round1((Number(actualInput.value) || 0) - (Number(removed.amount) || 0));
+            if (Number(actualInput.value) <= 0) actualInput.value = (logs.length === 0 ? '' : 0);
+            renderLogsInsideRow(tr);
+            calculateAll(true);
+        }
+
+        // העברת פעולה בודדת לקטגוריה אחרת
+        function moveLogToRow(selectEl, index) {
+            const targetName = selectEl.value; if (!targetName) return;
+            const srcTr = selectEl.closest('tr'); if (!srcTr) { selectEl.value = ''; return; }
+            let srcLogs = JSON.parse(srcTr.getAttribute('data-logs') || "[]");
+            if (index < 0 || index >= srcLogs.length) { selectEl.value = ''; return; }
+            const targetTr = findExpenseRowByName(targetName);
+            if (!targetTr) { selectEl.value = ''; return; }
+            const log = srcLogs.splice(index, 1)[0];
+            srcTr.setAttribute('data-logs', JSON.stringify(srcLogs));
+            const srcActual = srcTr.querySelector('.actual-val');
+            srcActual.value = round1((Number(srcActual.value) || 0) - (Number(log.amount) || 0));
+            if (Number(srcActual.value) <= 0) srcActual.value = (srcLogs.length === 0 ? '' : 0);
+            // הוספה ליעד
+            let tgtLogs = JSON.parse(targetTr.getAttribute('data-logs') || "[]");
+            tgtLogs.push(log); targetTr.setAttribute('data-logs', JSON.stringify(tgtLogs));
+            const tgtActual = targetTr.querySelector('.actual-val');
+            tgtActual.value = round1((Number(tgtActual.value) || 0) + (Number(log.amount) || 0));
+            renderLogsInsideRow(srcTr); renderLogsInsideRow(targetTr);
+            calculateAll(true);
+        }
+
+        // העברת כל הפעולות של קטגוריה לקטגוריה אחרת בבת אחת
+        function moveAllLogsFromRow(selectEl) {
+            const targetName = selectEl.value; if (!targetName) return;
+            const srcTr = selectEl.closest('tr'); if (!srcTr) { selectEl.value = ''; return; }
+            let srcLogs = JSON.parse(srcTr.getAttribute('data-logs') || "[]");
+            if (!srcLogs.length) { selectEl.value = ''; return; }
+            const targetTr = findExpenseRowByName(targetName);
+            if (!targetTr) { selectEl.value = ''; return; }
+            let tgtLogs = JSON.parse(targetTr.getAttribute('data-logs') || "[]");
+            let moved = 0;
+            srcLogs.forEach(l => { tgtLogs.push(l); moved += Number(l.amount) || 0; });
+            moved = round1(moved);
+            targetTr.setAttribute('data-logs', JSON.stringify(tgtLogs));
+            const tgtActual = targetTr.querySelector('.actual-val'); tgtActual.value = round1((Number(tgtActual.value) || 0) + moved);
+            srcTr.setAttribute('data-logs', '[]');
+            const srcActual = srcTr.querySelector('.actual-val'); srcActual.value = round1((Number(srcActual.value) || 0) - moved); if (Number(srcActual.value) <= 0) srcActual.value = '';
+            renderLogsInsideRow(srcTr); renderLogsInsideRow(targetTr); calculateAll(true);
+        }
+
+        // ===== מקור ההוצאה: בינה מלאכותית / ייבוא / ידני =====
+        function logSource(l) {
+            if (l && l.source) return l.source;
+            const s = String(l && l.store || '');
+            if (s.includes('[זיהוי AI]') || s.includes('[OCR]')) return 'ai';
+            if (s.includes('ייבוא בנקאי') || s.includes('[ייבוא]')) return 'import';
+            return 'manual';
+        }
+        function sourceBadge(src) {
+            if (src === 'ai') return '<span style="background:#ede9fe;color:#7c3aed;border-radius:6px;padding:2px 8px;font-size:0.72rem;font-weight:700;white-space:nowrap;">🤖 בינה מלאכותית</span>';
+            if (src === 'import') return '<span style="background:#dbeafe;color:#2563eb;border-radius:6px;padding:2px 8px;font-size:0.72rem;font-weight:700;white-space:nowrap;">🏦 ייבוא אוטומטי</span>';
+            return '<span style="background:#f1f5f9;color:#64748b;border-radius:6px;padding:2px 8px;font-size:0.72rem;font-weight:700;white-space:nowrap;">✋ ידני</span>';
+        }
+        function cleanStoreDisplay(s) {
+            let out = String(s || '').replace(/\[[^\]]*\]/g, '').replace(/[🔎🤖⚠️✋🏦]/g, '').replace(/\s+/g, ' ').trim();
+            return out || 'פעולה';
+        }
+
+        // מילוי תפריט הקטגוריות בחלון הוספת ההוצאה (כולל אפשרות ליצור חדשה)
+        function populateLogCategorySelect(defaultCat) {
+            const sel = document.getElementById('logCategory'); if (!sel) return;
+            const names = [];
+            document.querySelectorAll('#fixedBody tr, #variableBody tr').forEach(r => { const nm = (r.querySelector('.name-input') && r.querySelector('.name-input').value || '').trim(); if (nm && names.indexOf(nm) === -1) names.push(nm); });
+            if (defaultCat && names.indexOf(defaultCat) === -1) names.unshift(defaultCat);
+            sel.innerHTML = names.map(n => `<option value="${escapeHtml(n)}" ${n === defaultCat ? 'selected' : ''}>${escapeHtml(n)}</option>`).join('') + '<option value="__new__">➕ קטגוריה חדשה...</option>';
+            const wrap = document.getElementById('logNewCategoryWrap'); if (wrap) wrap.style.display = 'none';
+            const ni = document.getElementById('logNewCategory'); if (ni) ni.value = '';
+        }
+        function toggleNewCatInput() {
+            const sel = document.getElementById('logCategory'); const wrap = document.getElementById('logNewCategoryWrap'); if (!sel || !wrap) return;
+            wrap.style.display = (sel.value === '__new__') ? 'block' : 'none';
+        }
+        // מאתר/יוצר שורת קטגוריה לפי שם ומחזיר אותה
+        function resolveCategoryRow(name) {
+            let row = findExpenseRowByName(name);
+            if (!row) { appendExpenseRowUI(document.getElementById('variableBody'), name, 0, 0, 'variable', []); row = document.getElementById('variableBody').lastElementChild; }
+            return row;
+        }
 
         function appendIncomeRowUI(tbody, name, amount) { const tr = document.createElement('tr'); tr.innerHTML = `<td><input type="text" class="table-input name-input" value="${escapeHtml(name)}" oninput="calculateAll(true)"></td><td><input type="number" class="table-input val-input" value="${amount || ''}" placeholder="0" oninput="calculateAll(true)"></td><td style="text-align:center;"><button class="btn-delete" onclick="deleteRow(this)">✕</button></td>`; tbody.appendChild(tr); }
         function appendExpenseRowUI(tbody, name, target, actual, type, logs = []) { 
@@ -2252,23 +2414,36 @@
             tbody.appendChild(tr); renderLogsInsideRow(tr); 
         }
 
+        let pendingLogSource = 'manual';
         function openExpenseLogModal(btn) {
             activeRowForLog = btn.closest('tr');
-            document.getElementById('expenseLogTitle').innerText = "הוספה - " + (activeRowForLog.querySelector('.name-input').value || "כללי");
+            pendingLogSource = 'manual';
+            const curName = (activeRowForLog.querySelector('.name-input').value || "כללי");
+            document.getElementById('expenseLogTitle').innerText = "הוספה - " + curName;
             document.getElementById('logAmount').value = ""; document.getElementById('logStore').value = ""; document.getElementById('logDate').value = new Date().toISOString().split('T')[0]; 
+            populateLogCategorySelect(curName);
             document.getElementById('addExpenseLogModal').style.display = 'flex';
         }
         function closeExpenseLogModal() { document.getElementById('addExpenseLogModal').style.display = 'none'; activeRowForLog = null; }
         
         function saveExpenseLog() {
-            const amount = Number(document.getElementById('logAmount').value); const store = document.getElementById('logStore').value.trim(); const date = document.getElementById('logDate').value;
+            const amount = round1(Number(document.getElementById('logAmount').value)); const store = document.getElementById('logStore').value.trim(); const date = document.getElementById('logDate').value;
             if(amount <= 0) return;
-            const actualInput = activeRowForLog.querySelector('.actual-val'); actualInput.value = (Number(actualInput.value) || 0) + amount;
-            let logs = JSON.parse(activeRowForLog.getAttribute('data-logs') || "[]"); logs.push({ amount, store: store || "הוצאה ידנית", date }); activeRowForLog.setAttribute('data-logs', JSON.stringify(logs));
-            renderLogsInsideRow(activeRowForLog);
+            // קביעת קטגוריית היעד (קיימת / חדשה)
+            const sel = document.getElementById('logCategory');
+            let cat = sel ? sel.value : '';
+            if (cat === '__new__') { cat = (document.getElementById('logNewCategory').value || '').trim(); }
+            let targetRow = activeRowForLog;
+            if (cat) { targetRow = resolveCategoryRow(cat); }
+            if (!targetRow) { closeExpenseLogModal(); return; }
+            // מקור ההוצאה: בינה מלאכותית (קבלה שנסרקה) או ידני
+            const src = pendingLogSource || ((store.includes('[זיהוי AI]') || store.includes('[OCR]')) ? 'ai' : 'manual');
+            const actualInput = targetRow.querySelector('.actual-val'); actualInput.value = round1((Number(actualInput.value) || 0) + amount);
+            let logs = JSON.parse(targetRow.getAttribute('data-logs') || "[]"); logs.push({ amount, store: store || "הוצאה ידנית", date, source: src }); targetRow.setAttribute('data-logs', JSON.stringify(logs));
+            renderLogsInsideRow(targetRow);
             dailyExpenseLogs.push({ timestamp: new Date(date).getTime(), dateStr: new Date(date).toLocaleDateString('he-IL'), amount, store });
-            const cb = activeRowForLog.querySelector('.checkbox-done'); 
-            if (cb && Number(activeRowForLog.querySelector('.target-val').value) > 0) cb.checked = (Number(actualInput.value) >= Number(activeRowForLog.querySelector('.target-val').value));
+            const cb = targetRow.querySelector('.checkbox-done'); 
+            if (cb && Number(targetRow.querySelector('.target-val').value) > 0) cb.checked = (Number(actualInput.value) >= Number(targetRow.querySelector('.target-val').value));
             calculateAll(true); closeExpenseLogModal();
         }
 
@@ -2279,21 +2454,22 @@
         function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 
         function calculateAll(shouldSave = true) { 
-            let incomeSum = 0; document.querySelectorAll('#incomeBody .val-input').forEach(i => incomeSum += Number(i.value) || 0); document.getElementById('sumIncome').innerText = `₪${incomeSum.toLocaleString()}`; 
+            let incomeSum = 0; document.querySelectorAll('#incomeBody .val-input').forEach(i => incomeSum += Number(i.value) || 0); incomeSum = round1(incomeSum); document.getElementById('sumIncome').innerText = `₪${fmtNum(incomeSum)}`; 
             const processExpenses = (tbodyId, sumTargetId, sumActualId) => { 
                 let sumTarget = 0, sumActual = 0; 
                 document.querySelectorAll(`#${tbodyId} tr`).forEach(row => { 
                     const target = Number(row.querySelector('.target-val').value) || 0; const actual = Number(row.querySelector('.actual-val').value) || 0; sumTarget += target; sumActual += actual; 
                     const statusCell = row.querySelector('.status-cell'); 
                     if(statusCell) { 
-                        const diff = target - actual; 
-                        if(target === 0 && actual === 0) { statusCell.innerHTML = `<span class="status-badge status-neutral">-</span>`; } else if (actual === 0 && target > 0) { statusCell.innerHTML = `<span style="background:#f1f5f9;color:#64748b;border-radius:8px;padding:4px 10px;font-weight:600;font-size:0.88rem;">טרם הוצא</span>`; } else if (diff < 0) { statusCell.innerHTML = `<span style="background:#fee2e2;color:#dc2626;border-radius:8px;padding:4px 10px;font-weight:600;font-size:0.88rem;">▲ חריגה: ₪${Math.abs(diff)}</span>`; } else if (diff === 0) { statusCell.innerHTML = `<span style="background:#fef9c3;color:#854d0e;border-radius:8px;padding:4px 10px;font-weight:600;font-size:0.88rem;">בדיוק ביעד</span>`; } else { statusCell.innerHTML = `<span style="background:#dcfce7;color:#16a34a;border-radius:8px;padding:4px 10px;font-weight:600;font-size:0.88rem;">✔ נותרו: ₪${diff}</span>`; } 
+                        const diff = round1(target - actual); 
+                        if(target === 0 && actual === 0) { statusCell.innerHTML = `<span class="status-badge status-neutral">-</span>`; } else if (actual === 0 && target > 0) { statusCell.innerHTML = `<span style="background:#f1f5f9;color:#64748b;border-radius:8px;padding:4px 10px;font-weight:600;font-size:0.88rem;">טרם הוצא</span>`; } else if (diff < 0) { statusCell.innerHTML = `<span style="background:#fee2e2;color:#dc2626;border-radius:8px;padding:4px 10px;font-weight:600;font-size:0.88rem;">▲ חריגה: ₪${fmtNum(Math.abs(diff))}</span>`; } else if (diff === 0) { statusCell.innerHTML = `<span style="background:#fef9c3;color:#854d0e;border-radius:8px;padding:4px 10px;font-weight:600;font-size:0.88rem;">בדיוק ביעד</span>`; } else { statusCell.innerHTML = `<span style="background:#dcfce7;color:#16a34a;border-radius:8px;padding:4px 10px;font-weight:600;font-size:0.88rem;">✔ נותרו: ₪${fmtNum(diff)}</span>`; } 
                     } 
                 }); 
-                document.getElementById(sumTargetId).innerText = `₪${sumTarget.toLocaleString()}`; document.getElementById(sumActualId).innerText = `₪${sumActual.toLocaleString()}`; return sumActual; 
+                sumTarget = round1(sumTarget); sumActual = round1(sumActual);
+                document.getElementById(sumTargetId).innerText = `₪${fmtNum(sumTarget)}`; document.getElementById(sumActualId).innerText = `₪${fmtNum(sumActual)}`; return sumActual; 
             }; 
-            const totalExp = processExpenses('fixedBody', 'sumFixedTarget', 'sumFixedActual') + processExpenses('variableBody', 'sumVarTarget', 'sumVarActual'); 
-            document.getElementById('totalIncomeTxt').innerText = `₪${incomeSum.toLocaleString()}`; document.getElementById('totalExpensesTxt').innerText = `₪${totalExp.toLocaleString()}`; document.getElementById('balanceTxt').innerText = `₪${(incomeSum - totalExp).toLocaleString()}`; document.getElementById('balanceTxt').style.color = (incomeSum - totalExp) < 0 ? 'var(--danger)' : 'var(--primary)'; 
+            const totalExp = round1(processExpenses('fixedBody', 'sumFixedTarget', 'sumFixedActual') + processExpenses('variableBody', 'sumVarTarget', 'sumVarActual')); 
+            document.getElementById('totalIncomeTxt').innerText = `₪${fmtNum(incomeSum)}`; document.getElementById('totalExpensesTxt').innerText = `₪${fmtNum(totalExp)}`; document.getElementById('balanceTxt').innerText = `₪${fmtNum(incomeSum - totalExp)}`; document.getElementById('balanceTxt').style.color = (incomeSum - totalExp) < 0 ? 'var(--danger)' : 'var(--primary)'; 
             const statsSec = document.getElementById('statisticsSection'); if (statsSec && statsSec.style.display !== 'none') { renderMonthlyOverviewChart(incomeSum, totalExp); renderStatisticsChart(); }
             if (shouldSave && tempUserSession) { document.getElementById('saveStatusIndicator').style.display = 'none'; writeLocalMirror(); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => { saveDataToCloud(); }, 1500); } 
         }
@@ -2384,10 +2560,12 @@
                 addExpenseRow('variable'); targetRow = varBody.lastElementChild;
             }
             activeRowForLog = targetRow;
-            document.getElementById('logAmount').value = aiData.amount;
+            pendingLogSource = 'ai';
+            document.getElementById('logAmount').value = round1(aiData.amount);
             const conf = (typeof aiData.confidence === 'number') ? aiData.confidence : 1;
             const tag = aiData.engine === 'ocr' ? (conf < 0.6 ? " 🔎 [OCR - בדוק סכום]" : " 🔎 [OCR]") : (conf < 0.6 ? " ⚠️ [בדוק - לא ודאי]" : " 🤖 [זיהוי AI]");
             document.getElementById('logStore').value = (aiData.store || "קבלה") + tag;
+            populateLogCategorySelect(aiData.category || (targetRow.querySelector('.name-input').value || ""));
             const validDate = (aiData.date && /^\d{4}-\d{2}-\d{2}$/.test(aiData.date)) ? aiData.date : new Date().toISOString().split('T')[0];
             document.getElementById('logDate').value = validDate;
             closeReceiptScanner();
@@ -2543,6 +2721,7 @@
                 if (txs.length === 0) { bankError("לא זוהו תנועות חוקיות בקובץ. אנא ודא שהקובץ תקין."); return; }
                 bankStatus(`זוהו ${txs.length} תנועות. מנתח ומסווג את הנתונים...`);
                 await categorizeTransactions(txs); 
+                markDuplicates(txs);
                 parsedBankTransactions = txs; 
                 renderBankReview();
             } catch (err) { console.error(err); bankError("שגיאה בקריאת הקובץ: " + (err.message || "")); }
@@ -2630,20 +2809,42 @@
             return txs;
         }
 
+        // זיהוי כרטיס אשראי ספציפי -> קטגוריה נפרדת לכל כרטיס (לפי 4 ספרות או שם הכרטיס)
+        function creditCardCategory(store){
+            const s = String(store || "");
+            // 1) 4 ספרות אחרונות של הכרטיס (לוקחים את רצף ה-4 ספרות האחרון בתיאור)
+            const fours = s.match(/(\d{4})(?!\d)/g);
+            if (fours && fours.length) return "כרטיס אשראי " + fours[fours.length - 1];
+            // 2) לפי שם/מותג הכרטיס
+            const low = s.toLowerCase();
+            const brands = [
+                ["ויזה","ויזה"],["visa","ויזה"],
+                ["מאסטרקארד","מאסטרקארד"],["מאסטרקרד","מאסטרקארד"],["mastercard","מאסטרקארד"],
+                ["ישראכרט","ישראכרט"],["ישראכארט","ישראכרט"],["isracard","ישראכרט"],
+                ["אמריקן אקספרס","אמקס"],["אמקס","אמקס"],["amex","אמקס"],
+                ["דיינרס","דיינרס"],["diners","דיינרס"],
+                ["לאומי קארד","לאומי קארד"],["מקס","מקס"],["max","מקס"],["כאל","כאל"],["cal","כאל"]
+            ];
+            for (const [k, label] of brands){ if (low.includes(k)) return "כרטיס אשראי (" + label + ")"; }
+            return "כרטיס אשראי";
+        }
+
         async function categorizeTransactions(txs) {
             // הכנסות - סיווג מקומי לפי מילות מפתח
             txs.filter(t => t.type === 'income').forEach(t => { t.category = localCategorizeIncome(t.store); });
             // הוצאות - סיווג מקומי, והשאר ל-AI
             const expenses = txs.filter(t => t.type === 'expense');
             const unknown = []; expenses.forEach(t => { const c = localCategorize(t.store); if (c) t.category = c; else unknown.push(t); });
-            if (unknown.length === 0) return;
+            const splitCreditCards = () => { expenses.forEach(t => { if (t.category === "כרטיס אשראי") t.category = creditCardCategory(t.store); }); };
+            if (unknown.length === 0) { splitCreditCards(); return; }
             const uniqueNames = [...new Set(unknown.map(t => t.store))];
             try {
                 const cats = "'כרטיס אשראי','משיכת מזומן','שיקים','עמלות בנק','חשבונות ותשתיות','ביטוח','חיסכון והשקעות','הלוואות ומשכנתא','בריאות','קניות סופר','דלק ונסיעות','פנאי ובילוי','אוכל בחוץ','טיפוח ופארם','ביגוד והנעלה','קניות כלליות'";
                 const prompt = `אתה מסווג תנועות בנק/אשראי ישראליות לקטגוריה אחת בלבד מתוך: ${cats}. הנחיות: "חיוב לכרטיס ויזה" וכדומה = 'כרטיס אשראי'; משיכת מזומן/כספומט = 'משיכת מזומן'; שיק/המחאה = 'שיקים'; עמלה/דמי ניהול = 'עמלות בנק'; חשמל/מים/ארנונה/סלולר/אינטרנט = 'חשבונות ותשתיות'; פיקדון/חיסכון/פנסיה = 'חיסכון והשקעות'; הלוואה/משכנתא = 'הלוואות ומשכנתא'; מסעדה/קפה = 'אוכל בחוץ'; סופר = 'קניות סופר'. אם באמת לא ברור בחר 'קניות כלליות'. החזר אך ורק אובייקט JSON תקין: מפתח = שם התנועה, ערך = הקטגוריה. התנועות: ${JSON.stringify(uniqueNames)}`;
                 const txt = await geminiGenerate([{ text: prompt }], { json: true, retries: 2 });
                 const map = safeJsonParse(txt) || {}; unknown.forEach(t => { t.category = (map[t.store] && ALL_CATEGORIES.indexOf(map[t.store]) > -1) ? map[t.store] : "קניות כלליות"; });
-            } catch (e) { unknown.forEach(t => { t.category = "קניות כלליות"; }); }
+                splitCreditCards();
+            } catch (e) { unknown.forEach(t => { t.category = "קניות כלליות"; }); splitCreditCards(); }
         }
 
         const ALL_CATEGORIES = ["כרטיס אשראי","משיכת מזומן","שיקים","עמלות בנק","חשבונות ותשתיות","ביטוח","חיסכון והשקעות","הלוואות ומשכנתא","בריאות","קניות סופר","דלק ונסיעות","אוכל בחוץ","פנאי ובילוי","טיפוח ופארם","ביגוד והנעלה","קניות כלליות"];
@@ -2652,35 +2853,79 @@
             document.getElementById('bankStepUpload').style.display = 'none'; document.getElementById('bankStepReview').style.display = 'block'; document.getElementById('bankImportFooter').style.display = 'flex'; document.getElementById('bankTxCount').innerText = parsedBankTransactions.length;
             updateBankTotal();
             const incCount = parsedBankTransactions.filter(t => t.type === 'income').length;
+            const dupCount = parsedBankTransactions.filter(t => t.duplicate).length;
             const incNote = document.getElementById('bankIncomeNote');
-            if (incNote) incNote.innerText = incCount > 0 ? ` (מתוכן ${incCount} הכנסות)` : '';
+            if (incNote) {
+                let note = incCount > 0 ? ` (מתוכן ${incCount} הכנסות)` : '';
+                if (dupCount > 0) note += ` ⚠️ זוהו ${dupCount} תנועות שייתכן שכבר קיימות — סומנו לביטול. סמן ✓ ידנית אם ברצונך לייבא אותן בכל זאת.`;
+                incNote.innerText = note;
+            }
             
             document.getElementById('bankReviewBody').innerHTML = parsedBankTransactions.map((t, i) => {
                 const isInc = t.type === 'income';
                 const typeBadge = isInc
                     ? '<span style="background:#dcfce7;color:#16a34a;border-radius:6px;padding:2px 6px;font-size:0.72rem;font-weight:700;">הכנסה</span>'
                     : '<span style="background:#fee2e2;color:#dc2626;border-radius:6px;padding:2px 6px;font-size:0.72rem;font-weight:700;">הוצאה</span>';
+                const dupBadge = t.duplicate ? ' <span style="background:#fef3c7;color:#b45309;border-radius:6px;padding:2px 6px;font-size:0.72rem;font-weight:700;">⚠️ ייתכן כפול</span>' : '';
                 const amtColor = isInc ? '#16a34a' : '#dc2626';
                 const amtSign = isInc ? '+' : '−';
-                const list = isInc ? INCOME_CATEGORIES : ALL_CATEGORIES;
-                const catCell = `<select class="table-input" style="min-width:140px; font-size:0.85rem;" onchange="parsedBankTransactions[${i}].category=this.value">${list.map(c => `<option value="${c}" ${c === t.category ? 'selected' : ''}>${c}</option>`).join('')}</select>`;
-                return `<tr><td style="text-align:center;"><input type="checkbox" class="checkbox-done" ${t.include ? 'checked' : ''} onchange="parsedBankTransactions[${i}].include=this.checked; updateBankTotal();"></td><td style="white-space:nowrap; font-size:0.85rem;">${new Date(t.date).toLocaleDateString('he-IL')}</td><td style="font-size:0.88rem;">${typeBadge}<br>${escapeHtml(t.store)}</td><td style="font-weight:700; white-space:nowrap; color:${amtColor};">${amtSign}₪${t.amount.toLocaleString()}</td><td>${catCell}</td></tr>`;
+                const list = (isInc ? INCOME_CATEGORIES : ALL_CATEGORIES).slice();
+                if (t.category && list.indexOf(t.category) === -1) list.unshift(t.category); // קטגוריה דינמית (למשל "כרטיס אשראי 1234")
+                const catCell = `<select class="table-input" style="min-width:140px; font-size:0.85rem;" onchange="parsedBankTransactions[${i}].category=this.value">${list.map(c => `<option value="${escapeHtml(c)}" ${c === t.category ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}</select>`;
+                const rowBg = t.duplicate ? ' style="background:#fffbeb;"' : '';
+                return `<tr${rowBg}><td style="text-align:center;"><input type="checkbox" class="checkbox-done" ${t.include ? 'checked' : ''} onchange="parsedBankTransactions[${i}].include=this.checked; updateBankTotal();"></td><td style="white-space:nowrap; font-size:0.85rem;">${new Date(t.date).toLocaleDateString('he-IL')}</td><td style="font-size:0.88rem;">${typeBadge}${dupBadge}<br>${escapeHtml(t.store)}</td><td style="font-weight:700; white-space:nowrap; color:${amtColor};">${amtSign}₪${fmtNum(t.amount)}</td><td>${catCell}</td></tr>`;
             }).join('');
         }
+
+        // ===== זיהוי תנועות כפולות (מול מה שכבר קיים בחודש, ובתוך אותו קובץ) =====
+        function normStoreSig(s){ return String(s || '').replace(/\[[^\]]*\]/g, '').replace(/[🤖🔎⚠️✔️]/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); }
+        function gatherExistingSignatures(){
+            const sigs = {};
+            const add = (date, amount, store) => { const k = (date || '') + '|' + round1(amount) + '|' + normStoreSig(store); sigs[k] = true; };
+            // הוצאות קיימות (מתוך פירוט הפעולות בכל קטגוריה)
+            document.querySelectorAll('#fixedBody tr, #variableBody tr').forEach(r => {
+                let logs = []; try { logs = JSON.parse(r.getAttribute('data-logs') || '[]'); } catch(_e){}
+                logs.forEach(l => { const d = (function(){ try{ return new Date(l.date).toISOString().split('T')[0]; }catch(_e){ return l.date; } })(); add(d, l.amount, l.store); });
+            });
+            // הכנסות קיימות
+            document.querySelectorAll('#incomeBody tr').forEach(r => {
+                const nm = r.querySelector('.name-input') ? r.querySelector('.name-input').value : '';
+                const amt = Number(r.querySelector('.val-input') ? r.querySelector('.val-input').value : 0) || 0;
+                if (amt) add('', amt, nm);
+            });
+            return sigs;
+        }
+        function markDuplicates(txs){
+            const existing = gatherExistingSignatures();
+            const seenInFile = {};
+            txs.forEach(t => {
+                const isoDate = (function(){ try{ return new Date(t.date).toISOString().split('T')[0]; }catch(_e){ return t.date; } })();
+                const sigWithStore = isoDate + '|' + round1(t.amount) + '|' + normStoreSig(t.store);
+                const sigNoDate = '|' + round1(t.amount) + '|' + normStoreSig(t.store); // להתאמה מול הכנסות שאין להן תאריך שמור
+                let dup = false;
+                if (existing[sigWithStore] || existing[sigNoDate]) dup = true;       // כבר קיים בחודש
+                else if (seenInFile[sigWithStore]) dup = true;                       // מופיע פעמיים באותו קובץ
+                seenInFile[sigWithStore] = true;
+                t.duplicate = dup;
+                if (dup) t.include = false; // ברירת מחדל: לא לייבא כפילות, עד שהמשתמש יאשר ידנית
+            });
+        }
+
 
         function updateBankTotal() {
             const sumExp = parsedBankTransactions.filter(t => t.include && t.type === 'expense').reduce((s, t) => s + t.amount, 0);
             const sumInc = parsedBankTransactions.filter(t => t.include && t.type === 'income').reduce((s, t) => s + t.amount, 0);
             const el = document.getElementById('bankTxTotal');
-            if (el) el.innerHTML = `<span style="color:#dc2626;">הוצאות: ₪${(Math.round(sumExp * 100) / 100).toLocaleString()}</span> | <span style="color:#16a34a;">הכנסות: ₪${(Math.round(sumInc * 100) / 100).toLocaleString()}</span>`;
+            if (el) el.innerHTML = `<span style="color:#dc2626;">הוצאות: ₪${fmtNum(sumExp)}</span> | <span style="color:#16a34a;">הכנסות: ₪${fmtNum(sumInc)}</span>`;
         }
 
         function addLogToCategory(categoryName, amount, store, dateStr) {
+            amount = round1(amount);
             const varBody = document.getElementById('variableBody');
             let row = Array.from(varBody.querySelectorAll('tr')).find(r => r.querySelector('.name-input').value.trim() === categoryName) || Array.from(varBody.querySelectorAll('tr')).find(r => r.querySelector('.name-input').value.includes(categoryName));
             if (!row) { appendExpenseRowUI(varBody, categoryName, 0, 0, 'variable', []); row = varBody.lastElementChild; }
-            const actualInput = row.querySelector('.actual-val'); actualInput.value = (Number(actualInput.value) || 0) + amount;
-            let logs = JSON.parse(row.getAttribute('data-logs') || "[]"); logs.push({ amount, store: store || "ייבוא בנקאי", date: dateStr }); row.setAttribute('data-logs', JSON.stringify(logs)); renderLogsInsideRow(row);
+            const actualInput = row.querySelector('.actual-val'); actualInput.value = round1((Number(actualInput.value) || 0) + amount);
+            let logs = JSON.parse(row.getAttribute('data-logs') || "[]"); logs.push({ amount, store: store || "ייבוא בנקאי", date: dateStr, source: 'import' }); row.setAttribute('data-logs', JSON.stringify(logs)); renderLogsInsideRow(row);
             dailyExpenseLogs.push({ timestamp: new Date(dateStr).getTime(), dateStr: new Date(dateStr).toLocaleDateString('he-IL'), amount, store });
             const cb = row.querySelector('.checkbox-done'); const tgt = Number(row.querySelector('.target-val').value); if (cb && tgt > 0) cb.checked = (Number(actualInput.value) >= tgt);
         }
