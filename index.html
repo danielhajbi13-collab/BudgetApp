@@ -672,8 +672,12 @@
                 <!-- כפתור מעבר מהיר אישי ↔ עסקי — מופיע רק אם יש שני חשבונות -->
                 <button id="sidebarModeSwitchBtn" class="quick-mode-switch" onclick="quickSwitchMode()">💼 עבור לחשבון עסקי</button>
                 
-                <button class="btn-pro-scan" onclick="askCameraPermission()">
+                <button class="btn-pro-scan" onclick="askCameraPermission('expense')">
                     <span style="font-size:1.2rem;">📷</span> סרוק קבלה (AI)
+                </button>
+                <!-- כפתור סליקה — גלוי רק במצב עסקי -->
+                <button id="btnBizSalik" class="btn-pro-scan" onclick="askCameraPermission('income')" style="display:none; background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 8px 16px rgba(245,158,11,0.25);">
+                    <span style="font-size:1.2rem;">💳</span> סרוק סליקה (הכנסה)
                 </button>
 
                 <button class="btn-report" onclick="openReportsModal()" style="margin-top: 0.5rem; background: #f8fafc; color: var(--text-dark); border: 1.5px solid var(--border); box-shadow: none;">
@@ -909,7 +913,8 @@
     <div class="mobile-bottom-nav" id="mobileNav">
         <button class="mobile-nav-btn active" id="mobBtnMain" onclick="switchView('main')"><span>📝</span>תקציב</button>
         <button class="mobile-nav-btn" id="mobBtnStats" onclick="switchView('stats')"><span>📊</span>דוחות</button>
-        <button class="mobile-nav-btn" style="color:var(--success);" onclick="askCameraPermission()"><span>📷</span>סריקה</button>
+        <button class="mobile-nav-btn" style="color:var(--success);" onclick="askCameraPermission('expense')"><span>📷</span>סריקה</button>
+        <button class="mobile-nav-btn" id="mobBtnSalik" style="display:none; color:#d97706;" onclick="askCameraPermission('income')"><span>💳</span>סליקה</button>
         <button class="mobile-nav-btn" onclick="openUserInboxModal()" style="position:relative;"><span>💬</span>פניות<span class="js-user-inq-badge inq-badge" style="position:absolute; top:-2px; left:8px;"></span></button>
         <!-- כפתור מעבר מהיר — מוסתר כברירת מחדל, מופיע רק למי שיש שני חשבונות -->
         <button class="mobile-nav-btn" id="mobModeSwitchBtn" style="display:none; color:#b45309;" onclick="quickSwitchMode()"><span id="mobModeSwitchIcon">💼</span><span id="mobModeSwitchLabel">עסקי</span></button>
@@ -1008,7 +1013,7 @@
     </div>
 
     <!-- ===== מודל היסטוריית קבצים שהועלו ===== -->
-    <div class="modal-overlay" id="uploadHistoryModal">
+    <div class="modal-overlay" id="uploadHistoryModal" style="z-index:10002;">
         <div class="modal-content" style="max-width: 640px;">
             <div class="modal-header">
                 <h3 style="color:#6d28d9;">📋 היסטוריית העלאות</h3>
@@ -1031,7 +1036,6 @@
                         <span id="histSelectedCount" style="font-size:0.8rem; color:#7c3aed; font-weight:500;"></span>
                     </div>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <button class="btn-outline" style="font-size:0.82rem; padding:0.35rem 0.8rem; color:#1d4ed8; border-color:#bfdbfe; font-weight:700;" onclick="exportSelectedHistory('original')" title="הורד את הקובץ המקורי שהועלה (זמין באותו סשן)">⬇️ קובץ מקורי</button>
                         <button class="btn-outline" style="font-size:0.82rem; padding:0.35rem 0.8rem; color:#059669; border-color:#a7f3d0;" onclick="exportSelectedHistory('csv')">⬇️ CSV</button>
                         <button class="btn-outline" style="font-size:0.82rem; padding:0.35rem 0.8rem; color:#1d4ed8; border-color:#bfdbfe;" onclick="exportSelectedHistory('xlsx')">⬇️ XLSX</button>
                     </div>
@@ -1046,7 +1050,7 @@
     <div class="modal-overlay" id="receiptScannerModal">
         <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header">
-                <h3 style="color: #10b981;">סריקת חשבונית חכמה</h3>
+                <h3 id="receiptScannerTitle" style="color: #10b981;">סריקת חשבונית חכמה</h3>
                 <div style="display:flex; gap:6px; align-items:center;">
                     <button class="btn-outline" style="font-size:0.82rem; padding:0.3rem 0.7rem; color:#6d28d9; border-color:#e9d5ff;" onclick="openUploadHistoryModal('receipt')">📋 היסטוריה</button>
                     <button class="btn-close-modal" onclick="closeReceiptScanner()">✕</button>
@@ -1056,7 +1060,7 @@
                 <!-- אזהרת כפל — מוסתרת כברירת מחדל -->
                 <div id="receiptDupWarning" style="display:none; background:#fef3c7; border:1px solid #f59e0b; border-radius:10px; padding:0.7rem 1rem; margin-bottom:12px; font-size:0.85rem; color:#92400e; font-weight:600;"></div>
                 <div style="text-align:center;">
-                    <p style="margin-bottom:20px; color:var(--text-light); font-size:0.95rem;">העלה צילום של החשבונית, וה-AI שלנו יחלץ את הסכום והחנות וישייך לקטגוריה אוטומטית.</p>
+                    <p id="receiptScannerDesc" style="margin-bottom:20px; color:var(--text-light); font-size:0.95rem;">העלה צילום של החשבונית, וה-AI שלנו יחלץ את הסכום והחנות וישייך לקטגוריה אוטומטית.</p>
                     
                     <div style="display:flex; gap:12px; justify-content:center; margin-bottom: 20px; flex-wrap:wrap;">
                         <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
@@ -2437,6 +2441,9 @@
             if (varTitle) varTitle.innerText = 'הוצאות עסקיות לחודש זה';
             const lInc = document.getElementById('labelIncome'); if (lInc) lInc.innerText = 'הכנסות עסקיות';
             const lBal = document.getElementById('labelBalance'); if (lBal) lBal.innerText = 'רווח / הפסד';
+            // הצג כפתור סליקה (הכנסה) — רק במצב עסקי
+            const salik = document.getElementById('btnBizSalik'); if (salik) salik.style.display = 'flex';
+            const mobSalik = document.getElementById('mobBtnSalik'); if (mobSalik) mobSalik.style.display = 'flex';
         }
 
         function exitBizMode() {
@@ -2447,6 +2454,9 @@
             if (varTitle) varTitle.innerText = 'הוצאות משתנות';
             const lInc = document.getElementById('labelIncome'); if (lInc) lInc.innerText = 'הכנסות נטו';
             const lBal = document.getElementById('labelBalance'); if (lBal) lBal.innerText = 'חיסכון החודש';
+            // הסתר כפתור סליקה — לא רלוונטי במצב אישי
+            const salik = document.getElementById('btnBizSalik'); if (salik) salik.style.display = 'none';
+            const mobSalik = document.getElementById('mobBtnSalik'); if (mobSalik) mobSalik.style.display = 'none';
         }
 
         // מעבר מהיר מהתקציב האישי אל פאנל ניהול הקהילה (אותו חשבון)
@@ -3058,9 +3068,21 @@
         }
 
         // --- AI צילום ויועץ ---
-        function askCameraPermission() {
-            document.getElementById('receiptPreviewImg').src = ""; document.getElementById('imagePreviewContainer').style.display = 'none'; currentReceiptBase64 = null;
-            document.getElementById('receiptScannerModal').style.display = 'flex'; 
+        function askCameraPermission(mode) {
+            // mode: 'expense' (ברירת מחדל) או 'income' (סליקה עסקית)
+            window._receiptScanMode = mode || 'expense';
+            const isIncome = window._receiptScanMode === 'income';
+            document.getElementById('receiptPreviewImg').src = "";
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+            currentReceiptBase64 = null;
+            // עדכון כותרת ותיאור
+            const titleEl = document.getElementById('receiptScannerTitle');
+            const descEl  = document.getElementById('receiptScannerDesc');
+            const btnEl   = document.getElementById('btnStartAi');
+            if (titleEl) { titleEl.textContent = isIncome ? '💳 סריקת סליקה — הכנסה עסקית' : 'סריקת חשבונית חכמה'; titleEl.style.color = isIncome ? '#d97706' : '#10b981'; }
+            if (descEl)  { descEl.textContent  = isIncome ? 'העלה צילום של אישור הסליקה — ה-AI יזהה את הסכום שהתקבל ויוסיף אוטומטית להכנסות.' : 'העלה צילום של החשבונית, וה-AI שלנו יחלץ את הסכום והחנות וישייך לקטגוריה אוטומטית.'; }
+            if (btnEl)   { btnEl.style.background = isIncome ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#10b981,#059669)'; }
+            document.getElementById('receiptScannerModal').style.display = 'flex';
         }
         function closeReceiptScanner() { document.getElementById('receiptScannerModal').style.display = 'none'; document.getElementById('scannerLaser').style.display = 'none'; }
 
@@ -3107,6 +3129,30 @@
         // מילוי טופס הרישום מתוצאת זיהוי (AI או OCR)
         function applyReceiptResult(aiData) {
             if (!aiData || !aiData.amount) throw new Error("לא זוהה סכום בקבלה");
+            const isIncome = aiData._scanMode === 'income';
+            const conf = (typeof aiData.confidence === 'number') ? aiData.confidence : 1;
+            const tag  = aiData.engine === 'ocr' ? (conf < 0.6 ? " 🔎 [OCR - בדוק סכום]" : " 🔎 [OCR]") : (conf < 0.6 ? " ⚠️ [בדוק - לא ודאי]" : " 🤖 [זיהוי AI]");
+            const validDate = (aiData.date && /^\d{4}-\d{2}-\d{2}$/.test(aiData.date)) ? aiData.date : new Date().toISOString().split('T')[0];
+
+            if (isIncome) {
+                // ===== מצב סליקה: הוסף ישירות להכנסות =====
+                const storeName = (aiData.store || 'לקוח') + tag;
+                appendIncomeRowUI(document.getElementById('incomeBody'), storeName, round1(aiData.amount));
+                calculateAll(true);
+                // שמירה בהיסטוריה
+                if (window._pendingReceiptFingerprint) {
+                    addToUploadHistory('receipt', window._pendingReceiptFileName || 'סליקה', window._pendingReceiptFingerprint, {
+                        store: aiData.store || '', amount: aiData.amount || 0, category: 'הכנסה עסקית', type: 'income'
+                    });
+                    window._pendingReceiptFingerprint = null;
+                }
+                closeReceiptScanner();
+                document.getElementById('scannerLaser').style.display = 'none';
+                alert(`✅ הכנסה נוספה!\n${aiData.store || 'לקוח'}: ₪${round1(aiData.amount).toLocaleString()}\n${conf < 0.6 ? '\n⚠️ שים לב — וודא את הסכום.' : ''}`);
+                return;
+            }
+
+            // ===== מצב רגיל: הוסף להוצאות =====
             let varBody = document.getElementById('variableBody');
             let targetRow = Array.from(varBody.querySelectorAll('tr')).find(r => r.querySelector('.name-input').value.includes(aiData.category));
             if (!targetRow) {
@@ -3117,18 +3163,13 @@
             activeRowForLog = targetRow;
             pendingLogSource = 'ai';
             document.getElementById('logAmount').value = round1(aiData.amount);
-            const conf = (typeof aiData.confidence === 'number') ? aiData.confidence : 1;
-            const tag = aiData.engine === 'ocr' ? (conf < 0.6 ? " 🔎 [OCR - בדוק סכום]" : " 🔎 [OCR]") : (conf < 0.6 ? " ⚠️ [בדוק - לא ודאי]" : " 🤖 [זיהוי AI]");
             document.getElementById('logStore').value = (aiData.store || "קבלה") + tag;
             populateLogCategorySelect(aiData.category || (targetRow.querySelector('.name-input').value || ""));
-            const validDate = (aiData.date && /^\d{4}-\d{2}-\d{2}$/.test(aiData.date)) ? aiData.date : new Date().toISOString().split('T')[0];
             document.getElementById('logDate').value = validDate;
             // שמירה בהיסטוריית העלאות
             if (window._pendingReceiptFingerprint) {
                 addToUploadHistory('receipt', window._pendingReceiptFileName || 'קבלה', window._pendingReceiptFingerprint, {
-                    store: aiData.store || '',
-                    amount: aiData.amount || 0,
-                    category: aiData.category || ''
+                    store: aiData.store || '', amount: aiData.amount || 0, category: aiData.category || ''
                 });
                 window._pendingReceiptFingerprint = null;
             }
@@ -3142,14 +3183,21 @@
             if (!currentReceiptBase64) return alert("אנא בחר או צלם קבלה קודם.");
             const btnAi = document.getElementById('btnStartAi'); const errorDiv = document.getElementById('aiScanError');
             errorDiv.style.display = 'none';
+            const isIncome = window._receiptScanMode === 'income';
 
             try {
                 let aiData = null;
                 if (hasAiKey()) {
                     btnAi.innerHTML = "⏳ מנתח מסמך... (נא להמתין)";
                     try {
-                        const cats = "'קניות סופר','דלק ונסיעות','אוכל בחוץ','פנאי ובילוי','טיפוח ופארם','ביגוד והנעלה','בריאות','חשבונות ותשתיות','קניות כלליות'";
-                        const aiPrompt = `אתה מומחה OCR וניתוח קבלות לאפליקציית תקציב ישראלית. קרא את הקבלה (תמונה או PDF) והחזר אך ורק אובייקט JSON תקין ללא טקסט נוסף במבנה: {"store":"שם בית העסק בעברית אם קיים","amount":הסכום_הסופי_כמספר,"date":"YYYY-MM-DD","category":"קטגוריה","confidence":מספר_בין_0_ל_1}. כללים: amount = הסכום הסופי הכולל ששולם בפועל (חפש 'סה""כ לתשלום' / 'TOTAL'); אל תיקח תת-סכום, מע""מ בלבד, עודף או סכום מזומן. date = תאריך הקבלה עצמה; אם לא נמצא החזר "". category = אחת בלבד מתוך: ${cats}; אם לא ברור בחר 'קניות כלליות'. confidence = עד כמה הקריאה ודאית.`;
+                        let aiPrompt;
+                        if (isIncome) {
+                            // מצב סליקה — זיהוי הכנסה עסקית
+                            aiPrompt = `אתה מומחה OCR לניתוח אישורי סליקה ותשלומים עסקיים בישראל. קרא את האישור (תמונה או PDF) והחזר אך ורק אובייקט JSON תקין ללא טקסט נוסף במבנה: {"store":"שם הלקוח/עסק שממנו התקבל התשלום","amount":הסכום_שהתקבל_כמספר,"date":"YYYY-MM-DD","category":"הכנסה עסקית","confidence":מספר_בין_0_ל_1}. כללים: amount = הסכום שהתקבל בפועל בסליקה (חפש 'סה""כ לחיוב', 'סכום עסקה', 'AMOUNT', 'TOTAL'); זהו תשלום שהעסק קיבל — לא שילם. date = תאריך העסקה; אם לא נמצא החזר "". confidence = רמת הוודאות בזיהוי.`;
+                        } else {
+                            const cats = "'קניות סופר','דלק ונסיעות','אוכל בחוץ','פנאי ובילוי','טיפוח ופארם','ביגוד והנעלה','בריאות','חשבונות ותשתיות','קניות כלליות'";
+                            aiPrompt = `אתה מומחה OCR וניתוח קבלות לאפליקציית תקציב ישראלית. קרא את הקבלה (תמונה או PDF) והחזר אך ורק אובייקט JSON תקין ללא טקסט נוסף במבנה: {"store":"שם בית העסק בעברית אם קיים","amount":הסכום_הסופי_כמספר,"date":"YYYY-MM-DD","category":"קטגוריה","confidence":מספר_בין_0_ל_1}. כללים: amount = הסכום הסופי הכולל ששולם בפועל (חפש 'סה""כ לתשלום' / 'TOTAL'); אל תיקח תת-סכום, מע""מ בלבד, עודף או סכום מזומן. date = תאריך הקבלה עצמה; אם לא נמצא החזר "". category = אחת בלבד מתוך: ${cats}; אם לא ברור בחר 'קניות כלליות'. confidence = עד כמה הקריאה ודאית.`;
+                        }
                         const parts = [{ text: aiPrompt }, { inline_data: { mime_type: currentReceiptMime || "image/jpeg", data: currentReceiptBase64 } }];
                         const textResponse = await geminiGenerate(parts, { json: true, retries: 2 });
                         aiData = safeJsonParse(textResponse); if (aiData) aiData.engine = 'ai';
@@ -3159,11 +3207,13 @@
                     btnAi.innerHTML = "🔎 קורא את הקבלה...";
                     aiData = await ocrReceiptFallback(p => { btnAi.innerHTML = `🔎 קורא... ${p}%`; });
                 }
+                // סמן מצב סריקה על התוצאה
+                if (aiData) aiData._scanMode = isIncome ? 'income' : 'expense';
                 applyReceiptResult(aiData);
             } catch (err) {
                 console.error("Scan Error:", err);
                 document.getElementById('scannerLaser').style.display = 'none';
-                btnAi.innerHTML = "✨ נסה שוב";
+                btnAi.innerHTML = isIncome ? "💳 נסה שוב" : "✨ נסה שוב";
                 errorDiv.innerText = "לא הצלחתי לקרוא את הקבלה. ודא שהתמונה ברורה ומוארת ונסה שוב. (" + (err.message || "") + ")";
                 errorDiv.style.display = 'block';
             }
@@ -3250,9 +3300,6 @@
             const fp = await computeFileFingerprint(file);
             window._pendingBankFingerprint = fp;
             window._pendingBankFileName = file.name || 'קובץ בנק';
-            // שמירת הקובץ המקורי בזיכרון לייצוא עתידי (תקף לכל משך הסשן)
-            if (!window._bankFileStore) window._bankFileStore = {};
-            window._bankFileStore[fp] = file;
             const dup = findDuplicateInHistory(fp, 'bank');
             if (dup) {
                 const d = new Date(dup.uploadedAt).toLocaleDateString('he-IL');
@@ -3664,20 +3711,7 @@
         }
         function _saveUploadHistory(list) {
             if (!tempUserSession) return;
-            try {
-                localStorage.setItem('upload_hist_' + tempUserSession.user_id, JSON.stringify(list.slice(-80)));
-            } catch(e) {
-                // localStorage מלא — ניסיון עם רשימה קצרה יותר ללא תנועות מפורטות
-                try {
-                    const slim = list.slice(-40).map(function(h) {
-                        if (!h.result || !h.result.transactions) return h;
-                        const r = Object.assign({}, h, { result: Object.assign({}, h.result) });
-                        delete r.result.transactions; // הסר תנועות אם אין מקום
-                        return r;
-                    });
-                    localStorage.setItem('upload_hist_' + tempUserSession.user_id, JSON.stringify(slim));
-                } catch(e2) {}
-            }
+            try { localStorage.setItem('upload_hist_' + tempUserSession.user_id, JSON.stringify(list.slice(-80))); } catch(e) {}
         }
         // טביעת אצבע מהירה של קובץ: גודל + 8KB ראשונים (FNV-1a hash)
         async function computeFileFingerprint(file) {
@@ -3761,26 +3795,7 @@
                 const cbHtml = !isReceipt
                     ? '<input type=\"checkbox\" class=\"hist-export-cb\" data-idx=\"'+idx+'\" onchange=\"updateHistSelectedCount()\" style=\"accent-color:#8b5cf6; width:16px; height:16px; min-width:16px; cursor:pointer; margin-left:4px;\">'
                     : '<span style=\"width:20px; min-width:20px; display:inline-block;\"></span>';
-                // כפתור הורדת קובץ מקורי — מופיע רק אם הקובץ קיים בזיכרון (אותו סשן)
-                const fileInMem = !isReceipt && window._bankFileStore && window._bankFileStore[h.fingerprint];
-                const origBtn = fileInMem
-                    ? '<button onclick=\"downloadOriginalBankFile(\'' + escapeHtml(h.fingerprint) + '\')\" style=\"background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:8px;padding:3px 10px;font-size:0.78rem;font-weight:600;cursor:pointer;\">⬇️ הורד קובץ מקורי</button>'
-                    : (!isReceipt ? '<span style=\"font-size:0.72rem;color:var(--text-light);\">(פתח מחדש לייצוא מקורי)</span>' : '');
-                return '<div style=\"background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 14px; border-right:4px solid '+color+';\">'
-                    + '<div style=\"display:flex; justify-content:space-between; align-items:flex-start; gap:8px;\">'
-                    + '<div style=\"display:flex; align-items:center; gap:8px; min-width:0;\">'
-                    + cbHtml
-                    + '<span style=\"font-size:1.5rem; flex-shrink:0;\">'+icon+'</span>'
-                    + '<div style=\"min-width:0;\">'
-                    + '<div style=\"display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:3px;\">'
-                    + badge
-                    + '<span style=\"font-weight:600; font-size:0.88rem; color:var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;\" title=\"'+escapeHtml(h.fileName||'')+'\">'+escapeHtml(h.fileName||'—')+'</span>'
-                    + '</div>'
-                    + (detail ? '<div style=\"font-size:0.78rem; color:var(--text-light); margin-bottom:5px;\">' + detail + '</div>' : '')
-                    + (origBtn ? '<div style=\"margin-top:4px;\">' + origBtn + '</div>' : '')
-                    + '</div></div>'
-                    + '<div style=\"font-size:0.72rem; color:var(--text-light); text-align:left; flex-shrink:0; padding-top:2px;\">' + date + '</div>'
-                    + '</div></div>';
+                return '<div style=\"background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 14px; border-right:4px solid '+color+';\">'                    + '<div style=\"display:flex; justify-content:space-between; align-items:flex-start; gap:8px;\">'                    + '<div style=\"display:flex; align-items:center; gap:8px; min-width:0;\">'                    + cbHtml                    + '<span style=\"font-size:1.5rem; flex-shrink:0;\">'+icon+'</span>'                    + '<div style=\"min-width:0;\">'                    + '<div style=\"display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:3px;\">'                    + badge                    + '<span style=\"font-weight:600; font-size:0.88rem; color:var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;\" title=\"'+escapeHtml(h.fileName||'')+'\">'+escapeHtml(h.fileName||'—')+'</span>'                    + '</div>'                    + (detail ? '<div style=\"font-size:0.78rem; color:var(--text-light);\">' + detail + '</div>' : '')                    + '</div></div>'                    + '<div style=\"font-size:0.72rem; color:var(--text-light); text-align:left; flex-shrink:0; padding-top:2px;\">' + date + '</div>'                    + '</div></div>';
             }).join('');
         }
 
@@ -3802,49 +3817,11 @@
             if (!cbs.length) { alert('אנא בחר לפחות ייבוא אחד לייצוא.'); return; }
             const tab = window._histCurrentTab || 'all';
             const history = getUploadHistory().slice().reverse();
-            const filtered = tab === 'all' ? history.filter(function(h){ return h.type !== 'receipt'; }) : history.filter(function(h){ return h.type === 'bank'; });
-            const selectedItems = cbs.map(function(cb){ return filtered[parseInt(cb.dataset.idx)]; }).filter(Boolean);
+            const filtered = tab === 'all' ? history.filter(h => h.type !== 'receipt') : history.filter(h => h.type === 'bank');
+            const selectedItems = cbs.map(cb => filtered[parseInt(cb.dataset.idx)]).filter(Boolean);
             if (!selectedItems.length) { alert('לא נמצאו נתונים לייצוא.'); return; }
-
-            // ייצוא קובץ מקורי
-            if (format === 'original') {
-                let found = 0;
-                selectedItems.forEach(function(item) {
-                    if (window._bankFileStore && window._bankFileStore[item.fingerprint]) {
-                        downloadOriginalBankFile(item.fingerprint);
-                        found++;
-                    }
-                });
-                if (found === 0) alert('הקבצים המקוריים אינם זמינים — נשמרים רק בסשן שבו יובאו.\nייבא שוב כדי להוריד.');
-                else if (found < selectedItems.length) alert('הורדו ' + found + ' קבצים. ' + (selectedItems.length - found) + ' לא זמינים (ייובאו בסשן אחר).');
-                return;
-            }
-
-            // פריט יחיד עם קובץ מקורי בזיכרון — הורד ישירות (CSV/XLSX)
-            if (selectedItems.length === 1 && window._bankFileStore && window._bankFileStore[selectedItems[0].fingerprint]) {
-                downloadOriginalBankFile(selectedItems[0].fingerprint);
-                return;
-            }
-
             if (format === 'csv') { exportHistoryAsCSV(selectedItems); }
             else { exportHistoryAsXLSX(selectedItems); }
-        }
-
-        // ====== הורדת הקובץ המקורי שהועלה ======
-        function downloadOriginalBankFile(fingerprint) {
-            const file = window._bankFileStore && window._bankFileStore[fingerprint];
-            if (!file) {
-                alert('הקובץ המקורי אינו זמין בסשן הנוכחי.\nיש לייבא את הקובץ שוב כדי להוריד אותו.');
-                return;
-            }
-            const url = URL.createObjectURL(file);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = file.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
         }
         function exportHistoryAsCSV(items) {
             const rows = [['תאריך', 'בית עסק / פירוט', 'סכום (₪)', 'סוג', 'קטגוריה', 'מקור הקובץ', 'חודש']];
@@ -3869,48 +3846,24 @@
         }
         function exportHistoryAsXLSX(items) {
             const wb = XLSX.utils.book_new();
-            let allTxs = []; // לגיליון מאוחד
-            items.forEach(function(item, i) {
+            items.forEach((item, i) => {
                 const txs = (item.result && item.result.transactions) ? item.result.transactions : [];
-                const month = (item.result && item.result.month) || '';
-                const fileName = item.fileName || 'ייבוא';
-                // בניית שורות נתונים
-                const dataRows = txs.map(function(t) {
+                const dataRows = txs.map(t => {
                     const d = t.date ? new Date(t.date).toLocaleDateString('he-IL') : '';
-                    allTxs.push([d, t.store||'', t.amount||0, t.type==='income'?'הכנסה':'הוצאה', t.category||'', fileName, month]);
                     return [d, t.store||'', t.amount||0, t.type==='income'?'הכנסה':'הוצאה', t.category||''];
                 });
                 if (!dataRows.length) {
-                    dataRows.push(['', 'אין תנועות שמורות — ייבא מחדש להורדת הקובץ המקורי', '', '', '']);
+                    dataRows.push(['', 'אין תנועות שמורות', item.result&&item.result.total?Number(item.result.total).toFixed(0):'', '', '']);
                 }
-                // סיכום לגיליון הנוכחי
-                const totalExp = txs.filter(t=>t.type==='expense').reduce(function(s,t){return s+(Number(t.amount)||0);},0);
-                const totalInc = txs.filter(t=>t.type==='income').reduce(function(s,t){return s+(Number(t.amount)||0);},0);
                 const ws = XLSX.utils.aoa_to_sheet([
-                    ['קובץ: ' + fileName + (month ? ' | חודש: ' + month : '')],
-                    ['הופק: ' + new Date().toLocaleDateString('he-IL')],
+                    ['קובץ: '+(item.fileName||'ייבוא')+(item.result&&item.result.month?' | חודש: '+item.result.month:'')],
                     [],
                     ['תאריך','בית עסק / פירוט','סכום (₪)','סוג','קטגוריה'],
-                    ...dataRows,
-                    [],
-                    ['סה"כ הוצאות:', '', totalExp, '', ''],
-                    ['סה"כ הכנסות:', '', totalInc, '', '']
+                    ...dataRows
                 ]);
-                ws['!cols'] = [{wch:14},{wch:30},{wch:13},{wch:10},{wch:20}];
-                const sheetName = ('ייבוא '+(i+1)+' '+(month||'')).substring(0,30);
+                const sheetName = ('ייבוא '+(i+1)+' '+((item.result&&item.result.month)||'')).substring(0,30);
                 XLSX.utils.book_append_sheet(wb, ws, sheetName);
             });
-            // גיליון מרוכז של כל הייבואים יחד
-            if (items.length > 1 && allTxs.length > 0) {
-                const wsSummary = XLSX.utils.aoa_to_sheet([
-                    ['ריכוז כל הייבואים'],
-                    [],
-                    ['תאריך','בית עסק / פירוט','סכום (₪)','סוג','קטגוריה','קובץ מקור','חודש'],
-                    ...allTxs
-                ]);
-                wsSummary['!cols'] = [{wch:14},{wch:30},{wch:13},{wch:10},{wch:20},{wch:22},{wch:12}];
-                XLSX.utils.book_append_sheet(wb, wsSummary, 'ריכוז כולל');
-            }
             XLSX.writeFile(wb, 'ייצוא_ייבואים_' + new Date().toLocaleDateString('he-IL').replace(/\//g,'-') + '.xlsx');
         }
 
