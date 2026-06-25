@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <style>
         :root {
@@ -154,6 +155,27 @@
         @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .modal-header h3 { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); }
+        .btn-reset-section {
+            background: none;
+            border: 1.5px solid #fca5a5;
+            color: #dc2626;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .btn-reset-section:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #f87171;
+        }
+        .btn-reset-section:active { transform: scale(0.96); }
         .btn-close-modal { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; color: var(--text-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .btn-close-modal:hover { background: #e2e8f0; }
         .modal-body { padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
@@ -890,7 +912,9 @@
                     </div>
 
                     <div class="table-section" id="variableExpensesSection">
-                        <h3 id="variableExpensesTitle">הוצאות משתנות</h3>
+                        <h3 id="variableExpensesTitle">
+                            <span id="variableExpensesTitleText">הוצאות משתנות</span>
+                        </h3>
                         <div class="table-responsive-wrapper">
                             <table id="variableTable">
                                 <thead><tr><th>סעיף</th><th>יעד (₪)</th><th>בפועל (₪)</th><th>סטטוס</th><th style="width: 50px;"></th></tr></thead>
@@ -1124,7 +1148,7 @@
                             </select>
                         </div>
                     </div>
-                    <input type="file" id="bankFileInput" accept=".xlsx,.xls,.csv" style="display:none;">
+                    <input type="file" id="bankFileInput" accept=".xlsx,.xls,.csv,.pdf" style="display:none;">
                     <button class="btn-primary" style="margin-top:0; background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="document.getElementById('bankFileInput').click()">📂 בחר קובץ ייבוא</button>
                     <div id="bankImportStatus" style="margin-top:16px; font-weight:600; color:var(--primary); display:none;"></div>
                     <div id="bankImportError" style="margin-top:16px; color:var(--danger); font-weight:600; display:none;"></div>
@@ -2438,7 +2462,7 @@
             const fixedSec = document.getElementById('fixedExpensesSection');
             if (fixedSec) fixedSec.style.display = 'none';
             const varTitle = document.getElementById('variableExpensesTitle');
-            if (varTitle) varTitle.innerText = 'הוצאות עסקיות לחודש זה';
+            if (varTitle) { const varSpan = document.getElementById('variableExpensesTitleText'); if (varSpan) varSpan.innerText = 'הוצאות עסקיות לחודש זה'; else varTitle.innerText = 'הוצאות עסקיות לחודש זה'; }
             const lInc = document.getElementById('labelIncome'); if (lInc) lInc.innerText = 'הכנסות עסקיות';
             const lBal = document.getElementById('labelBalance'); if (lBal) lBal.innerText = 'רווח / הפסד';
             // הצג כפתור סליקה (הכנסה) — רק במצב עסקי
@@ -2451,7 +2475,7 @@
             const fixedSec = document.getElementById('fixedExpensesSection');
             if (fixedSec) fixedSec.style.display = '';
             const varTitle = document.getElementById('variableExpensesTitle');
-            if (varTitle) varTitle.innerText = 'הוצאות משתנות';
+            if (varTitle) { const varSpan2 = document.getElementById('variableExpensesTitleText'); if (varSpan2) varSpan2.innerText = 'הוצאות משתנות'; else varTitle.innerText = 'הוצאות משתנות'; }
             const lInc = document.getElementById('labelIncome'); if (lInc) lInc.innerText = 'הכנסות נטו';
             const lBal = document.getElementById('labelBalance'); if (lBal) lBal.innerText = 'חיסכון החודש';
             // הסתר כפתור סליקה — לא רלוונטי במצב אישי
@@ -2466,6 +2490,44 @@
         function quickSwitchMode() {
             if (!tempUserSession) return;
             loginAsUser(tempUserSession, !tempUserSession._bizMode);
+        }
+
+        // ===== בנייה מחדש של dailyExpenseLogs מתוך שורות הטבלה =====
+        function rebuildDailyLogsFromTable() {
+            const allLogs = [];
+            ['fixedBody', 'variableBody'].forEach(function(tbodyId) {
+                document.querySelectorAll('#' + tbodyId + ' tr').forEach(function(row) {
+                    const logs = JSON.parse(row.getAttribute('data-logs') || '[]');
+                    logs.forEach(function(l) {
+                        allLogs.push({
+                            timestamp: new Date(l.date).getTime(),
+                            dateStr: new Date(l.date).toLocaleDateString('he-IL'),
+                            amount: l.amount,
+                            store: l.store
+                        });
+                    });
+                });
+            });
+            dailyExpenseLogs = allLogs;
+        }
+
+        // ===== איפוס קטגוריה (הכנסות / קבועות / משתנות) =====
+        function openResetSectionModal(bodyId, sectionName) {
+            const modal = document.getElementById('resetSectionModal');
+            const textEl = document.getElementById('resetSectionText');
+            if (!modal || !textEl) return;
+            textEl.innerHTML = 'האם אתה בטוח שברצונך לאפס את <strong>&ldquo;' + sectionName + '&rdquo;</strong>?<br>'
+                             + '<span style="color:var(--text-light);font-size:0.88rem;">כל השורות בקטגוריה זו יימחקו. הפעולה לא ניתנת לביטול.</span>';
+            document.getElementById('confirmResetSectionBtn').onclick = function() {
+                const tbody = document.getElementById(bodyId);
+                if (tbody) { tbody.innerHTML = ''; rebuildDailyLogsFromTable(); calculateAll(true); }
+                closeResetSectionModal();
+            };
+            modal.style.display = 'flex';
+        }
+        function closeResetSectionModal() {
+            const modal = document.getElementById('resetSectionModal');
+            if (modal) modal.style.display = 'none';
         }
 
         function handleLogout() { tempUserSession = null; localStorage.removeItem('budget_active_session'); localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return'); location.reload(); }
@@ -2795,7 +2857,9 @@
         function initSystemDates() {
             const now = new Date();
             document.getElementById('liveDateWidget').innerText = now.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            const baseMonth = now.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+            let baseMonth = now.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+            // FIX: Safari adds comma after month name, Chrome does not — this causes different Supabase keys
+            baseMonth = baseMonth.replace(/,/g, '').replace(/\s+/g, ' ').trim();
             workingMonthStr = (tempUserSession && tempUserSession._bizMode) ? ('עסקי - ' + baseMonth) : baseMonth;
             document.getElementById('currentMonthTxt').innerText = workingMonthStr;
         }
@@ -2803,10 +2867,37 @@
         async function loadCurrentMonthData() { 
             const inc = document.getElementById('incomeBody'); const fix = document.getElementById('fixedBody'); const varb = document.getElementById('variableBody'); 
             inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = ''; 
-            const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', workingMonthStr); 
-            // גיבוי מקומי – משמש כשהענן ריק (למשל נתונים שהוזנו ונסגרה האפליקציה לפני שמירה)
+            // FIX: First try exact match, then try normalized (handle Safari comma vs Chrome no-comma)
+            let { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', workingMonthStr);
+            if (!data || data.length === 0) {
+                const { data: allM } = await _supabase.from('month_data').select('month_str, data').eq('user_id', tempUserSession.user_id);
+                const normCur = workingMonthStr.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+                const match = (allM || []).find(function(m) { return m.month_str.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase() === normCur; });
+                if (match) {
+                    data = [{ data: match.data }];
+                    // Migrate: save under the normalized key
+                    setTimeout(async function() { try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: workingMonthStr, data: match.data }); } catch(e) {} }, 1000);
+                }
+            }
+            // גיבוי מקומי – משמש כשהענן ריק
             let mirror = null;
             try { const raw = localStorage.getItem(localMirrorKey()); if (raw) mirror = JSON.parse(raw); } catch (e) {}
+            // FIX: Also search mirror keys with normalization
+            if (!mirror || !mirror.data) {
+                try {
+                    const normCurM = workingMonthStr.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+                    for (let ki = 0; ki < localStorage.length; ki++) {
+                        const kk = localStorage.key(ki);
+                        if (kk && kk.startsWith('mirror_' + tempUserSession.user_id + '_')) {
+                            const sfx = kk.slice(('mirror_' + tempUserSession.user_id + '_').length);
+                            if (sfx.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase() === normCurM) {
+                                const raw2 = localStorage.getItem(kk);
+                                if (raw2) { mirror = JSON.parse(raw2); break; }
+                            }
+                        }
+                    }
+                } catch(e2) {}
+            }
             const mirrorHasContent = mirror && mirror.data && ((mirror.data.income||[]).length || (mirror.data.fixed||[]).length || (mirror.data.variable||[]).length);
 
             if (data && data.length > 0) { 
@@ -2846,7 +2937,7 @@
                 .find(r => (r.querySelector('.name-input') && r.querySelector('.name-input').value.trim()) === name) || null;
         }
 
-        function renderLogsInsideRow(tr) {
+        function renderLogsInsideRow(tr, keepOpen) {
             let logs = JSON.parse(tr.getAttribute('data-logs') || "[]"); let td = tr.children[0]; let existingWrapper = td.querySelector('.logs-wrapper');
             if (existingWrapper) existingWrapper.remove();
             if (logs.length > 0) {
@@ -2869,11 +2960,15 @@
                 }).join('');
                 // בקרת "העבר את כל הפעולות" (מופיעה כשיש לאן להעביר)
                 let moveAllBar = others.length ? `<div style="margin-bottom:4px;"><select onchange="moveAllLogsFromRow(this)" style="width:100%; font-size:0.78rem; padding:5px 6px; border:1px dashed var(--primary); border-radius:8px; background:var(--primary-light); color:var(--primary); font-weight:600;">${moveAllOptions}</select></div>` : '';
-                let wrapper = document.createElement('div'); wrapper.className = 'logs-wrapper'; wrapper.innerHTML = `<button class="btn-toggle-logs" onclick="toggleLogs(this)">פירוט ההוצאות (${logs.length}) ▾</button><div class="logs-dropdown" style="display:none;">${moveAllBar}${logsHtml}</div>`;
+                let deleteAllBtn = logs.length > 1 ? `<button onclick="deleteAllLogsFromRow(this)" title="מחק את כל הפעולות" style="background:#fee2e2; color:#dc2626; border:none; border-radius:8px; padding:3px 9px; font-size:0.78rem; cursor:pointer; font-weight:700; white-space:nowrap;">🗑 מחק הכל</button>` : '';
+                const dropDisplay = keepOpen ? 'flex' : 'none';
+                const toggleArrow = keepOpen ? '▴' : '▾';
+                let wrapper = document.createElement('div'); wrapper.className = 'logs-wrapper';
+                wrapper.innerHTML = `<div style="display:flex; align-items:center; gap:6px;"><button class="btn-toggle-logs" onclick="toggleLogs(this)">פירוט ההוצאות (${logs.length}) ${toggleArrow}</button>${deleteAllBtn}</div><div class="logs-dropdown" style="display:${dropDisplay};">${moveAllBar}${logsHtml}</div>`;
                 td.appendChild(wrapper);
             }
         }
-        function toggleLogs(btn) { let dd = btn.nextElementSibling; if (dd.style.display === 'none' || dd.style.display === '') { dd.style.display = 'flex'; btn.innerText = btn.innerText.replace('▾', '▴'); } else { dd.style.display = 'none'; btn.innerText = btn.innerText.replace('▴', '▾'); } }
+        function toggleLogs(btn) { const wrapper = btn.closest('.logs-wrapper'); let dd = wrapper ? wrapper.querySelector('.logs-dropdown') : btn.nextElementSibling; if (dd.style.display === 'none' || dd.style.display === '') { dd.style.display = 'flex'; btn.innerText = btn.innerText.replace('▾', '▴'); } else { dd.style.display = 'none'; btn.innerText = btn.innerText.replace('▴', '▾'); } }
 
         // מחיקת פעולה בודדת מתוך קטגוריה
         function deleteLogFromRow(btn, index) {
@@ -2885,7 +2980,20 @@
             const actualInput = tr.querySelector('.actual-val');
             actualInput.value = round1((Number(actualInput.value) || 0) - (Number(removed.amount) || 0));
             if (Number(actualInput.value) <= 0) actualInput.value = (logs.length === 0 ? '' : 0);
-            renderLogsInsideRow(tr);
+            rebuildDailyLogsFromTable();
+            renderLogsInsideRow(tr, logs.length > 0); // keepOpen=true אם נשארו פעולות
+            calculateAll(true);
+        }
+
+        // מחיקת כל הפעולות מקטגוריה
+        function deleteAllLogsFromRow(btn) {
+            const tr = btn.closest('tr'); if (!tr) return;
+            if (!confirm('למחוק את כל פעולות הערסל בקטגוריה זו?\nהפעולה לא ניתנת לביטול.')) return;
+            tr.setAttribute('data-logs', '[]');
+            const actualInput = tr.querySelector('.actual-val');
+            actualInput.value = '';
+            rebuildDailyLogsFromTable();
+            renderLogsInsideRow(tr, false);
             calculateAll(true);
         }
 
@@ -3055,6 +3163,15 @@
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushPendingSave(); });
         window.addEventListener('pagehide', flushPendingSave);
         window.addEventListener('beforeunload', flushPendingSave);
+
+        // FIX: Periodic save every 45s for iOS Safari that does not fire beforeunload
+        window._periodicSaveTimer = setInterval(function() {
+            if (tempUserSession && workingMonthStr) {
+                writeLocalMirror();
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(function() { try { saveDataToCloud(); } catch(e) {} }, 800);
+            }
+        }, 45000);
 
         async function saveDataToCloud() { 
             if (!tempUserSession) return; 
@@ -3289,6 +3406,117 @@
             return null;
         }
 
+
+        // =============================================================
+        // FIX: Israeli bank PDF parser (Hapoalim, Leumi, Discount, Mizrahi...)
+        // =============================================================
+        async function parsePDFBankStatement(file) {
+            // =======================================================
+            // תומך ב: בנק הפועלים, לאומי, דיסקונט, מזרחי ועוד
+            // מזהה תנועות לפי פורמט DD/MM/YYYY + סכום + יתרה
+            // קובע חובה/זכות לפי שינוי יתרה בין שורות עוקבות
+            // =======================================================
+            const pdfjsLib = window['pdfjs-dist/build/pdf'];
+            if (!pdfjsLib) throw new Error('PDF.js לא נטען. רענן את הדף ונסה שוב.');
+            if (!window._pdfjsWorkerSet) {
+                pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                window._pdfjsWorkerSet = true;
+            }
+
+            const buf = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            const lines = [];
+
+            // ─── שלב א: חילוץ טקסט מכל דף וסידור לשורות לפי מיקום Y ───
+            for (let p = 1; p <= pdf.numPages; p++) {
+                const page = await pdf.getPage(p);
+                const tc   = await page.getTextContent();
+                const vp   = page.getViewport({ scale: 1 });
+                const yMap = {};
+                for (const item of tc.items) {
+                    const y = Math.round(vp.height - item.transform[5]);
+                    (yMap[y] = yMap[y] || []).push({ x: item.transform[4], text: (item.str || '').trim() });
+                }
+                Object.keys(yMap).map(Number).sort((a, b) => a - b).forEach(y => {
+                    const row  = yMap[y].sort((a, b) => b.x - a.x); // RTL: ימין לשמאל
+                    const text = row.map(i => i.text).filter(Boolean).join(' ');
+                    if (text) lines.push(text);
+                });
+            }
+
+            // ─── שלב ב: פענוח שורות תנועה ───
+            const DATE_RE  = /\b(\d{2}\/\d{2}\/\d{4})\b/;
+            const NUMS_RE  = /\b(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+\.\d+)\b/g;
+            const parseN   = s => parseFloat(String(s).replace(/,/g, ''));
+
+            const rawTxs = [];
+            for (const line of lines) {
+                const dm = DATE_RE.exec(line);
+                if (!dm) continue;
+                const [dd, mm, yyyy] = dm[1].split('/');
+                const isoDate = yyyy + '-' + mm + '-' + dd;
+
+                // כל המספרים בשורה (בסדר הופעה ב-RTL: יתרה ← סכום ← תיאור ← תאריך)
+                const nums = [];
+                let m;
+                const re = new RegExp(NUMS_RE.source, 'g');
+                while ((m = re.exec(line)) !== null) {
+                    const n = parseN(m[1]);
+                    if (!isNaN(n) && n > 0 && n < 9999999) nums.push(n);
+                }
+                if (nums.length < 2) continue; // חייב להיות לפחות סכום + יתרה
+
+                // יתרה = המספר האחרון (הכי שמאלי ב-RTL = הכי גדול בד"כ)
+                const balance = nums[nums.length - 1];
+                // סכום התנועה = המספר לפני האחרון
+                const amount  = nums[nums.length - 2];
+                if (!amount || amount === 0) continue;
+
+                // תיאור: מנקים תאריך, מספרים, סימני ₪/#
+                const desc = line
+                    .replace(DATE_RE, '')
+                    .replace(/[\u20AA#]/g, '')
+                    .replace(/\d[\d,.]*\d|\b\d\b/g, '') // הסרת כל המספרים
+                    .replace(/[.,]+/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim() || 'תנועה בנקאית';
+
+                rawTxs.push({ isoDate, desc, amount, balance });
+            }
+
+            // ─── שלב ג: סיווג חובה/זכות לפי שינוי יתרה בין שורות ───
+            // הדף הבנקאי הוא מהחדש לישן (החדש בראש). לכן:
+            //   balance[i] < balance[i+1] → תנועה i הפחיתה יתרה → חובה (הוצאה)
+            //   balance[i] > balance[i+1] → תנועה i הגדילה יתרה → זכות (הכנסה)
+            const txs = [];
+            for (let i = 0; i < rawTxs.length; i++) {
+                const cur  = rawTxs[i];
+                const next = rawTxs[i + 1]; // שורה ישנה יותר
+                let type = 'expense'; // ברירת מחדל
+
+                if (next && cur.balance !== null && next.balance !== null) {
+                    const diff = cur.balance - next.balance;
+                    // בדיקה מדויקת: האם ההפרש בין יתרות = הסכום הנוכחי?
+                    if      (Math.abs(diff + cur.amount) < 2) type = 'expense'; // יתרה ירדה בסכום
+                    else if (Math.abs(diff - cur.amount) < 2) type = 'income';  // יתרה עלתה בסכום
+                    else    type = diff < 0 ? 'expense' : 'income'; // החלטה לפי כיוון היתרה
+                }
+
+                txs.push({
+                    date: cur.isoDate,
+                    store: cur.desc,
+                    amount: Math.round(cur.amount * 100) / 100,
+                    type: type,
+                    category: null,
+                    include: true,
+                    _wasNegative: type === 'expense'
+                });
+            }
+            return txs;
+        }
+
+
         async function handleBankFileSelected(e) {
             const file = e.target.files && e.target.files[0]; if (!file) return;
             document.getElementById('bankImportError').style.display = 'none';
@@ -3312,10 +3540,21 @@
             }
 
             bankStatus("קורא את הקובץ...");
-            // קריאת הגדרות ייבוא שהמשתמש הגדיר
             _importFileType = (document.getElementById('bankFileType') && document.getElementById('bankFileType').value) || 'auto';
             _importCardSource = (document.getElementById('bankCardSource') && document.getElementById('bankCardSource').value) || '';
             try {
+                // FIX: PDF bank statement support
+                if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+                    bankStatus("מנתח קובץ PDF בנקאי...");
+                    const pdfTxs = await parsePDFBankStatement(file);
+                    if (!pdfTxs || pdfTxs.length === 0) { bankError("לא נמצאו תנועות ב-PDF. ודא שהקובץ הוא דף חשבון טקסטואלי (לא סרוק)."); return; }
+                    await categorizeTransactions(pdfTxs);
+                    markDuplicates(pdfTxs);
+                    parsedBankTransactions = pdfTxs;
+                    bankStatus("PDF נקרא בהצלחה — נמצאו " + pdfTxs.length + " תנועות.");
+                    renderBankReview();
+                    return;
+                }
                 let allRows = [];
                 if (file.name.toLowerCase().endsWith('.csv')) {
                     const buf = await file.arrayBuffer();
@@ -3911,9 +4150,10 @@
             // פילטור חודשים לפי מצב: עסקי רואה רק חודשים עסקיים, אישי רואה רק אישיים
             const months = (data || []).filter(d => {
                 if (d.month_str === '__settings__' || d.month_str === '__biz_settings__') return false;
-                const isBizMonth = d.month_str.startsWith('עסקי - ');
+                const normStr = d.month_str.replace(/,/g, '').replace(/\s+/g, ' ').trim();
+                const isBizMonth = normStr.startsWith('עסקי - ');
                 return isBiz ? isBizMonth : !isBizMonth;
-            });
+            }).map(d => (Object.assign({}, d, { month_str: d.month_str.replace(/,/g, '').replace(/\s+/g, ' ').trim() })));
             allUserMonthsData = months;
             const listElement = document.getElementById('historyList'); listElement.innerHTML = '';
             const pastMonths = months.map(d => d.month_str).filter(m => m !== workingMonthStr);
@@ -4521,5 +4761,23 @@
             } catch(e){}
         }
     </script>
+
+    <!-- מודל אישור איפוס קטגוריה -->
+    <div class="modal-overlay" id="resetSectionModal" style="display:none; z-index:10060;">
+        <div class="modal-content" style="max-width:390px;">
+            <div class="modal-header">
+                <h3 style="color:#dc2626;">⚠️ אישור איפוס</h3>
+                <button class="btn-close-modal" onclick="closeResetSectionModal()">✕</button>
+            </div>
+            <div class="modal-body" style="padding:1.4rem 1.6rem; gap:12px;">
+                <div style="text-align:center; font-size:2.5rem; line-height:1;">🗑️</div>
+                <p id="resetSectionText" style="text-align:center; font-size:0.97rem; line-height:1.65; color:var(--text-dark); margin:0;"></p>
+            </div>
+            <div class="modal-footer" style="display:flex; gap:10px;">
+                <button class="btn-outline" onclick="closeResetSectionModal()" style="flex:1; font-size:0.92rem;">❌ לא, בטל</button>
+                <button id="confirmResetSectionBtn" class="btn-primary" style="flex:1; font-size:0.92rem; background:linear-gradient(135deg,#dc2626,#b91c1c); border-color:#dc2626;">🗑️ כן, אפס</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
