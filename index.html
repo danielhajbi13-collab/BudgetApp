@@ -1695,11 +1695,14 @@
                             // הקטנה ודחיסה של התמונה לפני השליחה - משפר דיוק, מהירות ומונע כשלים
                             const tmp = new Image();
                             tmp.onload = function() {
-                                let w = tmp.width, h = tmp.height; const maxDim = 1600;
+                                // FIX: קבלות ארוכות (כמו קבלות קופה עם הרבה פריטים) מכילות טקסט קטן מאוד.
+                                // maxDim=1600 היה מטשטש אותו יותר מדי. הגדלנו ל-2200 ואת האיכות ל-0.92
+                                // כדי לשמר פרטים קטנים ולמנוע קריאה שגויה של סכומים ע"י ה-AI.
+                                let w = tmp.width, h = tmp.height; const maxDim = 2200;
                                 if (Math.max(w, h) > maxDim) { const s = maxDim / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
                                 const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
                                 canvas.getContext('2d').drawImage(tmp, 0, 0, w, h);
-                                const compressed = canvas.toDataURL('image/jpeg', 0.85);
+                                const compressed = canvas.toDataURL('image/jpeg', 0.92);
                                 currentReceiptMime = "image/jpeg"; currentReceiptBase64 = compressed.split(',')[1];
                                 if (pdfNote) pdfNote.style.display = 'none';
                                 imgEl.style.display = 'block'; imgEl.src = compressed; markReady();
@@ -2932,6 +2935,45 @@
             workingMonthStr = (tempUserSession && tempUserSession._bizMode) ? ('עסקי - ' + baseMonth) : baseMonth;
             document.getElementById('currentMonthTxt').innerText = workingMonthStr;
         }
+
+        // FIX: מונע מצב שבו קבלה/סליקה/תנועת בנק מתאריך של חודש אחר נכנסת בטעות לחודש הפעיל.
+        // מחשב את month_str הנכון עבור תאריך נתון (אותו פורמט בדיוק כמו initSystemDates).
+        function monthStrFromDateStr(dateStr) {
+            if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+            const d = new Date(dateStr + 'T00:00:00');
+            if (isNaN(d.getTime())) return null;
+            let baseMonth = d.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' }).replace(/,/g, '').replace(/\s+/g, ' ').trim();
+            const isBiz = !!(tempUserSession && tempUserSession._bizMode);
+            return isBiz ? ('עסקי - ' + baseMonth) : baseMonth;
+        }
+        function isSameMonthStr(a, b) {
+            const norm = s => (s || '').replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+            return norm(a) === norm(b);
+        }
+
+        // מוסיף רשומה (הכנסה/הוצאה) לחודש שאינו בהכרח החודש המוצג כרגע — טוען/יוצר נתוני החודש,
+        // ממזג את הרשומה החדשה, ושומר ישירות לענן (בלי לגעת בטבלאות המוצגות על המסך).
+        async function addEntryToOtherMonth(targetMonthStr, entry) {
+            let cached = allUserMonthsData.find(m => isSameMonthStr(m.month_str, targetMonthStr));
+            let monthData;
+            if (cached) {
+                monthData = cached.data;
+            } else {
+                const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', targetMonthStr);
+                monthData = (data && data.length > 0) ? data[0].data : { income: [], fixed: [], variable: [], daily_logs: [] };
+                monthData.income = monthData.income || []; monthData.fixed = monthData.fixed || []; monthData.variable = monthData.variable || []; monthData.daily_logs = monthData.daily_logs || [];
+            }
+            if (entry.type === 'income') {
+                monthData.income.push({ name: entry.name, amount: round1(entry.amount), source: entry.source || 'manual', date: entry.date });
+            } else {
+                let row = monthData.variable.find(v => v.name === entry.category || v.name.includes(entry.category));
+                if (!row) { row = { name: entry.category, target: 0, actual: 0, logs: [] }; monthData.variable.push(row); }
+                row.actual = round1((row.actual || 0) + entry.amount);
+                row.logs = row.logs || []; row.logs.push({ amount: round1(entry.amount), store: entry.store || '', date: entry.date, source: entry.source || 'manual' });
+            }
+            await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: targetMonthStr, data: monthData });
+            if (cached) cached.data = monthData; else allUserMonthsData.push({ month_str: targetMonthStr, data: monthData });
+        }
         
         async function loadCurrentMonthData() {
             // FIX: כל טעינה חדשה מתחילה "לא מאושרת" — autosave חסום עד שנדע בוודאות מה יש בענן
@@ -3419,18 +3461,32 @@
         }
 
         // מילוי טופס הרישום מתוצאת זיהוי (AI או OCR)
-        function applyReceiptResult(aiData) {
+        async function applyReceiptResult(aiData) {
             if (!aiData || !aiData.amount) throw new Error("לא זוהה סכום בקבלה");
             const isIncome = aiData._scanMode === 'income';
             const conf = (typeof aiData.confidence === 'number') ? aiData.confidence : 1;
             const tag  = aiData.engine === 'ocr' ? (conf < 0.6 ? " 🔎 [OCR - בדוק סכום]" : " 🔎 [OCR]") : (conf < 0.6 ? " ⚠️ [בדוק - לא ודאי]" : " 🤖 [זיהוי AI]");
             const validDate = (aiData.date && /^\d{4}-\d{2}-\d{2}$/.test(aiData.date)) ? aiData.date : new Date().toISOString().split('T')[0];
 
+            // FIX: אם ה-AI/OCR זיהה תאריך אמיתי על הקבלה (לא נפילה ל"היום"), ובודקים שהוא לא שייך
+            // לחודש אחר מזה שמוצג כרגע — לשאול את המשתמש ולנתב לחודש הנכון, כדי לא "לזהם" את החודש
+            // הפעיל בהוצאה/הכנסה שבאמת שייכת לחודש שעבר (או הבא).
+            const dateWasExtracted = !!(aiData.date && /^\d{4}-\d{2}-\d{2}$/.test(aiData.date));
+            let receiptMonthStr = dateWasExtracted ? monthStrFromDateStr(validDate) : null;
+            let goToOtherMonth = false;
+            if (receiptMonthStr && !isSameMonthStr(receiptMonthStr, workingMonthStr)) {
+                goToOtherMonth = confirm(`📅 שים לב: התאריך בקבלה (${validDate}) שייך לחודש "${receiptMonthStr}", אבל כרגע מוצג "${workingMonthStr}".\n\nאישור = הוסף לחודש "${receiptMonthStr}" (הנכון לפי התאריך).\nביטול = הוסף בכל זאת לחודש הנוכחי.`);
+            }
+
             if (isIncome) {
                 // ===== מצב סליקה: הוסף ישירות להכנסות (מתויג כ-AI + תאריך, לצורך ייצוא) =====
                 const storeName = (aiData.store || 'לקוח');
-                appendIncomeRowUI(document.getElementById('incomeBody'), storeName, round1(aiData.amount), 'ai', validDate);
-                calculateAll(true);
+                if (goToOtherMonth) {
+                    await addEntryToOtherMonth(receiptMonthStr, { type: 'income', name: storeName, amount: round1(aiData.amount), source: 'ai', date: validDate });
+                } else {
+                    appendIncomeRowUI(document.getElementById('incomeBody'), storeName, round1(aiData.amount), 'ai', validDate);
+                    calculateAll(true);
+                }
                 // שמירה בהיסטוריה
                 if (window._pendingReceiptFingerprint) {
                     addToUploadHistory('receipt', window._pendingReceiptFileName || 'סליקה', window._pendingReceiptFingerprint, {
@@ -3440,11 +3496,26 @@
                 }
                 closeReceiptScanner();
                 document.getElementById('scannerLaser').style.display = 'none';
-                alert(`✅ הכנסה נוספה!\n${aiData.store || 'לקוח'}: ₪${round1(aiData.amount).toLocaleString()}\n${conf < 0.6 ? '\n⚠️ ביטחון נמוך — אנא ודא את הסכום שהתקבל.' : conf < 0.8 ? '\n💡 בדוק שהסכום תואם לאישור.' : ''}`);
+                const monthNote = goToOtherMonth ? `\n📅 נוסף לחודש "${receiptMonthStr}" (לפי תאריך הקבלה).` : '';
+                alert(`✅ הכנסה נוספה!\n${aiData.store || 'לקוח'}: ₪${round1(aiData.amount).toLocaleString()}${monthNote}\n${conf < 0.6 ? '\n⚠️ ביטחון נמוך — אנא ודא את הסכום שהתקבל.' : conf < 0.8 ? '\n💡 בדוק שהסכום תואם לאישור.' : ''}`);
                 return;
             }
 
             // ===== מצב רגיל: הוסף להוצאות =====
+            if (goToOtherMonth) {
+                await addEntryToOtherMonth(receiptMonthStr, { type: 'expense', category: aiData.category || "קניות כלליות", amount: round1(aiData.amount), store: aiData.store || "קבלה", date: validDate, source: 'ai' });
+                if (window._pendingReceiptFingerprint) {
+                    addToUploadHistory('receipt', window._pendingReceiptFileName || 'קבלה', window._pendingReceiptFingerprint, {
+                        store: aiData.store || '', amount: aiData.amount || 0, category: aiData.category || ''
+                    });
+                    window._pendingReceiptFingerprint = null;
+                }
+                closeReceiptScanner();
+                document.getElementById('scannerLaser').style.display = 'none';
+                alert(`✅ הוצאה נוספה!\n${aiData.store || 'קבלה'}: ₪${round1(aiData.amount).toLocaleString()}\n📅 נוסף לחודש "${receiptMonthStr}" (לפי תאריך הקבלה).`);
+                return;
+            }
+
             let varBody = document.getElementById('variableBody');
             let targetRow = Array.from(varBody.querySelectorAll('tr')).find(r => r.querySelector('.name-input').value.includes(aiData.category));
             if (!targetRow) {
@@ -3501,7 +3572,7 @@
                 }
                 // סמן מצב סריקה על התוצאה
                 if (aiData) aiData._scanMode = isIncome ? 'income' : 'expense';
-                applyReceiptResult(aiData);
+                await applyReceiptResult(aiData);
             } catch (err) {
                 console.error("Scan Error:", err);
                 document.getElementById('scannerLaser').style.display = 'none';
@@ -4281,14 +4352,24 @@
             XLSX.writeFile(wb, 'ייצוא_ייבואים_' + new Date().toLocaleDateString('he-IL').replace(/\//g,'-') + '.xlsx');
         }
 
-        function applyBankImport() {
-            const selected = parsedBankTransactions.filter(t => t.include); 
+        async function applyBankImport() {
+            const selected = parsedBankTransactions.filter(t => t.include);
             if (selected.length === 0) return alert("לא נבחרו שורות לייבוא.");
-            
-            let expCount = 0; let incCount = 0; let totalExp = 0;
+
+            // FIX: דפי בנק כוללים לרוב תנועות ממספר חודשים (למשל דוח "3 חודשים אחרונים"). קודם
+            // מפרידים כל תנועה לפי חודש_str האמיתי שלה לפי התאריך שבה — לא זורקים הכל אוטומטית
+            // לחודש שמוצג כרגע על המסך.
+            const sameMonth = []; const otherMonthsMap = {}; // monthStr -> array of tx
             selected.forEach(t => {
+                const txMonth = monthStrFromDateStr(t.date);
+                if (!txMonth || isSameMonthStr(txMonth, workingMonthStr)) { sameMonth.push(t); }
+                else { (otherMonthsMap[txMonth] = otherMonthsMap[txMonth] || []).push(t); }
+            });
+
+            let expCount = 0; let incCount = 0; let totalExp = 0;
+            sameMonth.forEach(t => {
                 if (t.type === 'income') {
-                    appendIncomeRowUI(document.getElementById('incomeBody'), t.store, t.amount);
+                    appendIncomeRowUI(document.getElementById('incomeBody'), t.store, t.amount, 'import', t.date);
                     incCount++;
                 } else {
                     addLogToCategory(t.category || "קניות כלליות", t.amount, t.store, t.date);
@@ -4296,7 +4377,21 @@
                     totalExp += t.amount || 0;
                 }
             });
-            calculateAll(true);
+            if (sameMonth.length) calculateAll(true);
+
+            // תנועות שמשוייכות לחודשים אחרים - נשמרות ישירות לענן, לחודש הנכון של כל אחת
+            let otherCount = 0;
+            for (const monthStr of Object.keys(otherMonthsMap)) {
+                for (const t of otherMonthsMap[monthStr]) {
+                    if (t.type === 'income') {
+                        await addEntryToOtherMonth(monthStr, { type: 'income', name: t.store, amount: t.amount, source: 'import', date: t.date });
+                    } else {
+                        await addEntryToOtherMonth(monthStr, { type: 'expense', category: t.category || "קניות כלליות", amount: t.amount, store: t.store, date: t.date, source: 'import' });
+                    }
+                    otherCount++;
+                }
+            }
+
             // שמירה בהיסטוריה — כולל הפרטים המלאים של התנועות לייצוא עתידי
             if (window._pendingBankFingerprint) {
                 addToUploadHistory('bank', window._pendingBankFileName || 'קובץ בנק', window._pendingBankFingerprint, {
@@ -4313,9 +4408,12 @@
                 });
                 window._pendingBankFingerprint = null;
             }
-            closeBankImportModal(); 
-            switchView('main'); 
-            alert(`הייבוא הושלם בהצלחה!\nנוספו:\n• ${expCount} הוצאות\n• ${incCount} הכנסות`);
+            closeBankImportModal();
+            switchView('main');
+            const otherMonthsList = Object.keys(otherMonthsMap);
+            const otherNote = otherMonthsList.length ? `\n\n📅 ${otherCount} תנועות שייכות לחודשים אחרים (לפי תאריך) ונוספו ישירות לחודשים: ${otherMonthsList.join(', ')}.` : '';
+            alert(`הייבוא הושלם בהצלחה!\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}`);
+            fetchAllUserMonths();
         }
 
         // --- דוחות והיסטוריה ---
