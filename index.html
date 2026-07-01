@@ -735,7 +735,7 @@
                 <!-- כפתור מעבר מהיר אישי ↔ עסקי — מופיע רק אם יש שני חשבונות -->
                 <button id="sidebarModeSwitchBtn" class="quick-mode-switch" onclick="quickSwitchMode()">💼 עבור לחשבון עסקי</button>
                 
-                <button class="btn-pro-scan" onclick="askCameraPermission('expense')">
+                <button class="btn-pro-scan" onclick="askCameraPermission('expense')" title="⚠️ עובד בקבלות פשוטות וברורות. קבלות מורכבות - הזן ידנית">
                     <span style="font-size:1.2rem;">📷</span> סרוק קבלה (AI)
                 </button>
                 <!-- כפתור סליקה — גלוי רק במצב עסקי -->
@@ -904,7 +904,7 @@
                         <button class="btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="exportCurrentMonthPDF()">📄 ייצא ל-PDF</button>
                         <button class="btn-outline" style="border-color:#10b981; color:#10b981;" onclick="exportCurrentMonthExcelLive()">📊 ייצא לאקסל</button>
                         <button class="btn-outline" style="border-color:#0ea5e9; color:#0ea5e9;" onclick="window.print()">🖨️ הדפס דוח</button>
-                        <button class="btn-outline" style="border-color:#64748b; color:#64748b;" onclick="openBackupModal()">💾 גיבוי / שחזור</button>
+                        <button class="btn-outline" style="border-color:#64748b; color:#64748b; display:none;" onclick="openBackupModal()">💾 גיבוי / שחזור</button>
                         <button class="btn-outline" style="border-color:#6d28d9; color:#6d28d9;" onclick="openReportsModal()">📑 דוח חודשים נרחב</button>
                     </div>
                     <h3 style="font-size: 1.4rem; margin-bottom: 0.4rem;">סקירה חודשית: הכנסות מול הוצאות</h3>
@@ -1513,12 +1513,7 @@
         </div>
     </div>
 
-    <button class="ai-chat-btn" id="aiChatToggleBtn" onclick="toggleAiChat()" style="display:none;">🤖</button>
-    <div class="ai-chat-window" id="aiChatBox">
-        <div class="ai-header"><span>יועץ פיננסי חכם (AI)</span><span style="cursor:pointer;" onclick="toggleAiChat()">✕</span></div>
-        <div class="ai-body" id="aiChatBody"><div class="ai-msg ai-msg-bot">היי! אני היועץ הפיננסי שלך מבוסס מודל Google Gemini. שאל אותי חופשי כל שאלה!</div></div>
-        <div class="ai-footer"><input type="text" id="aiUserInput" class="ai-input" placeholder="שאל אותי משהו..." onkeypress="handleAiKeyPress(event)"><button class="ai-send-btn" onclick="sendAiMessageReal()">➔</button></div>
-    </div>
+    <!-- בוט AI הוסר - לא שימושי בלי חיבור שרת מלא -->
 
     <script>
         // ==========================================
@@ -1556,8 +1551,8 @@
         // מפתח ה-API של המערכת (גוגל AI)
         // ==========================================
         // אם תגדיר כתובת proxy (Cloudflare Worker) המפתח יישאר בצד השרת ולא ייחשף בקוד. אם ריק - המפתח משמש ישירות.
-        const GEMINI_PROXY_URL = "https://budget-ai-proxy.danielhajbi13.workers.dev"; // ה-proxy שלך (Cloudflare Worker) - המפתח מוסתר בצד השרת
-        const GEMINI_API_KEY = ""; // אם תרצה דיוק AI גבוה יותר, הדבק כאן מפתח תקין מ-aistudio.google.com (מתחיל ב-AIza). לא חובה - האפליקציה עובדת גם בלי.
+        const GEMINI_PROXY_URL = "https://budget-ai-proxy.danielhajbi13.workers.dev"; // ה-proxy שלך (Cloudflare Worker) - המפתח מוסתר בצד השרת, זה מה שבשימוש בפועל
+        const GEMINI_API_KEY = ""; // לא נחוץ כשיש proxy — לא ממלאים כאן מפתח אמיתי, זה ייחשף לכולם בקוד המקור
         const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
         // ===== עיגול אחיד לספרה עשרונית אחת (מונע "מלא אפסים" ומספרים ארוכים מה-AI) =====
@@ -4747,31 +4742,42 @@
 
         // ====== בניית גיליון אקסל מרשימת שורות ======
         function _buildReceiptSheet(rows, title, userName) {
+            // ===== גיליון עיקרי (פירוט) =====
             const header = [
-                ['🧾 ' + title, '', '', '', '', ''],
-                ['שם: ' + userName, '', 'תאריך הפקה: ' + new Date().toLocaleDateString('he-IL'), '', '', ''],
+                ['🧾 דוח הוצאות וקבלות', '', '', '', '', ''],
+                [title, '', '', '', '', ''],
+                ['שם משתמש: ' + userName, '', 'תאריך הפקה: ' + new Date().toLocaleDateString('he-IL'), '', '', ''],
+                ['סה"כ רשומות: ' + rows.length, '', 'סה"כ סכום: ₪' + rows.reduce(function(s,r){ return s + (r.amount||0); }, 0).toLocaleString(), '', '', ''],
                 [],
                 ['חודש', 'קטגוריה', 'בית עסק / פירוט', 'סכום (₪)', 'תאריך', 'מקור']
             ];
+
             let prev = null; const data = [];
             rows.forEach(function(r) {
                 if (r.month !== prev) { if (prev !== null) data.push([]); prev = r.month; }
                 data.push([r.month, r.category, r.store, r.amount, r.date, r.srcLabel]);
             });
-            const total = rows.reduce(function(s,r){ return s + (r.amount||0); }, 0);
-            data.push([], ['סה"כ: ' + rows.length + ' רשומות', '', '', total, '', '']);
 
-            // גיליון סיכום לפי קטגוריה
+            const total = rows.reduce(function(s,r){ return s + (r.amount||0); }, 0);
+            data.push([], ['סה"כ הוצאות:', '', '', total, '', '']);
+
+            const ws = XLSX.utils.aoa_to_sheet([...header, ...data]);
+            ws['!cols'] = [{ wch:14 },{ wch:18 },{ wch:28 },{ wch:13 },{ wch:14 },{ wch:12 }];
+
+            // ===== גיליון סיכום לפי קטגוריה =====
             const byCat = {};
             rows.forEach(function(r){ if (!byCat[r.category]) byCat[r.category] = 0; byCat[r.category] += r.amount; });
-            const sumRows = [['קטגוריה', 'סה"כ (₪)']];
+            const sumRows = [
+                ['סיכום לפי קטגוריה', ''],
+                [],
+                ['קטגוריה', 'סה"כ (₪)']
+            ];
             Object.keys(byCat).sort(function(a,b){ return byCat[b]-byCat[a]; }).forEach(function(c){ sumRows.push([c, byCat[c]]); });
             sumRows.push([], ['סה"כ כללי', total]);
 
-            const ws = XLSX.utils.aoa_to_sheet([...header, ...data]);
-            ws['!cols'] = [{ wch:22 },{ wch:22 },{ wch:32 },{ wch:13 },{ wch:14 },{ wch:12 }];
             const ws2 = XLSX.utils.aoa_to_sheet(sumRows);
             ws2['!cols'] = [{ wch:28 },{ wch:14 }];
+
             return { ws, ws2 };
         }
 
