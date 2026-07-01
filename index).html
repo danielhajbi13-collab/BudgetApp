@@ -2868,7 +2868,7 @@
             const inc = document.getElementById('incomeBody'); const fix = document.getElementById('fixedBody'); const varb = document.getElementById('variableBody'); 
             inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = ''; 
             // FIX: First try exact match, then try normalized (handle Safari comma vs Chrome no-comma)
-            let { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', workingMonthStr);
+            let { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', workingMonthStr).order('id', { ascending: false }).limit(1);
             if (!data || data.length === 0) {
                 const { data: allM } = await _supabase.from('month_data').select('month_str, data').eq('user_id', tempUserSession.user_id);
                 const normCur = workingMonthStr.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -2900,19 +2900,29 @@
             }
             const mirrorHasContent = mirror && mirror.data && ((mirror.data.income||[]).length || (mirror.data.fixed||[]).length || (mirror.data.variable||[]).length);
 
-            if (data && data.length > 0) { 
-                const d = data[0].data; dailyExpenseLogs = d.daily_logs || []; 
-                d.income.forEach(i => appendIncomeRowUI(inc, i.name, i.amount)); 
-                d.fixed.forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs)); 
-                d.variable.forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs)); 
+            // FIX: אם הגיבוי המקומי מסומן synced:false — כלומר יש שינוי אחרון שמעולם לא אושר כנשמר בענן —
+            // מעדיפים אותו תמיד, גם אם בענן כבר קיימת שורה (ישנה יותר) לחודש הזה. בלי זה, שמירה שנכשלה
+            // בשקט (או נקטעה כי האפליקציה נסגרה) הייתה נדרסת ע"י הגרסה הישנה מהענן בכניסה הבאה — וזה בדיוק
+            // מה שגרם לתחושת "הנתונים נעלמו אחרי כמה ימים".
+            if (mirrorHasContent && mirror.synced === false) {
+                const d = mirror.data; dailyExpenseLogs = d.daily_logs || [];
+                (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
+                (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
+                (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
+                setTimeout(() => { saveDataToCloud().catch(() => {}); }, 800);
+            } else if (data && data.length > 0) {
+                const d = data[0].data; dailyExpenseLogs = d.daily_logs || [];
+                d.income.forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
+                d.fixed.forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
+                d.variable.forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
             } else if (mirrorHasContent) {
                 // שחזור מהגיבוי המקומי ושמירה חוזרת לענן
                 const d = mirror.data; dailyExpenseLogs = d.daily_logs || [];
                 (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
                 (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
                 (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
-                setTimeout(() => { try { saveDataToCloud(); } catch (e) {} }, 800);
-            } else { 
+                setTimeout(() => { saveDataToCloud().catch(() => {}); }, 800);
+            } else {
                 dailyExpenseLogs = [];
                 const isBiz = tempUserSession && tempUserSession._bizMode;
                 defaultIncomes.forEach(i => appendIncomeRowUI(inc, i.name, i.amount)); 
@@ -3144,20 +3154,31 @@
             const totalExp = round1(processExpenses('fixedBody', 'sumFixedTarget', 'sumFixedActual') + processExpenses('variableBody', 'sumVarTarget', 'sumVarActual')); 
             document.getElementById('totalIncomeTxt').innerText = `₪${fmtNum(incomeSum)}`; document.getElementById('totalExpensesTxt').innerText = `₪${fmtNum(totalExp)}`; document.getElementById('balanceTxt').innerText = `₪${fmtNum(incomeSum - totalExp)}`; document.getElementById('balanceTxt').style.color = (incomeSum - totalExp) < 0 ? 'var(--danger)' : 'var(--primary)'; 
             const statsSec = document.getElementById('statisticsSection'); if (statsSec && statsSec.style.display !== 'none') { renderMonthlyOverviewChart(incomeSum, totalExp); renderStatisticsChart(); }
-            if (shouldSave && tempUserSession) { document.getElementById('saveStatusIndicator').style.display = 'none'; writeLocalMirror(); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => { saveDataToCloud(); }, 1500); } 
+            if (shouldSave && tempUserSession) { document.getElementById('saveStatusIndicator').style.display = 'none'; writeLocalMirror(); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => { saveDataToCloud().catch(() => {}); }, 600); }
         }
 
         // ===== גיבוי מקומי מיידי – מונע אובדן נתונים ביציאה/סגירה לפני שמירה לענן =====
         function localMirrorKey() { return tempUserSession ? ('mirror_' + tempUserSession.user_id + '_' + workingMonthStr) : null; }
+        // FIX: כל גיבוי מקומי מסומן כ"טרם אושר שנשמר בענן" (synced:false) עד שמגיע אישור מפורש מ-saveDataToCloud.
+        // כך אם השמירה לענן נכשלת/מתבטלת (למשל בגלל שהאפליקציה נסגרה), בפעם הבאה שהמשתמש נכנס
+        // המערכת יודעת שהגרסה המקומית עדכנית יותר מהענן ולא "מאבדת" אותה בטעות.
         function writeLocalMirror() {
             const key = localMirrorKey(); if (!key) return;
-            try { localStorage.setItem(key, JSON.stringify({ data: getLiveSnapshot(), savedAt: Date.now() })); } catch (e) {}
+            try { localStorage.setItem(key, JSON.stringify({ data: getLiveSnapshot(), savedAt: Date.now(), synced: false })); } catch (e) {}
+        }
+        function markMirrorSynced() {
+            const key = localMirrorKey(); if (!key) return;
+            try {
+                const raw = localStorage.getItem(key); if (!raw) return;
+                const obj = JSON.parse(raw); obj.synced = true;
+                localStorage.setItem(key, JSON.stringify(obj));
+            } catch (e) {}
         }
         function flushPendingSave() {
             if (!tempUserSession) return;
             writeLocalMirror();                 // גיבוי מקומי מיידי (סינכרוני, תמיד מצליח)
             clearTimeout(autoSaveTimer);
-            try { saveDataToCloud(); } catch (e) {}  // ניסיון שמירה לענן
+            saveDataToCloud(true).catch(() => {});   // ניסיון שמירה לענן עם keepalive - שורד גם אם הדף נסגר/עובר לרקע מיד אחרי
         }
         // שמירה אוטומטית כשהמשתמש עוזב/ממזער/סוגר את האפליקציה
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushPendingSave(); });
@@ -3169,19 +3190,53 @@
             if (tempUserSession && workingMonthStr) {
                 writeLocalMirror();
                 clearTimeout(autoSaveTimer);
-                autoSaveTimer = setTimeout(function() { try { saveDataToCloud(); } catch(e) {} }, 800);
+                autoSaveTimer = setTimeout(function() { saveDataToCloud().catch(function(){}); }, 800);
             }
         }, 45000);
 
-        async function saveDataToCloud() { 
-            if (!tempUserSession) return; 
-            const payload = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs }; 
-            document.querySelectorAll('#incomeBody tr').forEach(row => { payload.income.push({ name: row.querySelector('.name-input').value, amount: Number(row.querySelector('.val-input').value) || 0 }); }); 
-            const extractExpenses = (tbodyId, targetArr) => { document.querySelectorAll(`#${tbodyId} tr`).forEach(row => { targetArr.push({ name: row.querySelector('.name-input').value, target: Number(row.querySelector('.target-val').value) || 0, actual: Number(row.querySelector('.actual-val').value) || 0, logs: JSON.parse(row.getAttribute('data-logs') || "[]") }); }); }; 
-            extractExpenses('fixedBody', payload.fixed); extractExpenses('variableBody', payload.variable); 
-            await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: workingMonthStr, data: payload }); 
-            const ind = document.getElementById('saveStatusIndicator'); ind.style.display = 'inline-block'; setTimeout(() => { ind.style.display = 'none'; }, 2000); 
-            fetchAllUserMonths(); 
+        // FIX: מונה ניסיונות חוזרים לשמירה בענן — אם השמירה נכשלת (רשת/שרת), ננסה שוב אוטומטית
+        // עם השהיה גוברת, במקום להניח בשקט שהשמירה הצליחה (זה מה שגרם לאובדן נתונים בעבר).
+        let _cloudSaveRetryTimer = null;
+        let _cloudSaveRetryCount = 0;
+
+        // FIX: כשהאפליקציה נסגרת/עוברת לרקע (closingSave=true) מנסים לשמור עם keepalive כדי שהדפדפן
+        // ישלים את הבקשה גם אחרי שהדף כבר לא פעיל. keepalive מוגבל ל-~64KB לבקשה, לכן משתמשים בו
+        // רק כשהגוף קטן מספיק — אחרת חוזרים לשמירה הרגילה (וממילא הגיבוי המקומי כבר נשמר).
+        async function saveDataToCloud(closingSave) {
+            if (!tempUserSession) return;
+            const payload = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs };
+            document.querySelectorAll('#incomeBody tr').forEach(row => { payload.income.push({ name: row.querySelector('.name-input').value, amount: Number(row.querySelector('.val-input').value) || 0 }); });
+            const extractExpenses = (tbodyId, targetArr) => { document.querySelectorAll(`#${tbodyId} tr`).forEach(row => { targetArr.push({ name: row.querySelector('.name-input').value, target: Number(row.querySelector('.target-val').value) || 0, actual: Number(row.querySelector('.actual-val').value) || 0, logs: JSON.parse(row.getAttribute('data-logs') || "[]") }); }); };
+            extractExpenses('fixedBody', payload.fixed); extractExpenses('variableBody', payload.variable);
+            const ind = document.getElementById('saveStatusIndicator');
+            const record = { user_id: tempUserSession.user_id, month_str: workingMonthStr, data: payload };
+            let error = null;
+            const bodyStr = closingSave ? JSON.stringify(record) : null;
+            if (closingSave && bodyStr && bodyStr.length < 60000) {
+                try {
+                    const resp = await fetch(supabaseUrl + '/rest/v1/month_data?on_conflict=user_id,month_str', {
+                        method: 'POST', keepalive: true,
+                        headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey, 'Authorization': 'Bearer ' + supabaseKey, 'Prefer': 'resolution=merge-duplicates' },
+                        body: bodyStr
+                    });
+                    if (!resp.ok) error = new Error('HTTP ' + resp.status);
+                } catch (e) { error = e; }
+            } else {
+                ({ error } = await _supabase.from('month_data').upsert(record));
+            }
+            if (error) {
+                // FIX: השמירה נכשלה — לא מציגים "נשמר", לא מסמנים synced, ומתזמנים ניסיון חוזר אוטומטי
+                console.error('שמירה לענן נכשלה:', (error && error.message) || error);
+                if (ind) { ind.style.display = 'inline-block'; ind.style.color = '#dc2626'; ind.innerText = '⚠ לא נשמר — מנסה שוב...'; }
+                clearTimeout(_cloudSaveRetryTimer);
+                _cloudSaveRetryCount = Math.min(_cloudSaveRetryCount + 1, 5);
+                _cloudSaveRetryTimer = setTimeout(() => { saveDataToCloud().catch(() => {}); }, 3000 * _cloudSaveRetryCount);
+                return;
+            }
+            _cloudSaveRetryCount = 0;
+            markMirrorSynced(); // הענן אישר את השמירה — הגיבוי המקומי כבר לא "ממתין לאישור"
+            if (ind) { ind.style.color = 'var(--success)'; ind.innerText = '✓ ענן מעודכן'; ind.style.display = 'inline-block'; setTimeout(() => { ind.style.display = 'none'; }, 2000); }
+            fetchAllUserMonths();
         }
 
         // --- AI צילום ויועץ ---
