@@ -107,7 +107,10 @@
         .history-item { background: #f8fafc; padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
         .history-item:hover { border-color: var(--border); background: var(--surface); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
-        .content-area { display: flex; flex-direction: column; gap: 1.5rem; }
+        /* FIX: min-width:0 מונע "grid blowout" — בלי זה, ה-1fr של main-layout מתעקש להיות רחב לפחות
+           כמו התוכן הפנימי (כמו table עם min-width:600px), וכל העמוד נדחף לגלילה אופקית בנייד גם
+           כשה-sidebar כבר מוסתר. table-responsive-wrapper אמור להיות היחיד שגולל אופקית, לא כל העמוד. */
+        .content-area { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 1.5rem 2rem; border-radius: 24px; box-shadow: var(--shadow); flex-wrap: wrap; gap: 1rem; border: 1px solid rgba(255,255,255,0.8); }
         .greeting h2 { font-size: 1.8rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; }
         .greeting p { color: var(--text-light); font-size: 0.95rem; margin-top: 4px; }
@@ -333,40 +336,65 @@
         }
 
         /* ===================== תיקוני מצב לילה ===================== */
-        /* רקעים בהירים שנכתבו ישירות בקוד -> משטחים כהים, וטקסט בהיר וקריא */
+        /* רקעים בהירים שנכתבו ישירות בקוד -> משטחים כהים, וטקסט בהיר וקריא.
+           FIX: לכל צבע יש גם selector לפי rgb() — כי ברגע שקוד ה-JS נוגע ב-element.style של אלמנט
+           כלשהו (למשל el.style.display='block', דבר נפוץ מאוד באפליקציה הזו להצגת/הסתרת אזהרות ותגיות),
+           הדפדפן משכתב את כל תכונת ה-style ומנרמל צבעי hex ל-rgb(...) — מה שהיה שובר את ההתאמה
+           ומשאיר טקסט בהיר על רקע צהוב בהיר (בלתי קריא) גם אחרי שהאלמנט "כוסה" ברשימה. */
         html[data-theme="dark"] [style*="background:#fff"],
         html[data-theme="dark"] [style*="background: #fff"],
         html[data-theme="dark"] [style*="background:#ffffff"],
         html[data-theme="dark"] [style*="background: #ffffff"],
         html[data-theme="dark"] [style*="background:white"],
         html[data-theme="dark"] [style*="background: white"],
+        html[data-theme="dark"] [style*="background: rgb(255, 255, 255)"],
         html[data-theme="dark"] [style*="background:#f8fafc"],
         html[data-theme="dark"] [style*="background: #f8fafc"],
+        html[data-theme="dark"] [style*="background: rgb(248, 250, 252)"],
         html[data-theme="dark"] [style*="background:#f9fafb"],
         html[data-theme="dark"] [style*="background: #f9fafb"],
+        html[data-theme="dark"] [style*="background: rgb(249, 250, 251)"],
         html[data-theme="dark"] [style*="background:#f4f7fb"],
         html[data-theme="dark"] [style*="background: #f4f7fb"],
+        html[data-theme="dark"] [style*="background: rgb(244, 247, 251)"],
         html[data-theme="dark"] [style*="background:#f1f5f9"],
-        html[data-theme="dark"] [style*="background: #f1f5f9"] {
+        html[data-theme="dark"] [style*="background: #f1f5f9"],
+        html[data-theme="dark"] [style*="background: rgb(241, 245, 249)"] {
             background-color: var(--surface) !important; background-image: none !important; color: var(--text-dark) !important;
         }
         /* גוונים כחולים */
         html[data-theme="dark"] [style*="#eff6ff"],
-        html[data-theme="dark"] [style*="#dbeafe"] { background-color: #16213b !important; background-image: none !important; border-color: #28344a !important; }
+        html[data-theme="dark"] [style*="#dbeafe"],
+        html[data-theme="dark"] [style*="rgb(239, 246, 255)"],
+        html[data-theme="dark"] [style*="rgb(219, 234, 254)"] { background-color: #16213b !important; background-image: none !important; border-color: #28344a !important; }
         /* גוונים סגולים */
         html[data-theme="dark"] [style*="#faf5ff"],
-        html[data-theme="dark"] [style*="#f3e8ff"] { background-color: #241c3a !important; background-image: none !important; border-color: #3b2f5c !important; }
+        html[data-theme="dark"] [style*="#f3e8ff"],
+        html[data-theme="dark"] [style*="rgb(250, 245, 255)"],
+        html[data-theme="dark"] [style*="rgb(243, 232, 255)"] { background-color: #241c3a !important; background-image: none !important; border-color: #3b2f5c !important; }
         /* גוונים כתומים/זהב */
         html[data-theme="dark"] [style*="#fffbeb"],
         html[data-theme="dark"] [style*="#fef9c3"],
+        html[data-theme="dark"] [style*="#fef3c7"],
+        html[data-theme="dark"] [style*="#fefce8"],
+        html[data-theme="dark"] [style*="#fef9ea"],
+        html[data-theme="dark"] [style*="rgb(255, 251, 235)"],
+        html[data-theme="dark"] [style*="rgb(254, 249, 195)"],
+        html[data-theme="dark"] [style*="rgb(254, 243, 199)"],
+        html[data-theme="dark"] [style*="rgb(254, 252, 232)"],
+        html[data-theme="dark"] [style*="rgb(254, 249, 234)"],
         html[data-theme="dark"] [style*="var(--gold-soft)"],
-        html[data-theme="dark"] [style*="#fff7ed"] { background-color: #2a2410 !important; background-image: none !important; border-color: #4a3d18 !important; }
+        html[data-theme="dark"] [style*="#fff7ed"],
+        html[data-theme="dark"] [style*="rgb(255, 247, 237)"] { background-color: #2a2410 !important; background-image: none !important; border-color: #4a3d18 !important; }
         /* גוונים ירוקים */
-        html[data-theme="dark"] [style*="#dcfce7"] { background-color: #11261d !important; background-image: none !important; border-color: #1f4736 !important; }
+        html[data-theme="dark"] [style*="#dcfce7"],
+        html[data-theme="dark"] [style*="rgb(220, 252, 231)"] { background-color: #11261d !important; background-image: none !important; border-color: #1f4736 !important; }
         /* גוונים אדומים */
         html[data-theme="dark"] [style*="background:#fee2e2"],
         html[data-theme="dark"] [style*="background: #fee2e2"],
-        html[data-theme="dark"] [style*="background:#fca5a5"] { background-color: #2c1618 !important; background-image: none !important; }
+        html[data-theme="dark"] [style*="background: rgb(254, 226, 226)"],
+        html[data-theme="dark"] [style*="background:#fca5a5"],
+        html[data-theme="dark"] [style*="background: rgb(252, 165, 165)"] { background-color: #2c1618 !important; background-image: none !important; }
 
         /* רקעים בהירים שהוגדרו במחלקות CSS (לא ב-style ישיר) -> מונע כתב בהיר על רקע בהיר במצב לילה */
         html[data-theme="dark"] .history-item,
@@ -397,15 +425,23 @@
         html[data-theme="dark"] input::placeholder,
         html[data-theme="dark"] textarea::placeholder { color: var(--text-light); }
 
-        /* טקסט כהה שנכתב ישירות -> בהיר במצב לילה */
+        /* טקסט כהה שנכתב ישירות -> בהיר במצב לילה (גם hex וגם rgb() המנורמל ע"י הדפדפן — ר' הערה למעלה) */
         html[data-theme="dark"] [style*="color:#92400e"],
         html[data-theme="dark"] [style*="color:#b45309"],
         html[data-theme="dark"] [style*="color:#854d0e"],
         html[data-theme="dark"] [style*="color:#9a7b2e"],
         html[data-theme="dark"] [style*="color:#7a5f23"],
         html[data-theme="dark"] [style*="color:#9a3412"],
-        html[data-theme="dark"] [style*="color:#1e293b"] { color: #e8edf5 !important; }
-        html[data-theme="dark"] [style*="color:#6d28d9"] { color: #c4b5fd !important; }
+        html[data-theme="dark"] [style*="color:#1e293b"],
+        html[data-theme="dark"] [style*="color: rgb(146, 64, 14)"],
+        html[data-theme="dark"] [style*="color: rgb(180, 83, 9)"],
+        html[data-theme="dark"] [style*="color: rgb(133, 77, 14)"],
+        html[data-theme="dark"] [style*="color: rgb(154, 123, 46)"],
+        html[data-theme="dark"] [style*="color: rgb(122, 95, 35)"],
+        html[data-theme="dark"] [style*="color: rgb(154, 52, 18)"],
+        html[data-theme="dark"] [style*="color: rgb(30, 41, 59)"] { color: #e8edf5 !important; }
+        html[data-theme="dark"] [style*="color:#6d28d9"],
+        html[data-theme="dark"] [style*="color: rgb(109, 40, 217)"] { color: #c4b5fd !important; }
 
         /* רכיבים מבוססי-מחלקה */
         html[data-theme="dark"] .add-row { background: var(--surface-2) !important; border-color: var(--border); }
@@ -849,6 +885,12 @@
                         <div id="annualSavingsBox"><p style="color:var(--text-light); font-size:0.9rem;">טוען...</p></div>
                     </div>
 
+                    <div style="background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:1.5rem; border:1px solid var(--border); margin-bottom:1.5rem;">
+                        <h3 style="font-size:1.3rem; margin-top:0; margin-bottom:1rem;">📈 ניתוח והשוואה חודשים</h3>
+                        <p style="color:var(--text-light); font-size:0.82rem; margin-bottom:1rem;">השוואת הכנסות, הוצאות וחיסכון בין החודשים האחרונים + תובנות חכמות</p>
+                        <div id="monthlyComparisonSection" style="width:100%; max-height:600px; overflow-y:auto;"><p style="color:var(--text-light); text-align:center;">טוען נתונים...</p></div>
+                    </div>
+
                     <h3 style="font-size: 1.4rem; margin-bottom: 0.8rem;">סיכום וייצוא החודש הנוכחי</h3>
                     <div class="stats-export-bar">
                         <button class="btn-outline" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openInsightsModal()">🧠 תובנות חכמות (AI)</button>
@@ -1005,6 +1047,11 @@
                             <input type="checkbox" id="expSrcManual" checked style="width:18px;height:18px;accent-color:#6366f1;" onchange="updateExportPreview()">
                             <span>✏️ הוצאות ידניות</span>
                             <span id="expSrcManualCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
+                            <input type="checkbox" id="expSrcIncome" checked style="width:18px;height:18px;accent-color:#c9a84c;" onchange="updateExportPreview()">
+                            <span>💳 הכנסות עסקיות (סליקה)</span>
+                            <span id="expSrcIncomeCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
                         </label>
                     </div>
                 </div>
@@ -1444,6 +1491,7 @@
             <div class="modal-footer">
                 <button class="btn-outline" onclick="closeHistoryModal()">סגור</button>
                 <button class="btn-outline" style="border-color:#0ea5e9; color:#0ea5e9;" id="modalPrintPdfBtn">🖨️ הדפס</button>
+                <button class="btn-outline" style="border-color:#c9a84c; color:#b08535;" id="modalEditMonthBtn">✏️ ערוך חודש זה</button>
                 <button class="btn-primary" id="modalExportPdfBtn" style="margin-top:0; width:auto;">📄 הורד PDF</button>
             </div>
         </div>
@@ -1579,6 +1627,13 @@
         let _importCardSource = '';
 
         let workingMonthStr = ""; let tempUserSession = null; let tempRecoveryData = null; let autoSaveTimer; let dailyExpenseLogs = []; let expenseChartInstance = null; let monthlyChartInstance = null; let activeRowForLog = null; let currentReceiptBase64 = null; let currentReceiptMime = "image/jpeg"; let parsedBankTransactions = []; let allUserMonthsData = []; let isAdminMode = false; let isImpersonating = false;
+        // FIX: מונע שמירה אוטומטית (ומחיקת נתונים אמיתיים בענן) לפני שאישרנו בוודאות מה מצב הענן
+        // עבור החודש הנוכחי — ראה loadCurrentMonthData / calculateAll / _periodicSaveTimer.
+        let _cloudLoadConfirmed = false;
+        // עריכת חודשים קודמים: אם לא null — אנחנו כרגע "בתוך" עריכה של חודש שעבר, וזה החודש
+        // שאליו נחזור בלחיצה על "חזרה לחודש הנוכחי" (ר' editPastMonth / returnToCurrentMonth).
+        let _editingPastMonth = null;
+        let _returnToMonthStr = null;
 
         window.onload = function() {
             applyStoredTheme();
@@ -2387,6 +2442,9 @@
         }
 
         function loginAsUser(userObj, bizMode) {
+            // כניסה/מעבר חשבון תמיד מתחילים על החודש הנוכחי האמיתי, לא בתוך מצב עריכת חודש קודם
+            _editingPastMonth = null; _returnToMonthStr = null;
+            hidePastMonthEditBanner();
             // isBiz: אם bizMode הועבר מפורשות (true/false) — השתמש בו.
             // אחרת (reload מ-session) — השתמש ב-_bizMode השמור ב-session.
             const isBiz = (typeof bizMode === 'boolean') ? bizMode : !!(userObj._bizMode);
@@ -2847,7 +2905,7 @@
                 document.getElementById('mainTablesSection').style.display = 'block'; 
             } else if (viewName === 'stats') { 
                 document.getElementById('btnViewStats').classList.add('active'); document.getElementById('mobBtnStats').classList.add('active');
-                document.getElementById('statisticsSection').style.display = 'block'; renderMonthlyOverviewChart(); renderStatisticsChart(); renderAnnualSavings(); 
+                document.getElementById('statisticsSection').style.display = 'block'; renderMonthlyOverviewChart(); renderStatisticsChart(); renderAnnualSavings(); renderMonthlyComparisonChart(); 
             } else if (viewName === 'about') {
                 document.getElementById('btnViewAbout')?.classList.add('active'); document.getElementById('mobBtnAbout')?.classList.add('active');
                 document.getElementById('aboutSection').style.display = 'block';
@@ -2864,19 +2922,31 @@
             document.getElementById('currentMonthTxt').innerText = workingMonthStr;
         }
         
-        async function loadCurrentMonthData() { 
-            const inc = document.getElementById('incomeBody'); const fix = document.getElementById('fixedBody'); const varb = document.getElementById('variableBody'); 
-            inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = ''; 
+        async function loadCurrentMonthData() {
+            // FIX: כל טעינה חדשה מתחילה "לא מאושרת" — autosave חסום עד שנדע בוודאות מה יש בענן
+            // (ר' calculateAll ו-_periodicSaveTimer). זה מונע מצב שבו כשל רשת חד-פעמי גורם למסך ריק
+            // שנשמר אוטומטית ודורס נתונים אמיתיים.
+            _cloudLoadConfirmed = false;
+            const inc = document.getElementById('incomeBody'); const fix = document.getElementById('fixedBody'); const varb = document.getElementById('variableBody');
+            inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = '';
             // FIX: First try exact match, then try normalized (handle Safari comma vs Chrome no-comma)
-            let { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', workingMonthStr).order('id', { ascending: false }).limit(1);
-            if (!data || data.length === 0) {
-                const { data: allM } = await _supabase.from('month_data').select('month_str, data').eq('user_id', tempUserSession.user_id);
-                const normCur = workingMonthStr.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
-                const match = (allM || []).find(function(m) { return m.month_str.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase() === normCur; });
-                if (match) {
-                    data = [{ data: match.data }];
-                    // Migrate: save under the normalized key
-                    setTimeout(async function() { try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: workingMonthStr, data: match.data }); } catch(e) {} }, 1000);
+            // FIX: הייתה כאן .order('id', ...) — בטבלת month_data אין עמודה בשם id, אז זה גרם לשגיאת
+            // Postgres (42703) בכל טעינה, בלי יוצא מן הכלל. לפני התיקון בקובץ הזה השגיאה הזו הושתקה
+            // בשקט (ה-error לא נבדק), אז זה "עבד במקרה" רק דרך שאילתת ה-fallback המנורמלת למטה. יש כבר
+            // אילוץ ייחודיות על (user_id, month_str) — ר' upsert עם on_conflict=user_id,month_str —
+            // אז ממילא תמיד יש לכל היותר שורה אחת תואמת, אין צורך ב-order/limit בכלל.
+            let { data, error: fetchErr } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', workingMonthStr);
+            if (!fetchErr && (!data || data.length === 0)) {
+                const { data: allM, error: allMErr } = await _supabase.from('month_data').select('month_str, data').eq('user_id', tempUserSession.user_id);
+                if (allMErr) { fetchErr = allMErr; }
+                else {
+                    const normCur = workingMonthStr.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+                    const match = (allM || []).find(function(m) { return m.month_str.replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase() === normCur; });
+                    if (match) {
+                        data = [{ data: match.data }];
+                        // Migrate: save under the normalized key
+                        setTimeout(async function() { try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: workingMonthStr, data: match.data }); } catch(e) {} }, 1000);
+                    }
                 }
             }
             // גיבוי מקומי – משמש כשהענן ריק
@@ -2906,31 +2976,46 @@
             // מה שגרם לתחושת "הנתונים נעלמו אחרי כמה ימים".
             if (mirrorHasContent && mirror.synced === false) {
                 const d = mirror.data; dailyExpenseLogs = d.daily_logs || [];
-                (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
+                (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount, i.source, i.date));
                 (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
                 (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
+                _cloudLoadConfirmed = true;
                 setTimeout(() => { saveDataToCloud().catch(() => {}); }, 800);
             } else if (data && data.length > 0) {
                 const d = data[0].data; dailyExpenseLogs = d.daily_logs || [];
-                d.income.forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
+                d.income.forEach(i => appendIncomeRowUI(inc, i.name, i.amount, i.source, i.date));
                 d.fixed.forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
                 d.variable.forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
+                _cloudLoadConfirmed = true;
             } else if (mirrorHasContent) {
                 // שחזור מהגיבוי המקומי ושמירה חוזרת לענן
                 const d = mirror.data; dailyExpenseLogs = d.daily_logs || [];
-                (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
+                (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount, i.source, i.date));
                 (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
                 (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
+                _cloudLoadConfirmed = true;
                 setTimeout(() => { saveDataToCloud().catch(() => {}); }, 800);
+            } else if (fetchErr) {
+                // FIX: הטעינה מהענן נכשלה (רשת/שרת) ואין גם גיבוי מקומי להישען עליו — זה בדיוק המצב
+                // המסוכן (למשל אחרי שבוע ב-iPhone שבו Safari מוחק את ה-localStorage). לא מציירים מסך
+                // ריק (זה היה נשמר אוטומטית תוך 45 שניות ומוחק את הנתונים האמיתיים!) — משאירים
+                // _cloudLoadConfirmed=false (autosave חסום) ומנסים שוב בעוד כמה שניות.
+                dailyExpenseLogs = [];
+                const ind = document.getElementById('saveStatusIndicator');
+                if (ind) { ind.style.display = 'inline-block'; ind.style.color = 'var(--text-light)'; ind.innerText = '⏳ טוען מהענן... נסה שוב בעוד רגע'; }
+                setTimeout(() => { loadCurrentMonthData(); }, 4000);
+                return;
             } else {
                 dailyExpenseLogs = [];
                 const isBiz = tempUserSession && tempUserSession._bizMode;
-                defaultIncomes.forEach(i => appendIncomeRowUI(inc, i.name, i.amount)); 
+                defaultIncomes.forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
                 if (!isBiz) { defaultFixed.forEach(f => appendExpenseRowUI(fix, f.name, f.target, f.actual, 'fixed', [])); }
                 const varDefaults = isBiz ? defaultBusinessVariable : defaultVariable;
-                varDefaults.forEach(v => appendExpenseRowUI(varb, v.name, v.target, v.actual, 'variable', [])); 
-            } 
-            calculateAll(false); 
+                varDefaults.forEach(v => appendExpenseRowUI(varb, v.name, v.target, v.actual, 'variable', []));
+                _cloudLoadConfirmed = true;
+            }
+            const ind2 = document.getElementById('saveStatusIndicator'); if (ind2 && ind2.innerText.indexOf('טוען מהענן') !== -1) ind2.style.display = 'none';
+            calculateAll(false);
         }
 
         // רשימת שמות כל קטגוריות ההוצאה (קבועות + משתנות) — לשימוש בתפריט ההעברה
@@ -3087,7 +3172,13 @@
             return row;
         }
 
-        function appendIncomeRowUI(tbody, name, amount) { const tr = document.createElement('tr'); tr.innerHTML = `<td><input type="text" class="table-input name-input" value="${escapeHtml(name)}" oninput="calculateAll(true)"></td><td><input type="number" class="table-input val-input" value="${amount || ''}" placeholder="0" oninput="calculateAll(true)"></td><td style="text-align:center;"><button class="btn-delete" onclick="deleteRow(this)">✕</button></td>`; tbody.appendChild(tr); }
+        function appendIncomeRowUI(tbody, name, amount, source, date) {
+            const tr = document.createElement('tr');
+            if (source) tr.setAttribute('data-source', source);
+            tr.setAttribute('data-date', date || new Date().toISOString().split('T')[0]);
+            tr.innerHTML = `<td><input type="text" class="table-input name-input" value="${escapeHtml(name)}" oninput="calculateAll(true)"></td><td><input type="number" class="table-input val-input" value="${amount || ''}" placeholder="0" oninput="calculateAll(true)"></td><td style="text-align:center;"><button class="btn-delete" onclick="deleteRow(this)">✕</button></td>`;
+            tbody.appendChild(tr);
+        }
         function appendExpenseRowUI(tbody, name, target, actual, type, logs = []) { 
             const tr = document.createElement('tr'); tr.setAttribute('data-logs', JSON.stringify(logs));
             let extraUI = `<button class="btn-plus" onclick="openExpenseLogModal(this)" title="הוסף פעולת ערסל (הוצאה)">+</button>`; 
@@ -3154,7 +3245,9 @@
             const totalExp = round1(processExpenses('fixedBody', 'sumFixedTarget', 'sumFixedActual') + processExpenses('variableBody', 'sumVarTarget', 'sumVarActual')); 
             document.getElementById('totalIncomeTxt').innerText = `₪${fmtNum(incomeSum)}`; document.getElementById('totalExpensesTxt').innerText = `₪${fmtNum(totalExp)}`; document.getElementById('balanceTxt').innerText = `₪${fmtNum(incomeSum - totalExp)}`; document.getElementById('balanceTxt').style.color = (incomeSum - totalExp) < 0 ? 'var(--danger)' : 'var(--primary)'; 
             const statsSec = document.getElementById('statisticsSection'); if (statsSec && statsSec.style.display !== 'none') { renderMonthlyOverviewChart(incomeSum, totalExp); renderStatisticsChart(); }
-            if (shouldSave && tempUserSession) { document.getElementById('saveStatusIndicator').style.display = 'none'; writeLocalMirror(); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => { saveDataToCloud().catch(() => {}); }, 600); }
+            // FIX: לא שומרים (מקומית או לענן) לפני שאישרנו בוודאות את מצב הענן לחודש הזה —
+            // ראה _cloudLoadConfirmed ב-loadCurrentMonthData. מונע דריסת נתונים אמיתיים במסך ריק זמני.
+            if (shouldSave && tempUserSession && _cloudLoadConfirmed) { document.getElementById('saveStatusIndicator').style.display = 'none'; writeLocalMirror(); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => { saveDataToCloud().catch(() => {}); }, 600); }
         }
 
         // ===== גיבוי מקומי מיידי – מונע אובדן נתונים ביציאה/סגירה לפני שמירה לענן =====
@@ -3175,7 +3268,7 @@
             } catch (e) {}
         }
         function flushPendingSave() {
-            if (!tempUserSession) return;
+            if (!tempUserSession || !_cloudLoadConfirmed) return; // FIX: אין מה "לשטוף" אם עדיין לא אישרנו מה יש בענן — עלול לדרוס נתונים
             writeLocalMirror();                 // גיבוי מקומי מיידי (סינכרוני, תמיד מצליח)
             clearTimeout(autoSaveTimer);
             saveDataToCloud(true).catch(() => {});   // ניסיון שמירה לענן עם keepalive - שורד גם אם הדף נסגר/עובר לרקע מיד אחרי
@@ -3187,7 +3280,7 @@
 
         // FIX: Periodic save every 45s for iOS Safari that does not fire beforeunload
         window._periodicSaveTimer = setInterval(function() {
-            if (tempUserSession && workingMonthStr) {
+            if (tempUserSession && workingMonthStr && _cloudLoadConfirmed) {
                 writeLocalMirror();
                 clearTimeout(autoSaveTimer);
                 autoSaveTimer = setTimeout(function() { saveDataToCloud().catch(function(){}); }, 800);
@@ -3198,6 +3291,7 @@
         // עם השהיה גוברת, במקום להניח בשקט שהשמירה הצליחה (זה מה שגרם לאובדן נתונים בעבר).
         let _cloudSaveRetryTimer = null;
         let _cloudSaveRetryCount = 0;
+        let _cloudSaveFirstFailAt = null; // FIX: מתי התחילה סדרת כשלים רצופה — לצורך ריכוך ההודעה (ר' saveDataToCloud)
 
         // FIX: כשהאפליקציה נסגרת/עוברת לרקע (closingSave=true) מנסים לשמור עם keepalive כדי שהדפדפן
         // ישלים את הבקשה גם אחרי שהדף כבר לא פעיל. keepalive מוגבל ל-~64KB לבקשה, לכן משתמשים בו
@@ -3205,7 +3299,7 @@
         async function saveDataToCloud(closingSave) {
             if (!tempUserSession) return;
             const payload = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs };
-            document.querySelectorAll('#incomeBody tr').forEach(row => { payload.income.push({ name: row.querySelector('.name-input').value, amount: Number(row.querySelector('.val-input').value) || 0 }); });
+            document.querySelectorAll('#incomeBody tr').forEach(row => { payload.income.push({ name: row.querySelector('.name-input').value, amount: Number(row.querySelector('.val-input').value) || 0, source: row.getAttribute('data-source') || 'manual', date: row.getAttribute('data-date') || '' }); });
             const extractExpenses = (tbodyId, targetArr) => { document.querySelectorAll(`#${tbodyId} tr`).forEach(row => { targetArr.push({ name: row.querySelector('.name-input').value, target: Number(row.querySelector('.target-val').value) || 0, actual: Number(row.querySelector('.actual-val').value) || 0, logs: JSON.parse(row.getAttribute('data-logs') || "[]") }); }); };
             extractExpenses('fixedBody', payload.fixed); extractExpenses('variableBody', payload.variable);
             const ind = document.getElementById('saveStatusIndicator');
@@ -3225,15 +3319,25 @@
                 ({ error } = await _supabase.from('month_data').upsert(record));
             }
             if (error) {
-                // FIX: השמירה נכשלה — לא מציגים "נשמר", לא מסמנים synced, ומתזמנים ניסיון חוזר אוטומטי
+                // FIX: השמירה נכשלה — לא מציגים "נשמר", לא מסמנים synced, ומתזמנים ניסיון חוזר אוטומטי.
+                // ההודעה למשתמש מרוככת בכוונה: הגיבוי המקומי (writeLocalMirror) כבר שמר את הנתונים
+                // לפני שהגענו לכאן, אז אין סיכון אמיתי לאובדן מידע — "⚠ לא נשמר" המבהיל מוצג רק
+                // אם זה נכשל שוב ושוב לאורך זמן ממושך, לא בניסיון החוזר הראשון/השני.
                 console.error('שמירה לענן נכשלה:', (error && error.message) || error);
-                if (ind) { ind.style.display = 'inline-block'; ind.style.color = '#dc2626'; ind.innerText = '⚠ לא נשמר — מנסה שוב...'; }
                 clearTimeout(_cloudSaveRetryTimer);
                 _cloudSaveRetryCount = Math.min(_cloudSaveRetryCount + 1, 5);
+                if (!_cloudSaveFirstFailAt) _cloudSaveFirstFailAt = Date.now();
+                const failingLong = (Date.now() - _cloudSaveFirstFailAt) > 180000;
+                if (ind) {
+                    ind.style.display = 'inline-block';
+                    if (failingLong) { ind.style.color = '#dc2626'; ind.innerText = '⚠ בעיית חיבור — הנתונים שמורים במכשיר, יעלו אוטומטית כשהחיבור יחזור'; }
+                    else { ind.style.color = 'var(--text-light)'; ind.innerText = '🔄 מסנכרן...'; }
+                }
                 _cloudSaveRetryTimer = setTimeout(() => { saveDataToCloud().catch(() => {}); }, 3000 * _cloudSaveRetryCount);
                 return;
             }
             _cloudSaveRetryCount = 0;
+            _cloudSaveFirstFailAt = null;
             markMirrorSynced(); // הענן אישר את השמירה — הגיבוי המקומי כבר לא "ממתין לאישור"
             if (ind) { ind.style.color = 'var(--success)'; ind.innerText = '✓ ענן מעודכן'; ind.style.display = 'inline-block'; setTimeout(() => { ind.style.display = 'none'; }, 2000); }
             fetchAllUserMonths();
@@ -3312,9 +3416,9 @@
             const validDate = (aiData.date && /^\d{4}-\d{2}-\d{2}$/.test(aiData.date)) ? aiData.date : new Date().toISOString().split('T')[0];
 
             if (isIncome) {
-                // ===== מצב סליקה: הוסף ישירות להכנסות =====
+                // ===== מצב סליקה: הוסף ישירות להכנסות (מתויג כ-AI + תאריך, לצורך ייצוא) =====
                 const storeName = (aiData.store || 'לקוח');
-                appendIncomeRowUI(document.getElementById('incomeBody'), storeName, round1(aiData.amount));
+                appendIncomeRowUI(document.getElementById('incomeBody'), storeName, round1(aiData.amount), 'ai', validDate);
                 calculateAll(true);
                 // שמירה בהיסטוריה
                 if (window._pendingReceiptFingerprint) {
@@ -4218,7 +4322,7 @@
             const listElement = document.getElementById('historyList'); listElement.innerHTML = '';
             const pastMonths = months.map(d => d.month_str).filter(m => m !== workingMonthStr);
             if(pastMonths.length === 0) { listElement.innerHTML = '<li style="color: var(--text-light); font-size: 0.95rem;">אין חודשים קודמים</li>'; } 
-            else { pastMonths.forEach(month => { const li = document.createElement('li'); li.className = 'history-item'; li.onclick = () => showMonthHistoryModal(month); li.innerHTML = `<span>${month.replace('עסקי - ', '')}</span><span>צפה 📊</span>`; listElement.appendChild(li); }); }
+            else { pastMonths.forEach(month => { const li = document.createElement('li'); li.className = 'history-item'; li.style.display = 'flex'; li.style.justifyContent = 'space-between'; li.style.alignItems = 'center'; li.innerHTML = `<span>${month.replace('עסקי - ', '')}</span><div style="display:flex; gap:0.5rem;"><button class="btn-link" style="padding:0.25rem 0.5rem; font-size:0.85rem;" onclick="editPastMonth('${month}'); event.stopPropagation();">✏️ עריכה</button><button class="btn-link" style="padding:0.25rem 0.5rem; font-size:0.85rem;" onclick="showMonthHistoryModal('${month}'); event.stopPropagation();">📊 דוח</button></div>`; listElement.appendChild(li); }); }
             renderAnnualSavings();
         }
 
@@ -4286,11 +4390,101 @@
         }
 
         function renderStatisticsChart() { const ctx = document.getElementById('expensesChart').getContext('2d'); const daysToGenerate = Number(document.getElementById('chartDateFilter').value); const now = new Date(); const labels = []; const aggregatedData = {}; for (let i = daysToGenerate - 1; i >= 0; i--) { const d = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000)); const dateStr = d.toLocaleDateString('he-IL'); labels.push(dateStr); aggregatedData[dateStr] = 0; } const cutoffTime = now.getTime() - (daysToGenerate * 24 * 60 * 60 * 1000); dailyExpenseLogs.forEach(log => { if (log.timestamp >= cutoffTime && aggregatedData[log.dateStr] !== undefined) { aggregatedData[log.dateStr] += log.amount; } }); const data = labels.map(l => aggregatedData[l]); if (expenseChartInstance) { expenseChartInstance.destroy(); } expenseChartInstance = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'סך הוצאות ביום זה (₪)', data: data, backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); }
+
+        // ===== ניתוח השוואה חודשים + AI Insights =====
+        function renderMonthlyComparisonChart() {
+          if (!allUserMonthsData || allUserMonthsData.length < 2) {
+            const sec = document.getElementById('monthlyComparisonSection');
+            if(sec) sec.innerHTML = '<p style="color:var(--text-light); text-align:center;">צריך לפחות 2 חודשים כדי לעשות השוואה</p>';
+            return;
+          }
+          const recent = allUserMonthsData.slice(-6); // 6 חודשים אחרונים
+          const labels = recent.map(m => m.month_str.split(' ')[0]); // רק שם החודש
+          const incomes = recent.map(m => m.data.income.reduce((s, i) => s + i.amount, 0));
+          const expenses = recent.map(m => (m.data.fixed.reduce((s, f) => s + f.actual, 0) + m.data.variable.reduce((s, v) => s + v.actual, 0)));
+          const savings = recent.map((m, i) => incomes[i] - expenses[i]);
+
+          // טבלה
+          let tableHtml = '<table style="width:100%; border-collapse:collapse; margin-bottom:2rem;"><tr style="background:#f0f0f0; font-weight:bold;"><th>חודש</th><th>הכנסות (₪)</th><th>הוצאות (₪)</th><th>חיסכון (₪)</th></tr>';
+          recent.forEach((m, i) => {
+            const savingColor = savings[i] >= 0 ? 'var(--success)' : 'var(--danger)';
+            tableHtml += `<tr style="border-bottom:1px solid #ddd;"><td style="padding:10px;">${m.month_str}</td><td style="color:var(--success);">₪${incomes[i].toLocaleString()}</td><td style="color:var(--danger);">₪${expenses[i].toLocaleString()}</td><td style="color:${savingColor}; font-weight:bold;">₪${savings[i].toLocaleString()}</td></tr>`;
+          });
+          tableHtml += '</table>';
+
+          // גרף
+          const canvasId = 'comparisonChart_' + Date.now();
+          let chartHtml = tableHtml + `<canvas id="${canvasId}" style="max-height:300px;"></canvas>`;
+          const sec = document.getElementById('monthlyComparisonSection');
+          if(sec) sec.innerHTML = chartHtml;
+
+          setTimeout(() => {
+            const ctx = document.getElementById(canvasId);
+            if(ctx && window.Chart) {
+              if (monthlyComparisonChartInstance) monthlyComparisonChartInstance.destroy();
+              monthlyComparisonChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels: labels,
+                  datasets: [
+                    {label: 'הכנסות (₪)', data: incomes, borderColor: '#10b981', borderWidth: 2, tension: 0.4, fill: false},
+                    {label: 'הוצאות (₪)', data: expenses, borderColor: '#ef4444', borderWidth: 2, tension: 0.4, fill: false},
+                    {label: 'חיסכון (₪)', data: savings, borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, fill: false}
+                  ]
+                },
+                options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: true}}}
+              });
+            }
+          }, 100);
+
+          // AI Insights
+          generateAndDisplayAIInsights(recent, incomes, expenses, savings);
+        }
+
+        function generateAndDisplayAIInsights(recent, incomes, expenses, savings) {
+          const insights = [];
+          const avgIncome = incomes.reduce((a,b) => a+b, 0) / incomes.length;
+          const avgExpense = expenses.reduce((a,b) => a+b, 0) / expenses.length;
+          const avgSaving = savings.reduce((a,b) => a+b, 0) / savings.length;
+
+          // כלל 1: טרנד הכנסות
+          if(incomes.length >= 2) {
+            const lastIncome = incomes[incomes.length-1];
+            const prevIncome = incomes[incomes.length-2];
+            const diff = ((lastIncome - prevIncome) / prevIncome * 100).toFixed(1);
+            if(lastIncome > prevIncome) insights.push(`✅ ההכנסות עלו ב-${diff}% בחודש האחרון`);
+            else if(lastIncome < prevIncome) insights.push(`⚠️ ההכנסות ירדו ב-${Math.abs(diff)}% בחודש האחרון`);
+          }
+
+          // כלל 2: טרנד הוצאות
+          if(expenses.length >= 2) {
+            const lastExp = expenses[expenses.length-1];
+            const prevExp = expenses[expenses.length-2];
+            if(lastExp > prevExp * 1.15) insights.push(`⚠️ הוצאות עלו ב-${((lastExp - prevExp) / prevExp * 100).toFixed(1)}% - לחתוך קצת בחודש הבא`);
+            else if(lastExp < prevExp * 0.85) insights.push(`✅ הצלחת להקטין הוצאות ב-${((prevExp - lastExp) / prevExp * 100).toFixed(1)}%`);
+          }
+
+          // כלל 3: יעד חיסכון
+          if(avgSaving > 0) insights.push(`💰 ממוצע חיסכון חודשי: ₪${avgSaving.toLocaleString()}`);
+          else insights.push(`❌ ממוצע יציאה בהוצאות: ₪${Math.abs(avgSaving).toLocaleString()}`);
+
+          // כלל 4: יציבות
+          const expenseVariance = Math.max(...expenses) - Math.min(...expenses);
+          if(expenseVariance < avgExpense * 0.2) insights.push(`📊 הוצאות יציבות - טוב מאוד!`);
+          else insights.push(`📊 הוצאות משתנות - חשוב להתקע אזהרה`);
+
+          let insightHtml = '<div style="background:#f0fdf4; border-left:4px solid #10b981; padding:1rem; margin:1rem 0; border-radius:8px;"><strong>💡 תובנות AI:</strong><ul style="margin:0.5rem 0;">';
+          insights.forEach(i => insightHtml += `<li>${i}</li>`);
+          insightHtml += '</ul></div>';
+
+          const sec = document.getElementById('monthlyComparisonSection');
+          if(sec) sec.innerHTML += insightHtml;
+        }
         
         async function showMonthHistoryModal(monthName) { 
             const currentData = allUserMonthsData.find(m => m.month_str === monthName); if(!currentData) return; 
             const snapshot = currentData.data; let incSum = 0, expSum = 0; snapshot.income.forEach(i => incSum += i.amount); snapshot.fixed.forEach(f => expSum += f.actual); snapshot.variable.forEach(v => expSum += v.actual); const savings = incSum - expSum; 
-            document.getElementById('modalMonthTitle').innerText = `דו"ח נעול - ${monthName}`; 
+            document.getElementById('modalMonthTitle').innerText = `דו"ח - ${monthName}`;
             let html = `<div style="background: #f1f5f9; padding: 1.5rem; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; font-weight: 700;"><div><span style="font-size: 0.9rem; color: var(--text-light); display:block;">הכנסות</span><span style="color: var(--success);">₪${incSum.toLocaleString()}</span></div><div><span style="font-size: 0.9rem; color: var(--text-light); display:block;">הוצאות</span><span style="color: var(--danger);">₪${expSum.toLocaleString()}</span></div><div><span style="font-size: 0.9rem; color: var(--text-light); display:block;">חיסכון</span><span style="color: var(--primary);">₪${savings.toLocaleString()}</span></div></div><div style="margin-top:20px; padding: 15px; border: 1px solid var(--border); border-radius: 12px;">`; 
             snapshot.fixed.forEach(f => { html += `<div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #eee;"><span>${escapeHtml(f.name)}</span><span><strong>₪${f.actual}</strong></span></div>`; }); 
             snapshot.variable.forEach(v => { html += `<div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #eee;"><span>${escapeHtml(v.name)}</span><span><strong>₪${v.actual}</strong></span></div>`; }); 
@@ -4302,10 +4496,62 @@
                 printWindow.document.write(`<html><head><title>הדפסת דוח - ${monthName}</title></head><body style="direction:rtl; font-family:'Rubik', sans-serif;">${html}</body></html>`);
                 printWindow.document.close(); printWindow.focus(); setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
             };
+            document.getElementById('modalEditMonthBtn').onclick = () => { editPastMonth(monthName); };
 
-            document.getElementById('historyModal').style.display = 'flex'; 
+            document.getElementById('historyModal').style.display = 'flex';
         }
         function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
+
+        // ===== עריכת חודשים קודמים =====
+        function populateTablesFromSnapshot(d) {
+            const inc = document.getElementById('incomeBody'); const fix = document.getElementById('fixedBody'); const varb = document.getElementById('variableBody');
+            inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = '';
+            dailyExpenseLogs = d.daily_logs || [];
+            (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount, i.source, i.date));
+            (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
+            (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
+        }
+
+        function editPastMonth(monthName) {
+            const monthEntry = allUserMonthsData.find(m => m.month_str === monthName);
+            if (!monthEntry) { alert('לא נמצאו נתונים לחודש זה.'); return; }
+            if (_editingPastMonth === null) _returnToMonthStr = workingMonthStr; // שומרים את החודש הנוכחי האמיתי כדי לחזור אליו
+            _editingPastMonth = monthName;
+            workingMonthStr = monthName;
+            populateTablesFromSnapshot(monthEntry.data);
+            _cloudLoadConfirmed = true; // הנתונים כבר בזיכרון (מ-fetchAllUserMonths) — בטוח לאפשר שמירה
+            document.getElementById('currentMonthTxt').innerText = workingMonthStr;
+            calculateAll(false);
+            closeHistoryModal();
+            switchView('main');
+            showPastMonthEditBanner(monthName);
+        }
+
+        function returnToCurrentMonth() {
+            if (_editingPastMonth === null) return;
+            workingMonthStr = _returnToMonthStr;
+            _editingPastMonth = null; _returnToMonthStr = null;
+            hidePastMonthEditBanner();
+            document.getElementById('currentMonthTxt').innerText = workingMonthStr;
+            loadCurrentMonthData();
+        }
+
+        function showPastMonthEditBanner(monthName) {
+            let banner = document.getElementById('pastMonthEditBanner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'pastMonthEditBanner';
+                banner.style.cssText = 'position:sticky; top:8px; z-index:500; background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; padding:0.9rem 1.2rem; border-radius:14px; margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; font-weight:600; box-shadow:var(--shadow); border:1px solid #f0c060;';
+                const contentArea = document.querySelector('.content-area');
+                if (contentArea) contentArea.insertBefore(banner, contentArea.firstChild);
+            }
+            banner.innerHTML = `<span>✏️ עורך/ת את <strong>${escapeHtml(monthName.replace('עסקי - ', ''))}</strong> — לא החודש הנוכחי</span><button class="btn-outline" style="background:#fff; margin:0; color:#92400e; border-color:#f0c060;" onclick="returnToCurrentMonth()">↩ חזרה לחודש הנוכחי</button>`;
+            banner.style.display = 'flex';
+        }
+        function hidePastMonthEditBanner() {
+            const banner = document.getElementById('pastMonthEditBanner');
+            if (banner) banner.style.display = 'none';
+        }
         
         function generateAndDownloadPDF(monthName, snapshot, incSum, expSum, savings) { 
             const userName = document.getElementById('displayUser').innerText; 
@@ -4327,7 +4573,7 @@
 
         function getLiveSnapshot() {
             const snapshot = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs };
-            document.querySelectorAll('#incomeBody tr').forEach(row => { snapshot.income.push({ name: row.querySelector('.name-input').value, amount: Number(row.querySelector('.val-input').value) || 0 }); });
+            document.querySelectorAll('#incomeBody tr').forEach(row => { snapshot.income.push({ name: row.querySelector('.name-input').value, amount: Number(row.querySelector('.val-input').value) || 0, source: row.getAttribute('data-source') || 'manual', date: row.getAttribute('data-date') || '' }); });
             const extract = (tbodyId, arr) => { document.querySelectorAll(`#${tbodyId} tr`).forEach(row => { arr.push({ name: row.querySelector('.name-input').value, target: Number(row.querySelector('.target-val').value) || 0, actual: Number(row.querySelector('.actual-val').value) || 0, logs: JSON.parse(row.getAttribute('data-logs') || "[]") }); }); };
             extract('fixedBody', snapshot.fixed); extract('variableBody', snapshot.variable); return snapshot;
         }
@@ -4364,7 +4610,7 @@
         function closeReceiptExportModal() { document.getElementById('receiptExportModal').style.display = 'none'; }
 
         // ====== איסוף נתוני לוגים לפי פילטר ======
-        function _collectFilteredLogs(fromMonth, toMonth, srcAi, srcImport, srcManual) {
+        function _collectFilteredLogs(fromMonth, toMonth, srcAi, srcImport, srcManual, srcIncome) {
             // בניית רשימת חודשים רלוונטיים
             const isBiz = !!(tempUserSession && tempUserSession._bizMode);
             const historicMonths = (allUserMonthsData || []).filter(function(m){
@@ -4376,7 +4622,7 @@
                 allMonths.push({ label: workingMonthStr, data: liveSnap });
             }
 
-            const result = { ai: [], import: [], manual: [] };
+            const result = { ai: [], import: [], manual: [], income: [] };
             allMonths.forEach(function(m) {
                 const allCats = [].concat(m.data.fixed || [], m.data.variable || []);
                 allCats.forEach(function(cat) {
@@ -4399,12 +4645,26 @@
                         result.manual.push({ month: m.label, category: cat.name || '', store: '(ללא פירוט)', amount: cat.actual, date: '', srcLabel: 'ידני' });
                     }
                 });
+                // FIX: הכנסות עסקיות (סליקה) לא נכללו בייצוא בכלל — נוספות כאן כמקור רביעי,
+                // כדי שאפשר יהיה לייצא סליקה וסריקת קבלות יחד באותו קובץ.
+                (m.data.income || []).forEach(function(inc) {
+                    if (!inc.amount) return;
+                    result.income.push({
+                        month: m.label,
+                        category: inc.source === 'ai' ? 'הכנסה עסקית (סליקה)' : 'הכנסה',
+                        store: inc.name || '—',
+                        amount: Number(inc.amount) || 0,
+                        date: inc.date ? new Date(inc.date).toLocaleDateString('he-IL') : '',
+                        srcLabel: inc.source === 'ai' ? 'סליקה' : 'ידני'
+                    });
+                });
             });
             // סינון לפי בחירות
             const filtered = [];
             if (srcAi)     filtered.push(...result.ai);
             if (srcImport) filtered.push(...result.import);
             if (srcManual) filtered.push(...result.manual);
+            if (srcIncome) filtered.push(...result.income);
             return { all: filtered, bySource: result };
         }
 
@@ -4414,29 +4674,34 @@
             const srcAi      = document.getElementById('expSrcAi').checked;
             const srcImport  = document.getElementById('expSrcImport').checked;
             const srcManual  = document.getElementById('expSrcManual').checked;
+            const srcIncomeEl = document.getElementById('expSrcIncome');
+            const srcIncome  = srcIncomeEl ? srcIncomeEl.checked : false;
             if (!fromMonth || !toMonth) return;
 
             // ספירה לכל מקור (ללא פילטר)
-            const raw = _collectFilteredLogs(fromMonth, toMonth, true, true, true);
+            const raw = _collectFilteredLogs(fromMonth, toMonth, true, true, true, true);
             document.getElementById('expSrcAiCount').innerText     = raw.bySource.ai.length     + ' רשומות';
             document.getElementById('expSrcImportCount').innerText = raw.bySource.import.length  + ' רשומות';
             document.getElementById('expSrcManualCount').innerText = raw.bySource.manual.length  + ' רשומות';
+            const incomeCountEl = document.getElementById('expSrcIncomeCount');
+            if (incomeCountEl) incomeCountEl.innerText = raw.bySource.income.length + ' רשומות';
 
             // סה"כ לפי בחירה
             let total = 0;
             if (srcAi)     total += raw.bySource.ai.length;
             if (srcImport) total += raw.bySource.import.length;
             if (srcManual) total += raw.bySource.manual.length;
+            if (srcIncome) total += raw.bySource.income.length;
 
             const preview = document.getElementById('exportPreviewBox');
-            const selectedSrcs = [srcAi && '📷', srcImport && '📥', srcManual && '✏️'].filter(Boolean).join(' ');
+            const selectedSrcs = [srcAi && '📷', srcImport && '📥', srcManual && '✏️', srcIncome && '💳'].filter(Boolean).join(' ');
             if (total === 0) {
                 preview.style.background = '#fef2f2'; preview.style.borderColor = '#fca5a5'; preview.style.color = '#991b1b';
                 preview.innerText = 'לא נמצאו רשומות בטווח ובסינון שנבחרו.';
             } else {
                 preview.style.background = '#f0fdf4'; preview.style.borderColor = '#86efac'; preview.style.color = '#166534';
                 const isSep = document.getElementById('expFmtSep').checked;
-                const filesStr = isSep ? `${[srcAi, srcImport, srcManual].filter(Boolean).length} קבצים נפרדים` : 'קובץ אחד';
+                const filesStr = isSep ? `${[srcAi, srcImport, srcManual, srcIncome].filter(Boolean).length} קבצים נפרדים` : 'קובץ אחד';
                 preview.innerText = `✅ ${total} רשומות מוכנות לייצוא (${filesStr}) ${selectedSrcs}`;
             }
         }
@@ -4477,13 +4742,15 @@
             const srcAi     = document.getElementById('expSrcAi').checked;
             const srcImport = document.getElementById('expSrcImport').checked;
             const srcManual = document.getElementById('expSrcManual').checked;
+            const srcIncomeEl = document.getElementById('expSrcIncome');
+            const srcIncome = srcIncomeEl ? srcIncomeEl.checked : false;
             const isSep     = document.getElementById('expFmtSep').checked;
             const isBiz     = !!(tempUserSession && tempUserSession._bizMode);
             const modeLabel = isBiz ? 'עסקי' : 'אישי';
             const userName  = tempUserSession ? tempUserSession.username : '';
             const dateStr   = new Date().toLocaleDateString('he-IL').replace(/\//g,'-');
 
-            const { all, bySource } = _collectFilteredLogs(fromMonth, toMonth, srcAi, srcImport, srcManual);
+            const { all, bySource } = _collectFilteredLogs(fromMonth, toMonth, srcAi, srcImport, srcManual, srcIncome);
 
             if (all.length === 0) {
                 alert('לא נמצאו רשומות לייצוא בטווח ובסינון שנבחרו.');
@@ -4513,8 +4780,15 @@
                     XLSX.utils.book_append_sheet(wb, ws2, 'סיכום קטגוריות');
                     XLSX.writeFile(wb, `ידני_${modeLabel}_${userName}_${dateStr}.xlsx`);
                 }
+                if (srcIncome && bySource.income.length > 0) {
+                    const wb = XLSX.utils.book_new();
+                    const { ws, ws2 } = _buildReceiptSheet(bySource.income, 'הכנסות (סליקה) — ' + modeLabel, userName);
+                    XLSX.utils.book_append_sheet(wb, ws, 'פירוט הכנסות');
+                    XLSX.utils.book_append_sheet(wb, ws2, 'סיכום קטגוריות');
+                    XLSX.writeFile(wb, `הכנסות_סליקה_${modeLabel}_${userName}_${dateStr}.xlsx`);
+                }
                 closeReceiptExportModal();
-                const count = [srcAi && bySource.ai.length, srcImport && bySource.import.length, srcManual && bySource.manual.length].filter(Boolean);
+                const count = [srcAi && bySource.ai.length, srcImport && bySource.import.length, srcManual && bySource.manual.length, srcIncome && bySource.income.length].filter(Boolean);
                 alert('✅ ' + count.length + ' קבצים יוצאו בהצלחה!\n' + all.length + ' רשומות בסה"כ.');
             } else {
                 // ====== קובץ אחד מאוחד ======
