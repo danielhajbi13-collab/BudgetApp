@@ -566,6 +566,7 @@
                     <button onclick="openCreateManagerModal()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">➕ מנהל חדש</button>
                     <button onclick="openAdminManagersChat()" style="background:linear-gradient(135deg,#0ea5e9,#0369a1);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(14,165,233,0.2);">💬 צ'אט עם המנהלים</button>
                     <button onclick="openAdminInboxModal()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 תיבת פניות <span class="js-admin-inq-badge inq-badge"></span></button>
+                    <button onclick="openChangeAdminCredsModal()" class="btn-outline">🔑 שינוי פרטי כניסה</button>
                     <button onclick="handleLogout()" class="btn-outline">🚪 יציאה</button>
                 </div>
             </div>
@@ -1386,6 +1387,22 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="changeAdminCredsModal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header"><h3 style="color:var(--admin);">🔑 שינוי פרטי כניסה למנהל הבכיר</h3><button class="btn-close-modal" onclick="closeChangeAdminCredsModal()">✕</button></div>
+            <div class="modal-body">
+                <div class="input-group" style="margin:0;"><label>קוד סודי נוכחי (לאימות)</label><input type="password" id="adminCredsCurrentPin" class="input-field" placeholder="קוד סודי נוכחי" maxlength="4" style="text-align:center; letter-spacing:6px;" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                <div class="input-group" style="margin:0;"><label>ת.ז / קוד כניסה חדש</label><input type="text" id="adminCredsNewId" class="input-field" placeholder="9 ספרות" maxlength="9" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                <div class="input-group" style="margin:0;"><label>קוד סודי חדש (PIN)</label><input type="password" id="adminCredsNewPin" class="input-field" placeholder="4 ספרות" maxlength="4" style="text-align:center; letter-spacing:6px;" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                <p style="font-size:0.8rem; color:var(--text-light);">אלו הפרטים שמשמשים להתחברות לפאנל הניהול הראשי (במקום ת.ז/קוד ברירת המחדל). שמור אותם היטב — אם תשכח אותם לא תוכל להיכנס לפאנל הניהול.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeChangeAdminCredsModal()">ביטול</button>
+                <button class="btn-primary" style="margin:0; background:linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow:none;" onclick="saveAdminCredentials()">שמור</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="reportsModal">
         <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header"><h3 style="color: #6d28d9;">הפקת דוחות (רבעוני / שנתי)</h3><button class="btn-close-modal" onclick="closeReportsModal()">✕</button></div>
@@ -1754,10 +1771,22 @@
             return false;
         }
 
+        // ====== פרטי כניסה של המנהל הבכיר (ניתנים לשינוי, נשמרים ב-month_data תחת מזהה מיוחד) ======
+        const ADMIN_CREDS_USER_ID = '__super_admin__';
+        const ADMIN_CREDS_MONTH_STR = '__admin_credentials__';
+        async function getAdminCredentials() {
+            try {
+                const { data } = await _supabase.from('month_data').select('data').eq('user_id', ADMIN_CREDS_USER_ID).eq('month_str', ADMIN_CREDS_MONTH_STR);
+                if (data && data.length > 0 && data[0].data && data[0].data.id && data[0].data.pin) return data[0].data;
+            } catch(_e) {}
+            return { id: '000000000', pin: '0000' }; // ברירת מחדל, כל עוד לא הוגדרו פרטים אחרים
+        }
+
         async function processLoginDetails() {
             const id = document.getElementById('loginUserId').value.trim(); const pin = document.getElementById('loginPin').value.trim();
             if (!id || !pin) return alert("הזן תעודת זהות וקוד סודי.");
-            if (id === '000000000' && pin === '0000') { loginAsAdmin(); return; }
+            const adminCreds = await getAdminCredentials();
+            if (id === adminCreds.id && pin === adminCreds.pin) { loginAsAdmin(); return; }
             const { data, error } = await _supabase.from('users').select('*').eq('user_id', id);
             if (error || !data || data.length === 0) return alert("שגיאה: חשבון לא קיים.");
             if (data[0].pin !== pin) return alert("קוד סודי שגוי.");
@@ -1865,6 +1894,28 @@
             if (!confirm("לבטל את ניהול הקבוצה עבור חשבון זה?\nהחשבון יישאר כלקוח רגיל עם התקציב שלו, והחברים יישארו ללא מנהל פעיל.")) return;
             await _supabase.from('users').update({ manager_code: null, manager_group_name: null }).eq('user_id', id);
             loginAsAdmin();
+        }
+
+        // ====== שינוי פרטי כניסה של המנהל הבכיר ======
+        function openChangeAdminCredsModal() {
+            document.getElementById('adminCredsCurrentPin').value = '';
+            document.getElementById('adminCredsNewId').value = '';
+            document.getElementById('adminCredsNewPin').value = '';
+            document.getElementById('changeAdminCredsModal').style.display = 'flex';
+        }
+        function closeChangeAdminCredsModal() { document.getElementById('changeAdminCredsModal').style.display = 'none'; }
+        async function saveAdminCredentials() {
+            const currentPin = document.getElementById('adminCredsCurrentPin').value.trim();
+            const newId = document.getElementById('adminCredsNewId').value.trim();
+            const newPin = document.getElementById('adminCredsNewPin').value.trim();
+            const creds = await getAdminCredentials();
+            if (currentPin !== creds.pin) return alert("הקוד הסודי הנוכחי שגוי.");
+            if (!newId || newId.length < 4) return alert("קוד הכניסה החדש חייב להכיל לפחות 4 ספרות.");
+            if (!newPin || newPin.length !== 4) return alert("הקוד הסודי החדש חייב להיות 4 ספרות.");
+            const { error } = await _supabase.from('month_data').upsert({ user_id: ADMIN_CREDS_USER_ID, month_str: ADMIN_CREDS_MONTH_STR, data: { id: newId, pin: newPin } });
+            if (error) return alert("שגיאה בשמירת הפרטים: " + (error.message || ''));
+            closeChangeAdminCredsModal();
+            alert("פרטי הכניסה עודכנו בהצלחה!\nמעתה יש להיכנס עם ת.ז/קוד: " + newId + " וקוד סודי חדש.");
         }
 
         async function loginAsAdmin() {
