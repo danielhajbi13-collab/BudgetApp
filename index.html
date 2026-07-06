@@ -1870,9 +1870,10 @@
         async function loginAsAdmin() {
             document.getElementById('authBox').style.display = 'none'; document.getElementById('dashboardScreen').style.display = 'none'; document.getElementById('managerPanel').style.display = 'none'; document.getElementById('adminPanel').style.display = 'flex'; document.body.classList.remove('dashboard-active');
             isAdminMode = true; document.getElementById('adminImpersonationBanner').style.display = 'none';
-            const aiBtnAdmin = document.getElementById('aiChatToggleBtn'); if (aiBtnAdmin) aiBtnAdmin.style.display = 'none'; document.getElementById('aiChatBox').style.display = 'none';
+            const aiBtnAdmin = document.getElementById('aiChatToggleBtn'); if (aiBtnAdmin) aiBtnAdmin.style.display = 'none'; const aiBoxAdmin = document.getElementById('aiChatBox'); if (aiBoxAdmin) aiBoxAdmin.style.display = 'none';
             
-            const { data } = await _supabase.from('users').select('*').order('username', { ascending: true });
+            const { data, error: usersErr } = await _supabase.from('users').select('*').order('username', { ascending: true });
+            if (usersErr) { console.error('loginAsAdmin: שגיאה בטעינת משתמשים', usersErr); alert('שגיאה בטעינת רשימת המשתמשים מהשרת: ' + (usersErr.message || JSON.stringify(usersErr)) + '\n\nייתכן שזו בעיית הרשאות (RLS) בטבלת users בסופאבייס.'); }
             const all = data || [];
             const managers = all.filter(function(u){ return !!u.manager_code; });
             // מפת שמות, ספירת חברים, ומצב שיתוף לכל קוד קבוצה
