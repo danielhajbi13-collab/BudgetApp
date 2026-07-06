@@ -3642,7 +3642,7 @@
 
         function openBankImportModal() { resetBankImport(); document.getElementById('bankImportModal').style.display = 'flex'; }
         function closeBankImportModal() { document.getElementById('bankImportModal').style.display = 'none'; }
-        function resetBankImport() { parsedBankTransactions = []; document.getElementById('bankFileInput').value = ''; document.getElementById('bankStepUpload').style.display = 'block'; document.getElementById('bankStepReview').style.display = 'none'; document.getElementById('bankImportFooter').style.display = 'none'; document.getElementById('bankImportStatus').style.display = 'none'; document.getElementById('bankImportError').style.display = 'none'; }
+        function resetBankImport() { parsedBankTransactions = []; window._bankImportMonthCache = {}; document.getElementById('bankFileInput').value = ''; document.getElementById('bankStepUpload').style.display = 'block'; document.getElementById('bankStepReview').style.display = 'none'; document.getElementById('bankImportFooter').style.display = 'none'; document.getElementById('bankImportStatus').style.display = 'none'; document.getElementById('bankImportError').style.display = 'none'; }
         function bankStatus(msg) { const el = document.getElementById('bankImportStatus'); el.style.display = 'block'; el.innerText = msg; }
         function bankError(msg) { const el = document.getElementById('bankImportError'); el.style.display = 'block'; el.innerText = msg; }
 
@@ -3796,7 +3796,7 @@
                     const pdfTxs = await parsePDFBankStatement(file);
                     if (!pdfTxs || pdfTxs.length === 0) { bankError("לא נמצאו תנועות ב-PDF. ודא שהקובץ הוא דף חשבון טקסטואלי (לא סרוק)."); return; }
                     await categorizeTransactions(pdfTxs);
-                    markDuplicates(pdfTxs);
+                    await markDuplicates(pdfTxs);
                     parsedBankTransactions = pdfTxs;
                     bankStatus("PDF נקרא בהצלחה — נמצאו " + pdfTxs.length + " תנועות.");
                     renderBankReview();
@@ -3845,7 +3845,7 @@
                 if (budgetTxs.length > 0) {
                     // קובץ תקציב שלנו — לא צריך סיווג AI
                     budgetTxs.forEach(t => { t.include = true; t.duplicate = false; });
-                    markDuplicates(budgetTxs);
+                    await markDuplicates(budgetTxs);
                     parsedBankTransactions = budgetTxs;
                     bankStatus('זוהה קובץ תקציב מיוצא — נטענו ' + budgetTxs.length + ' תנועות.');
                     renderBankReview();
@@ -3874,9 +3874,9 @@
                 }
 
                 bankStatus(`זוהו ${txs.length} תנועות. מנתח ומסווג את הנתונים...`);
-                await categorizeTransactions(txs); 
-                markDuplicates(txs);
-                parsedBankTransactions = txs; 
+                await categorizeTransactions(txs);
+                await markDuplicates(txs);
+                parsedBankTransactions = txs;
                 renderBankReview();
             } catch (err) { console.error(err); bankError("שגיאה בקריאת הקובץ: " + (err.message || "")); }
         }
@@ -4152,20 +4152,48 @@
             });
             return sigs;
         }
-        function markDuplicates(txs){
-            const existing = gatherExistingSignatures();
+        // שליפת נתוני חודש (מהזיכרון אם כבר נטען, אחרת מהענן) — עם מטמון קצר לכל סבב ייבוא
+        async function getMonthDataForImport(monthStr) {
+            const cached = (allUserMonthsData || []).find(m => isSameMonthStr(m.month_str, monthStr));
+            if (cached) return { exists: true, data: cached.data };
+            window._bankImportMonthCache = window._bankImportMonthCache || {};
+            if (window._bankImportMonthCache[monthStr] !== undefined) return window._bankImportMonthCache[monthStr];
+            const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', monthStr);
+            const result = (data && data.length > 0) ? { exists: true, data: data[0].data } : { exists: false, data: null };
+            window._bankImportMonthCache[monthStr] = result;
+            return result;
+        }
+        // בניית "חתימות" תנועות קיימות מתוך נתוני חודש שמור (ולא מה-DOM) — לזיהוי כפילות בחודשים אחרים
+        function buildSignaturesFromMonthData(monthData) {
+            const sigs = {};
+            const add = (date, amount, store) => { const k = (date || '') + '|' + round1(amount) + '|' + normStoreSig(store); sigs[k] = true; };
+            (monthData.fixed || []).concat(monthData.variable || []).forEach(row => {
+                (row.logs || []).forEach(l => { const d = (function(){ try{ return new Date(l.date).toISOString().split('T')[0]; }catch(_e){ return l.date; } })(); add(d, l.amount, l.store); });
+            });
+            (monthData.income || []).forEach(i => { if (i.amount) add('', i.amount, i.name); });
+            return sigs;
+        }
+        async function markDuplicates(txs){
+            const domExisting = gatherExistingSignatures(); // החודש הנוכחי — מתוך המסך
             const seenInFile = {};
-            txs.forEach(t => {
+            for (const t of txs) {
                 const isoDate = (function(){ try{ return new Date(t.date).toISOString().split('T')[0]; }catch(_e){ return t.date; } })();
                 const sigWithStore = isoDate + '|' + round1(t.amount) + '|' + normStoreSig(t.store);
                 const sigNoDate = '|' + round1(t.amount) + '|' + normStoreSig(t.store); // להתאמה מול הכנסות שאין להן תאריך שמור
+                // תנועה ששייכת לחודש אחר (לפי התאריך שלה) — בודקים מול הנתונים השמורים של אותו חודש בפועל, לא מול המסך
+                const txMonth = monthStrFromDateStr(t.date);
+                let existing = domExisting;
+                if (txMonth && !isSameMonthStr(txMonth, workingMonthStr)) {
+                    const info = await getMonthDataForImport(txMonth);
+                    existing = info.exists ? buildSignaturesFromMonthData(info.data) : {};
+                }
                 let dup = false;
-                if (existing[sigWithStore] || existing[sigNoDate]) dup = true;       // כבר קיים בחודש
+                if (existing[sigWithStore] || existing[sigNoDate]) dup = true;       // כבר קיים בחודש היעד
                 else if (seenInFile[sigWithStore]) dup = true;                       // מופיע פעמיים באותו קובץ
                 seenInFile[sigWithStore] = true;
                 t.duplicate = dup;
                 if (dup) t.include = false; // ברירת מחדל: לא לייבא כפילות, עד שהמשתמש יאשר ידנית
-            });
+            }
         }
 
 
@@ -4367,6 +4395,17 @@
                 else { (otherMonthsMap[txMonth] = otherMonthsMap[txMonth] || []).push(t); }
             });
 
+            // חודשים שעדיין אין להם תזרים במערכת - שואלים לפני שפותחים חודש חדש עבורם
+            const skippedNewMonths = [];
+            for (const monthStr of Object.keys(otherMonthsMap)) {
+                const info = await getMonthDataForImport(monthStr);
+                if (!info.exists) {
+                    const txCount = otherMonthsMap[monthStr].length;
+                    const openIt = confirm(`זוהו ${txCount} תנועות מחודש "${monthStr}" שעדיין לא קיים במערכת.\n\nלפתוח תזרים חודשי חדש עבור "${monthStr}" ולייבא אליו את התנועות?`);
+                    if (!openIt) { delete otherMonthsMap[monthStr]; skippedNewMonths.push(monthStr); }
+                }
+            }
+
             let expCount = 0; let incCount = 0; let totalExp = 0;
             sameMonth.forEach(t => {
                 if (t.type === 'income') {
@@ -4413,7 +4452,8 @@
             switchView('main');
             const otherMonthsList = Object.keys(otherMonthsMap);
             const otherNote = otherMonthsList.length ? `\n\n📅 ${otherCount} תנועות שייכות לחודשים אחרים (לפי תאריך) ונוספו ישירות לחודשים: ${otherMonthsList.join(', ')}.` : '';
-            alert(`הייבוא הושלם בהצלחה!\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}`);
+            const skippedNote = skippedNewMonths.length ? `\n\n⏭️ דילגנו על החודשים הבאים לפי בחירתך ולא פתחנו עבורם תזרים חדש: ${skippedNewMonths.join(', ')}.` : '';
+            alert(`הייבוא הושלם בהצלחה!\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}${skippedNote}`);
             fetchAllUserMonths();
         }
 
