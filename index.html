@@ -72,7 +72,10 @@
 
         @keyframes scanLaser { 0% { top: 0; } 100% { top: 95%; } }
 
-        #adminImpersonationBanner { display: none; position: fixed; top: 0; left: 0; right: 0; background: #ea580c; color: white; text-align: center; padding: 12px; font-weight: 600; z-index: 10000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; }
+        /* FIX: הוסר position:fixed מפה - עכשיו הבאנר הזה חי בתוך #topFixedBar (יחד עם הסרגל הרץ),
+           שהוא זה שמקובע לראש המסך. כך שני הרכיבים נערמים זה מתחת לזה בלי לחפוף. */
+        #topFixedBar { position: fixed; top: 0; left: 0; right: 0; z-index: 10050; display: flex; flex-direction: column; }
+        #adminImpersonationBanner { display: none; background: #ea580c; color: white; text-align: center; padding: 12px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; }
         #adminImpersonationBanner:hover { background: #c2410c; }
 
         .auth-wrapper { background: var(--surface); padding: 3rem 2.5rem; border-radius: 24px; box-shadow: var(--shadow); width: 100%; max-width: 420px; text-align: center; align-self: center; border: 1px solid rgba(255,255,255,0.8); }
@@ -152,6 +155,27 @@
         .logs-dropdown { margin-top: 5px; background: #f8fafc; border-radius: 8px; padding: 10px; display: none; flex-direction: column; gap: 8px; border: 1px solid var(--border); min-width: 240px; word-break: break-word; overflow-wrap: anywhere; }
         .log-item { display: flex; justify-content: space-between; font-size: 0.85rem; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
         .log-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+        /* ===== סרגל רץ - צף וקבוע בראש המסך (בתוך #topFixedBar), משותף לדשבורד/פאנל מנהל/
+           פאנל מנהל בכיר - אלמנט גלובלי יחיד, לא חלק מ-dashboardScreen, כדי שיופיע בכל מסך.
+           FIX: לפי בקשה - רקע שקוף יותר ובהיר יותר (שכבה שחורה עדינה בלבד, בלי גוון כחול-כהה
+           קודם), עם טקסט לבן בהיר עם צל קל לשמירה על קריאות גם כשרואים דרכו את התוכן מתחת.
+           אין יותר השהיה ב-hover - תמיד רץ. */
+        /* FIX חשוב: הדף כולו RTL (dir="rtl"). ב-RTL המסלול (track) מיושר לימין - קצהו הימני
+           נעול לימין המסך והתוכן "נשפך" שמאלה. אנימציית translateX(-50%) מזיזה אותו עוד שמאלה
+           ואז צד ימין של המסך מתרוקן בסוף כל מחזור - זה בדיוק ה"שטח הריק" שנראה. הפתרון: כופים
+           direction:ltr על *כל הסרגל* (המכולה + המסלול), כך שהמסלול מיושר לשמאל (קצהו השמאלי ב-0
+           והתוכן נשפך ימינה אל מחוץ למסך), והאנימציה שמאלה חושפת את התוכן המשוכפל בלולאה חלקה
+           ואינסופית - בלי שטח ריק אף פעם. מחזירים direction:rtl על כל פריט טקסט כדי שהעברית תוצג נכון. */
+        .econ-ticker { direction: ltr; width: 100%; overflow: hidden; background: rgba(0, 0, 0, 0.28); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.12); box-shadow: var(--shadow); }
+        .econ-ticker-track { direction: ltr; display: flex; width: max-content; white-space: nowrap; padding: 0.65rem 0; animation: econTickerScroll 90s linear infinite; will-change: transform; }
+        .econ-ticker-item { direction: rtl; display: inline-flex; align-items: center; color: #fff; font-size: 0.86rem; font-weight: 600; padding: 0 1.4rem; text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
+        .econ-ticker-sep { color: rgba(255,255,255,0.6); }
+        @keyframes econTickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @media (prefers-reduced-motion: reduce) { .econ-ticker-track { animation: none; } }
+        /* פינוי מקום בראש הדף כדי שהסרגל הצף לא יכסה תוכן - ערך התחלתי, מתעדכן בפועל ע"י JS
+           (ר' _setupTopBarObserver) לפי הגובה האמיתי של #topFixedBar, כולל כשבאנר ההתחזות מוצג */
+        body { padding-top: 3.5rem; }
 
         .modal-overlay { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; padding: 1rem; }
         .modal-content { background: var(--surface); border-radius: 24px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 90vh; animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -393,13 +417,26 @@
         html[data-theme="dark"] [style*="rgb(255, 247, 237)"] { background-color: #2a2410 !important; background-image: none !important; border-color: #4a3d18 !important; }
         /* גוונים ירוקים */
         html[data-theme="dark"] [style*="#dcfce7"],
-        html[data-theme="dark"] [style*="rgb(220, 252, 231)"] { background-color: #11261d !important; background-image: none !important; border-color: #1f4736 !important; }
+        html[data-theme="dark"] [style*="rgb(220, 252, 231)"],
+        html[data-theme="dark"] [style*="#f0fdf4"],
+        html[data-theme="dark"] [style*="rgb(240, 253, 244)"] { background-color: #11261d !important; background-image: none !important; border-color: #1f4736 !important; }
         /* גוונים אדומים */
         html[data-theme="dark"] [style*="background:#fee2e2"],
         html[data-theme="dark"] [style*="background: #fee2e2"],
         html[data-theme="dark"] [style*="background: rgb(254, 226, 226)"],
         html[data-theme="dark"] [style*="background:#fca5a5"],
         html[data-theme="dark"] [style*="background: rgb(252, 165, 165)"] { background-color: #2c1618 !important; background-image: none !important; }
+        /* FIX: נמצאו בסבב בדיקת ניגודיות למצב לילה (ר' באג "תובנות AI" בכרטיס ניתוח חודשים -
+           רקע #f0fdf4 לא הוגדר בכלל, מה שהשאיר טקסט בהיר-בירושה על רקע ירוק-בהיר קבוע = לא קריא).
+           גוונים אפורים בהירים נוספים שהיו חסרים באותה בדיקה: */
+        html[data-theme="dark"] [style*="background:#f0f0f0"],
+        html[data-theme="dark"] [style*="background: #f0f0f0"],
+        html[data-theme="dark"] [style*="background: rgb(240, 240, 240)"],
+        html[data-theme="dark"] [style*="#e2e8f0"],
+        html[data-theme="dark"] [style*="rgb(226, 232, 240)"] { background-color: var(--surface-2) !important; background-image: none !important; border-color: var(--border) !important; }
+        /* גוון סגול בהיר נוסף שהיה חסר (תג "🤖 בינה מלאכותית") */
+        html[data-theme="dark"] [style*="#ede9fe"],
+        html[data-theme="dark"] [style*="rgb(237, 233, 254)"] { background-color: #241c3a !important; background-image: none !important; border-color: #3b2f5c !important; }
 
         /* רקעים בהירים שהוגדרו במחלקות CSS (לא ב-style ישיר) -> מונע כתב בהיר על רקע בהיר במצב לילה */
         html[data-theme="dark"] .history-item,
@@ -447,6 +484,11 @@
         html[data-theme="dark"] [style*="color: rgb(30, 41, 59)"] { color: #e8edf5 !important; }
         html[data-theme="dark"] [style*="color:#6d28d9"],
         html[data-theme="dark"] [style*="color: rgb(109, 40, 217)"] { color: #c4b5fd !important; }
+        /* FIX: עוד שני צבעי טקסט כהים שנכתבו ישירות ולא נתפסו קודם (ר' באג "תובנות AI") */
+        html[data-theme="dark"] [style*="color:#166534"],
+        html[data-theme="dark"] [style*="color: rgb(22, 101, 52)"] { color: #4ade80 !important; }
+        html[data-theme="dark"] [style*="color:#7c3aed"],
+        html[data-theme="dark"] [style*="color: rgb(124, 58, 237)"] { color: #c4b5fd !important; }
 
         /* רכיבים מבוססי-מחלקה */
         html[data-theme="dark"] .add-row { background: var(--surface-2) !important; border-color: var(--border); }
@@ -476,10 +518,6 @@
         body.biz-mode .date-widget .widget-label { color: #b08535 !important; }
         .biz-badge { display:none; background:linear-gradient(135deg,#c9a84c,#b08535); color:#fff; font-size:0.72rem; font-weight:700; padding:2px 9px; border-radius:20px; letter-spacing:0.5px; vertical-align:middle; margin-right:6px; }
         body.biz-mode .biz-badge { display:inline-block !important; }
-        /* כפתור מעבר מהיר בין חשבון אישי ועסקי */
-        .quick-mode-switch { padding: 0.8rem 1rem; border-radius: 12px; font-weight: 700; font-size: 0.88rem; display: none; align-items: center; gap: 8px; justify-content: center; width: 100%; cursor: pointer; border: 2px solid #f0c060; background: linear-gradient(135deg,#fef9ea,#fef3c7); color: #b45309; transition: all 0.2s; font-family: inherit; }
-        .quick-mode-switch:hover { filter: brightness(0.96); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(201,168,76,0.2); }
-        html[data-theme="dark"] .quick-mode-switch { background: #2a2418 !important; border-color: #7a6030 !important; color: var(--gold) !important; }
 
         /* ====== כפתורי בחירת סוג חשבון ====== */
         .account-type-btn { flex:1; padding:0.95rem 0.6rem; border:2px solid var(--border); background:transparent; color:var(--text-light); border-radius:14px; cursor:pointer; font-weight:600; font-size:0.88rem; line-height:1.5; transition:all 0.2s; text-align:center; font-family:inherit; }
@@ -489,8 +527,13 @@
 </head>
 <body>
 
-    <div id="adminImpersonationBanner" onclick="exitImpersonation()">
-        אתה מחובר כעת לחשבון הלקוח. לחץ כאן לחזרה לפאנל המנהל
+    <div id="topFixedBar">
+        <div id="adminImpersonationBanner" onclick="exitImpersonation()">
+            אתה מחובר כעת לחשבון הלקוח. לחץ כאן לחזרה לפאנל המנהל
+        </div>
+        <div class="econ-ticker" id="econTicker" aria-label="טיפים פיננסיים / תובנות">
+            <div class="econ-ticker-track" id="econTickerTrack"></div>
+        </div>
     </div>
 
     <div class="auth-wrapper" id="authBox">
@@ -720,7 +763,7 @@
 
     <div class="dashboard-container" id="dashboardScreen">
         <div class="main-layout">
-            
+
             <div class="sidebar">
                 <div class="date-widget">
                     <div class="widget-label">תאריך נוכחי</div>
@@ -733,9 +776,6 @@
                     <button class="sidebar-btn" id="btnViewAbout" onclick="switchView('about')"><span>ℹ️</span> איך זה עובד?</button>
                 </div>
 
-                <!-- כפתור מעבר מהיר אישי ↔ עסקי — מופיע רק אם יש שני חשבונות -->
-                <button id="sidebarModeSwitchBtn" class="quick-mode-switch" onclick="quickSwitchMode()">💼 עבור לחשבון עסקי</button>
-                
                 <button class="btn-pro-scan" onclick="askCameraPermission('expense')" title="⚠️ עובד בקבלות פשוטות וברורות. קבלות מורכבות - הזן ידנית">
                     <span style="font-size:1.2rem;">📷</span> סרוק קבלה (AI)
                 </button>
@@ -744,12 +784,16 @@
                     <span style="font-size:1.2rem;">💳</span> סרוק סליקה (הכנסה)
                 </button>
 
-                <button class="btn-report" onclick="openReportsModal()" style="margin-top: 0.5rem; background: #f8fafc; color: var(--text-dark); border: 1.5px solid var(--border); box-shadow: none;">
-                    <span>📑</span> ייצוא ואקסל
+                <button class="btn-report" onclick="openExportCenter()" style="margin-top: 0.5rem; background: #f8fafc; color: var(--text-dark); border: 1.5px solid var(--border); box-shadow: none;">
+                    <span>📤</span> ייצוא ודוחות
                 </button>
 
                 <button onclick="openBankImportModal()" style="margin-top: 0.5rem; background: linear-gradient(135deg,#f59e0b,#d97706); color: white; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; box-shadow: 0 8px 16px rgba(245,158,11,0.25);">
                     <span>📥</span> ייבוא דף בנק (אקסל/CSV)
+                </button>
+
+                <button id="trashBinBtn" onclick="openTrashModal()" class="btn-outline" style="margin-top: 0.5rem; width:100%; justify-content:center; position:relative;" title="שחזור פריטים שנמחקו">
+                    <span>🗑️</span> סל מיחזור <span class="trash-count" style="background:#dc2626; color:#fff; border-radius:10px; padding:0 6px; font-size:0.72rem; font-weight:700; margin-right:4px;"></span>
                 </button>
 
                 <button onclick="openUserInboxModal()" style="margin-top: 0.5rem; background: linear-gradient(135deg,#eff6ff,#dbeafe); color: #2563eb; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%;">
@@ -773,9 +817,10 @@
                     <div class="actions-bar">
                         <div class="current-month-badge">חודש פעיל: <span id="currentMonthTxt"></span></div>
                         <span id="saveStatusIndicator" style="font-size: 0.85rem; color: var(--success); font-weight: 600; display: none;">✓ ענן מעודכן</span>
-                        <button class="btn-outline" id="toManagerPanelBtn" style="display:none; color:var(--admin); border-color:#e9d5ff;" onclick="userSwitchToManager()">🛡️ ניהול הקהילה</button>
-                        <!-- מעבר מהיר אישי ↔ עסקי — נראה רק אם יש שני חשבונות -->
-                        <button id="topBarModeSwitchBtn" class="btn-outline" style="display:none;" onclick="quickSwitchMode()">💼 עסקי</button>
+                        <!-- FIX: כפתור יחיד מאוחד למעבר בין חשבונות (היו קודם עד 3 כפתורים נפרדים -
+                             ניהול קהילה + מעבר אישי/עסקי בטופ-בר + עוד אחד בסיידבר/מובייל). לחיצה
+                             יחידה: אם יש רק כובע אחר אחד - עוברים ישר; אם יש שניים - שואלים. ר' handleAccountSwitch. -->
+                        <button class="btn-outline" id="switchAccountBtn" style="display:none; color:var(--admin); border-color:#e9d5ff;" onclick="handleAccountSwitch()">🔀 החלף חשבון</button>
                         <button class="btn-outline" onclick="openProfileUpdateModal()">✏️ פרופיל</button>
                         <button class="btn-outline" id="themeToggleBtn" onclick="toggleTheme()" title="מצב כהה/בהיר">🌙</button>
                         <button class="btn-outline" style="color:var(--danger); border-color:#fecaca;" onclick="handleLogout()">התנתק</button>
@@ -843,6 +888,9 @@
                         <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #8b5cf6;">
                             <strong>🧠 יועץ פיננסי ותובנות:</strong> צ'אט ייעוץ חכם (כפתור הסגול בפינה) ותובנות אוטומטיות על ההתנהלות הכספית.
                         </li>
+                        <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #4f46e5;">
+                            <strong>📰 סרגל תובנות אישי:</strong> הסרגל הרץ בראש המסך מנתח את <em>נתוני התקציב האמיתיים שלכם</em> (הכנסות, הוצאות, קטגוריה בולטת, חריגות מהיעד, מגמה מול חודשים קודמים) ומציג תובנות קצרות מותאמות אישית — מתעדכן אוטומטית בכל כניסה (עד פעם ב-6 שעות). בלי מפתח AI, או אם הניתוח נכשל, מוצגות תובנות מקומיות מדויקות באותו סגנון במקום טיפים כלליים.
+                        </li>
                         <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #6d28d9;">
                             <strong>📋 היסטוריית העלאות:</strong> כפתור "היסטוריה" בסריקת הקבלות ובייבוא הבנק מציג את כל מה שהועלה — עם תאריך, שם קובץ, ופרטי התוצאה. מזהה קבצים כפולים אוטומטית.
                         </li>
@@ -901,12 +949,8 @@
                     <div class="stats-export-bar">
                         <button class="btn-outline" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openInsightsModal()">🧠 תובנות חכמות (AI)</button>
                         <button class="btn-outline" style="border-color:#f59e0b; color:#f59e0b;" onclick="openBankImportModal()">📥 ייבוא דף בנק</button>
-                        <button class="btn-outline" style="border-color:#10b981; color:#10b981;" onclick="openReceiptExportModal()">🧾 ייצוא קבלות לאקסל</button>
-                        <button class="btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="exportCurrentMonthPDF()">📄 ייצא ל-PDF</button>
-                        <button class="btn-outline" style="border-color:#10b981; color:#10b981;" onclick="exportCurrentMonthExcelLive()">📊 ייצא לאקסל</button>
-                        <button class="btn-outline" style="border-color:#0ea5e9; color:#0ea5e9;" onclick="window.print()">🖨️ הדפס דוח</button>
+                        <button class="btn-outline" style="border-color:#6d28d9; color:#6d28d9;" onclick="openExportCenter()">📤 ייצוא ודוחות</button>
                         <button class="btn-outline" style="border-color:#64748b; color:#64748b; display:none;" onclick="openBackupModal()">💾 גיבוי / שחזור</button>
-                        <button class="btn-outline" style="border-color:#6d28d9; color:#6d28d9;" onclick="openReportsModal()">📑 דוח חודשים נרחב</button>
                     </div>
                     <h3 style="font-size: 1.4rem; margin-bottom: 0.4rem;">סקירה חודשית: הכנסות מול הוצאות</h3>
                     <p style="color:var(--text-light); font-size:0.85rem; margin-bottom:0.8rem;">מתעדכן בזמן אמת על כל פעולה בתקציב.</p>
@@ -989,8 +1033,6 @@
         <button class="mobile-nav-btn" id="mobBtnSalik" style="display:none; color:#d97706;" onclick="askCameraPermission('income')"><span>💳</span>סליקה</button>
         <button class="mobile-nav-btn" onclick="openMobileMonthsModal()"><span>📅</span>חודשים</button>
         <button class="mobile-nav-btn" onclick="openUserInboxModal()" style="position:relative;"><span>💬</span>פניות<span class="js-user-inq-badge inq-badge" style="position:absolute; top:-2px; left:8px;"></span></button>
-        <!-- כפתור מעבר מהיר — מוסתר כברירת מחדל, מופיע רק למי שיש שני חשבונות -->
-        <button class="mobile-nav-btn" id="mobModeSwitchBtn" style="display:none; color:#b45309;" onclick="quickSwitchMode()"><span id="mobModeSwitchIcon">💼</span><span id="mobModeSwitchLabel">עסקי</span></button>
         <button class="mobile-nav-btn" id="mobBtnAbout" onclick="switchView('about')"><span>ℹ️</span>מידע</button>
         <button class="mobile-nav-btn" onclick="openProfileUpdateModal()"><span>⚙️</span>הגדרות</button>
     </div>
@@ -1013,79 +1055,104 @@
     </div>
 
     <!-- ===== מודל ייצוא פירוטי הוצאות ===== -->
-    <div class="modal-overlay" id="receiptExportModal">
-        <div class="modal-content" style="max-width: 520px;">
+    <!-- ===== מרכז ייצוא ודוחות (מאוחד - כל פעולות הייצוא במקום אחד) ===== -->
+    <div class="modal-overlay" id="exportCenterModal">
+        <div class="modal-content" style="max-width: 560px;">
             <div class="modal-header">
-                <h3 style="color:#10b981;">🧾 ייצוא פירוטי הוצאות</h3>
-                <button class="btn-close-modal" onclick="closeReceiptExportModal()">✕</button>
+                <h3 style="color:#6d28d9;">📤 ייצוא ודוחות</h3>
+                <button class="btn-close-modal" onclick="closeExportCenter()">✕</button>
             </div>
-            <div class="modal-body" style="gap:1.2rem;">
+            <div class="modal-body" style="gap:1.1rem;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button id="expTabBtnMonth"    class="btn-outline" style="flex:1; min-width:110px; justify-content:center; font-size:0.83rem; padding:0.5rem 0.4rem;" onclick="switchExportTab('month')">📅 החודש הנוכחי</button>
+                    <button id="expTabBtnDetailed" class="btn-outline" style="flex:1; min-width:110px; justify-content:center; font-size:0.83rem; padding:0.5rem 0.4rem;" onclick="switchExportTab('detailed')">🧾 הוצאות מפורט</button>
+                    <button id="expTabBtnRange"    class="btn-outline" style="flex:1; min-width:110px; justify-content:center; font-size:0.83rem; padding:0.5rem 0.4rem;" onclick="switchExportTab('range')">📑 טווח חודשים</button>
+                </div>
 
-                <!-- טווח חודשים -->
-                <div style="background:var(--surface-2); border-radius:14px; padding:1rem 1.2rem; border:1px solid var(--border);">
-                    <div style="font-weight:700; font-size:0.9rem; color:var(--text-dark); margin-bottom:10px;">📅 טווח חודשים</div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <div>
-                            <label style="font-size:0.8rem; color:var(--text-light); display:block; margin-bottom:4px;">מחודש:</label>
-                            <select id="exportFromMonth" class="input-field" style="margin:0; font-size:0.88rem;" onchange="updateExportPreview()"></select>
+                <!-- ===== טאב 1: החודש הנוכחי ===== -->
+                <div id="expTabContentMonth" style="display:flex; flex-direction:column; gap:10px;">
+                    <p id="expMonthTabDesc" style="color:var(--text-light); font-size:0.85rem; margin:0;">ייצוא/הדפסה מהירים של החודש הפעיל בלבד.</p>
+                    <button class="btn-outline" style="border-color:#ef4444; color:#ef4444; justify-content:center;" onclick="exportCurrentMonthPDF()">📄 ייצא ל-PDF</button>
+                    <button class="btn-outline" style="border-color:#10b981; color:#10b981; justify-content:center;" onclick="exportCurrentMonthExcelLive()">📊 ייצא לאקסל</button>
+                    <button class="btn-outline" style="border-color:#0ea5e9; color:#0ea5e9; justify-content:center;" onclick="window.print()">🖨️ הדפס דוח</button>
+                </div>
+
+                <!-- ===== טאב 2: הוצאות מפורט (היה מודל receiptExportModal נפרד) ===== -->
+                <div id="expTabContentDetailed" style="display:none; flex-direction:column; gap:1.1rem;">
+                    <!-- טווח חודשים -->
+                    <div style="background:var(--surface-2); border-radius:14px; padding:1rem 1.2rem; border:1px solid var(--border);">
+                        <div style="font-weight:700; font-size:0.9rem; color:var(--text-dark); margin-bottom:10px;">📅 טווח חודשים</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div>
+                                <label style="font-size:0.8rem; color:var(--text-light); display:block; margin-bottom:4px;">מחודש:</label>
+                                <select id="exportFromMonth" class="input-field" style="margin:0; font-size:0.88rem;" onchange="updateExportPreview()"></select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; color:var(--text-light); display:block; margin-bottom:4px;">עד חודש:</label>
+                                <select id="exportToMonth" class="input-field" style="margin:0; font-size:0.88rem;" onchange="updateExportPreview()"></select>
+                            </div>
                         </div>
-                        <div>
-                            <label style="font-size:0.8rem; color:var(--text-light); display:block; margin-bottom:4px;">עד חודש:</label>
-                            <select id="exportToMonth" class="input-field" style="margin:0; font-size:0.88rem;" onchange="updateExportPreview()"></select>
+                    </div>
+
+                    <!-- מה לייצא -->
+                    <div style="background:var(--surface-2); border-radius:14px; padding:1rem 1.2rem; border:1px solid var(--border);">
+                        <div style="font-weight:700; font-size:0.9rem; color:var(--text-dark); margin-bottom:10px;">✅ מה לכלול בייצוא</div>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
+                                <input type="checkbox" id="expSrcAi" checked style="width:18px;height:18px;accent-color:#10b981;" onchange="updateExportPreview()">
+                                <span>📷 סריקות קבלות (AI)</span>
+                                <span id="expSrcAiCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
+                                <input type="checkbox" id="expSrcImport" checked style="width:18px;height:18px;accent-color:#f59e0b;" onchange="updateExportPreview()">
+                                <span>📥 ייבוא מהבנק</span>
+                                <span id="expSrcImportCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
+                                <input type="checkbox" id="expSrcManual" checked style="width:18px;height:18px;accent-color:#6366f1;" onchange="updateExportPreview()">
+                                <span>✏️ הוצאות ידניות</span>
+                                <span id="expSrcManualCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
+                                <input type="checkbox" id="expSrcIncome" checked style="width:18px;height:18px;accent-color:#c9a84c;" onchange="updateExportPreview()">
+                                <span>💳 הכנסות עסקיות (סליקה)</span>
+                                <span id="expSrcIncomeCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
+                            </label>
                         </div>
                     </div>
-                </div>
 
-                <!-- מה לייצא -->
-                <div style="background:var(--surface-2); border-radius:14px; padding:1rem 1.2rem; border:1px solid var(--border);">
-                    <div style="font-weight:700; font-size:0.9rem; color:var(--text-dark); margin-bottom:10px;">✅ מה לכלול בייצוא</div>
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
-                            <input type="checkbox" id="expSrcAi" checked style="width:18px;height:18px;accent-color:#10b981;" onchange="updateExportPreview()">
-                            <span>📷 סריקות קבלות (AI)</span>
-                            <span id="expSrcAiCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
-                            <input type="checkbox" id="expSrcImport" checked style="width:18px;height:18px;accent-color:#f59e0b;" onchange="updateExportPreview()">
-                            <span>📥 ייבוא מהבנק</span>
-                            <span id="expSrcImportCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
-                            <input type="checkbox" id="expSrcManual" checked style="width:18px;height:18px;accent-color:#6366f1;" onchange="updateExportPreview()">
-                            <span>✏️ הוצאות ידניות</span>
-                            <span id="expSrcManualCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem; font-weight:500;">
-                            <input type="checkbox" id="expSrcIncome" checked style="width:18px;height:18px;accent-color:#c9a84c;" onchange="updateExportPreview()">
-                            <span>💳 הכנסות עסקיות (סליקה)</span>
-                            <span id="expSrcIncomeCount" style="margin-right:auto; font-size:0.78rem; color:var(--text-light); background:var(--surface); padding:1px 8px; border-radius:20px; border:1px solid var(--border);">...</span>
-                        </label>
+                    <!-- פורמט -->
+                    <div style="background:var(--surface-2); border-radius:14px; padding:1rem 1.2rem; border:1px solid var(--border);">
+                        <div style="font-weight:700; font-size:0.9rem; color:var(--text-dark); margin-bottom:10px;">📁 פורמט הייצוא</div>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem;">
+                                <input type="radio" name="expFormat" id="expFmtOne" value="one" checked style="width:16px;height:16px;accent-color:var(--primary);">
+                                <span><strong>📄 קובץ אחד</strong> — כל המקורות בגיליון מאוחד + גיליון סיכום</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem;">
+                                <input type="radio" name="expFormat" id="expFmtSep" value="separate" style="width:16px;height:16px;accent-color:var(--primary);">
+                                <span><strong>📂 קבצים נפרדים</strong> — קובץ נפרד לכל מקור (AI / בנק / ידני)</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
 
-                <!-- פורמט -->
-                <div style="background:var(--surface-2); border-radius:14px; padding:1rem 1.2rem; border:1px solid var(--border);">
-                    <div style="font-weight:700; font-size:0.9rem; color:var(--text-dark); margin-bottom:10px;">📁 פורמט הייצוא</div>
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem;">
-                            <input type="radio" name="expFormat" id="expFmtOne" value="one" checked style="width:16px;height:16px;accent-color:var(--primary);">
-                            <span><strong>📄 קובץ אחד</strong> — כל המקורות בגיליון מאוחד + גיליון סיכום</span>
-                        </label>
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.92rem;">
-                            <input type="radio" name="expFormat" id="expFmtSep" value="separate" style="width:16px;height:16px;accent-color:var(--primary);">
-                            <span><strong>📂 קבצים נפרדים</strong> — קובץ נפרד לכל מקור (AI / בנק / ידני)</span>
-                        </label>
+                    <!-- תצוגה מקדימה -->
+                    <div id="exportPreviewBox" style="background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:0.8rem 1rem; font-size:0.88rem; color:#166534; font-weight:600; text-align:center;">
+                        בחר אפשרויות לצפייה בתצוגה מקדימה
                     </div>
+                    <button class="btn-primary" style="margin:0; background:linear-gradient(135deg,#10b981,#059669);" onclick="doExportReceipts()">🧾 ייצא לאקסל</button>
                 </div>
 
-                <!-- תצוגה מקדימה -->
-                <div id="exportPreviewBox" style="background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:0.8rem 1rem; font-size:0.88rem; color:#166534; font-weight:600; text-align:center;">
-                    בחר אפשרויות לצפייה בתצוגה מקדימה
+                <!-- ===== טאב 3: דוח מלא לפי טווח חודשים (היה מודל reportsModal נפרד) ===== -->
+                <div id="expTabContentRange" style="display:none; flex-direction:column; gap:1rem;">
+                    <p style="color:var(--text-light); font-size:0.85rem; margin:0;">דוח תקציב מלא (הכנסות + הוצאות + פירוט) לכל חודש בטווח, גיליון נפרד לכל חודש.</p>
+                    <div style="display:flex; gap:10px;">
+                        <div class="input-group" style="flex:1; margin:0;"><label>מחודש:</label><select id="reportStartMonth" class="input-field" onchange="_syncReportRangeSanity()"></select></div>
+                        <div class="input-group" style="flex:1; margin:0;"><label>עד חודש:</label><select id="reportEndMonth" class="input-field" onchange="_syncReportRangeSanity()"></select></div>
+                    </div>
+                    <button class="btn-outline" style="border-color:#10b981; color:#10b981; justify-content:center;" onclick="generateAdvancedExcel()">📊 הורד אקסל מלא לטווח</button>
+                    <button class="btn-outline" style="border-color:#3b82f6; color:#3b82f6; justify-content:center;" onclick="generateAdvancedEmail()">📧 הכן סיכום לשליחה באימייל</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline" onclick="closeReceiptExportModal()">ביטול</button>
-                <button class="btn-primary" style="margin:0; width:auto; background:linear-gradient(135deg,#10b981,#059669);" onclick="doExportReceipts()">🧾 ייצא לאקסל</button>
             </div>
         </div>
     </div>
@@ -1119,6 +1186,22 @@
                     </div>
                 </div>
                 <div id="uploadHistoryList" style="max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                    <p style="text-align:center; color:var(--text-light);">טוען...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== מודל סל מיחזור — שחזור פריטים שנמחקו ===== -->
+    <div class="modal-overlay" id="trashModal" style="z-index:10002;">
+        <div class="modal-content" style="max-width: 640px;">
+            <div class="modal-header">
+                <h3 style="color:#b45309;">🗑️ סל מיחזור</h3>
+                <button class="btn-close-modal" onclick="closeTrashModal()">✕</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; background:#f8fafc;">
+                <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:1rem;">כאן נשמרים פריטים שנמחקו (הכנסות, קטגוריות הוצאה, פעולות ויעדי חיסכון) — ניתן לשחזר בכל עת, גם ממכשיר אחר.</p>
+                <div id="trashList" style="max-height:420px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
                     <p style="text-align:center; color:var(--text-light);">טוען...</p>
                 </div>
             </div>
@@ -1344,27 +1427,16 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="hatChoiceModal">
-        <div class="modal-content" style="max-width: 420px;">
-            <div class="modal-header"><h3 style="color:var(--admin);">באיזה כובע להתחבר?</h3></div>
-            <div class="modal-body" style="text-align:center;">
-                <p style="color:var(--text-light);">שלום <strong id="hatChoiceName" style="color:var(--text-dark);"></strong>, יש לך גם חשבון אישי וגם ניהול קבוצה (<strong id="hatChoiceGroup" style="color:var(--admin);"></strong>). מה תרצה לעשות עכשיו?</p>
-                <button class="btn-primary" style="margin-top:0.5rem; background:linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow:none;" onclick="chooseHatManager()">🛡️ ניהול הקהילה שלי</button>
-                <button class="btn-primary" style="margin-top:0.8rem; background:linear-gradient(135deg,#10b981,#059669); box-shadow:none;" onclick="chooseHatClient()">💼 החשבון שלי (תקציב חודשי)</button>
-                <a class="auth-toggle-link" style="display:block; margin-top:1rem; color:var(--text-light);" onclick="closeHatChoiceModal()">ביטול</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- מודל בחירת מצב אישי/עסקי -->
-    <div class="modal-overlay" id="bizHatModal">
+    <!-- מודל בחירת חשבון מאוחד - מציג בבת אחת את כל ה"כובעים" הרלוונטיים (מנהל/אישי/עסקי),
+         כמה שיש. מחליף את שני המודלים הנפרדים (hatChoiceModal + bizHatModal) שהיו מציגים
+         בחירה דו-שלבית מקוננת. ר' askAccountHatChoice/chooseAccountHat. -->
+    <div class="modal-overlay" id="accountHatModal">
         <div class="modal-content" style="max-width: 420px;">
             <div class="modal-header"><h3 style="color:var(--primary);">🧭 לאיזה חשבון להיכנס?</h3></div>
             <div class="modal-body" style="text-align:center;">
-                <p style="color:var(--text-light); margin-bottom:0.5rem;">שלום <strong id="bizHatName" style="color:var(--text-dark);"></strong>,<br>יש לך חשבון אישי וגם חשבון עסקי. לאן להיכנס?</p>
-                <button class="btn-primary" style="margin-top:0.6rem; background:linear-gradient(135deg,#4f46e5,#4338ca); box-shadow:none;" onclick="chooseModePersonal()">👤 חשבון אישי<br><small style="font-weight:400; opacity:0.85;">ניהול תקציב חודשי</small></button>
-                <button class="btn-primary" style="margin-top:0.8rem; background:linear-gradient(135deg,#c9a84c,#b08535); box-shadow:none;" onclick="chooseModeBiz()">💼 חשבון עסקי<br><small style="font-weight:400; opacity:0.85;">ניהול הוצאות עסק</small></button>
-                <a class="auth-toggle-link" style="display:block; margin-top:1rem; color:var(--text-light);" onclick="closeBizHatModal()">ביטול</a>
+                <p style="color:var(--text-light); margin-bottom:0.5rem;">שלום <strong id="accountHatName" style="color:var(--text-dark);"></strong>, יש לך כמה חשבונות. לאן להיכנס?</p>
+                <div id="accountHatOptions" style="display:flex; flex-direction:column; gap:0.8rem; margin-top:0.5rem;"></div>
+                <a class="auth-toggle-link" style="display:block; margin-top:1rem; color:var(--text-light);" onclick="closeAccountHatModal()">ביטול</a>
             </div>
         </div>
     </div>
@@ -1399,23 +1471,6 @@
             <div class="modal-footer">
                 <button class="btn-outline" onclick="closeChangeAdminCredsModal()">ביטול</button>
                 <button class="btn-primary" style="margin:0; background:linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow:none;" onclick="saveAdminCredentials()">שמור</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="reportsModal">
-        <div class="modal-content" style="max-width: 450px;">
-            <div class="modal-header"><h3 style="color: #6d28d9;">הפקת דוחות (רבעוני / שנתי)</h3><button class="btn-close-modal" onclick="closeReportsModal()">✕</button></div>
-            <div class="modal-body">
-                <p style="color:var(--text-light); margin-bottom:10px;">בחר טווח חודשים לייצוא הדוח:</p>
-                <div style="display:flex; gap:10px; margin-bottom: 1.5rem;">
-                    <div class="input-group" style="flex:1; margin:0;"><label>מחודש:</label><select id="reportStartMonth" class="input-field"></select></div>
-                    <div class="input-group" style="flex:1; margin:0;"><label>עד חודש:</label><select id="reportEndMonth" class="input-field"></select></div>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <button class="btn-outline" style="border-color:#10b981; color:#10b981;" onclick="generateAdvancedExcel()">📊 הורד אקסל מלא לטווח</button>
-                    <button class="btn-outline" style="border-color:#3b82f6; color:#3b82f6;" onclick="generateAdvancedEmail()">📧 הכן סיכום לשליחה באימייל</button>
-                </div>
             </div>
         </div>
     </div>
@@ -1663,8 +1718,20 @@
         let _editingPastMonth = null;
         let _returnToMonthStr = null;
 
+        // FIX: מודד את הגובה האמיתי של #topFixedBar (סרגל רץ + באנר התחזות, כשמוצג) ומעדכן את
+        // ה-padding-top של body בהתאם - כדי שהתוכן לעולם לא ייחסם, גם כשבאנר ההתחזות מופיע/נעלם.
+        function _setupTopBarObserver() {
+            const bar = document.getElementById('topFixedBar'); if (!bar) return;
+            const apply = () => { document.body.style.paddingTop = (bar.offsetHeight + 8) + 'px'; };
+            apply();
+            if (window.ResizeObserver) { new ResizeObserver(apply).observe(bar); }
+            else { window.addEventListener('resize', apply); }
+        }
+
         window.onload = function() {
             applyStoredTheme();
+            initEconTicker();
+            _setupTopBarObserver();
             const savedSession = localStorage.getItem('budget_active_session');
             if (savedSession) { 
                 tempUserSession = JSON.parse(savedSession); 
@@ -1681,10 +1748,10 @@
                     // טביעת אצבע + זיהוי כפל (אסינכרוני, לא חוסם)
                     const dupWarn = document.getElementById('receiptDupWarning');
                     if (dupWarn) dupWarn.style.display = 'none';
-                    computeFileFingerprint(file).then(function(fp) {
+                    computeFileFingerprint(file).then(async function(fp) {
                         window._pendingReceiptFingerprint = fp;
                         window._pendingReceiptFileName = file.name || 'קבלה';
-                        const dup = findDuplicateInHistory(fp, 'receipt');
+                        const dup = await findDuplicateInHistory(fp, 'receipt');
                         if (dup && dupWarn) {
                             const d = new Date(dup.uploadedAt).toLocaleDateString('he-IL');
                             const info = dup.result && dup.result.store ? ' — ' + dup.result.store + (dup.result.amount ? ', ₪' + dup.result.amount : '') : '';
@@ -1791,41 +1858,48 @@
             if (error || !data || data.length === 0) return alert("שגיאה: חשבון לא קיים.");
             if (data[0].pin !== pin) return alert("קוד סודי שגוי.");
             isImpersonating = false; localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return');
-            // אם לחשבון יש קבוצה בניהולו - הוא גם מנהל וגם לקוח, נשאל באיזה "כובע" להתחבר
-            if (isManagerAccount(data[0])) { askHatChoice(data[0]); return; }
-            // בדיקת חשבון עסקי: localStorage (מהיר) + Supabase (אמין/חוצה מכשירים)
-            const hasBiz = hasBizAccount(data[0].user_id) || await checkBizAccountCloud(data[0].user_id);
-            if (hasBiz) { askBizHatChoice(data[0]); return; }
-            loginAsUser(data[0]);
+            // FIX: איחוד שני מסכי הבחירה הנפרדים (מנהל/לקוח, ואז אישי/עסקי) למסך אחד שמציג
+            // בבת אחת את כל ה"כובעים" הרלוונטיים - כדי שמישהו שהוא גם מנהל קהילה וגם בעל חשבון
+            // עסקי יראה את כל 3 האפשרויות יחד, במקום שתי שאלות מקוננות ברצף.
+            await presentHatChoiceOrLogin(data[0]);
         }
 
-        // ====== בחירת "כובע" למי שהוא גם מנהל וגם לקוח ======
-        function askHatChoice(userObj) {
+        // ====== קביעת כל ה"כובעים" הזמינים לחשבון (מנהל / אישי / עסקי) ======
+        async function getAvailableHats(userObj) {
+            const hats = ['personal']; // חשבון אישי קיים תמיד
+            if (isManagerAccount(userObj)) hats.unshift('manager');
+            const hasBiz = hasBizAccount(userObj.user_id) || await checkBizAccountCloud(userObj.user_id);
+            if (hasBiz) hats.push('business');
+            return hats;
+        }
+        // בודק כמה כובעים יש לחשבון - אם יותר מאחד, שואל; אחרת נכנס ישר לחשבון האישי
+        async function presentHatChoiceOrLogin(userObj) {
+            const hats = await getAvailableHats(userObj);
+            if (hats.length > 1) { askAccountHatChoice(userObj, hats); return; }
+            loginAsUser(userObj);
+        }
+        const HAT_INFO = {
+            manager:  { icon: '🛡️', label: 'ניהול הקהילה שלי',  sub: 'ניהול חברי הקבוצה', gradient: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' },
+            personal: { icon: '👤', label: 'החשבון האישי שלי',  sub: 'ניהול תקציב חודשי', gradient: 'linear-gradient(135deg,#4f46e5,#4338ca)' },
+            business: { icon: '💼', label: 'החשבון העסקי שלי',  sub: 'ניהול הוצאות עסק',  gradient: 'linear-gradient(135deg,#c9a84c,#b08535)' }
+        };
+        function askAccountHatChoice(userObj, hats) {
             pendingHatUser = userObj;
-            document.getElementById('hatChoiceName').innerText = userObj.username || '';
-            document.getElementById('hatChoiceGroup').innerText = userObj.manager_group_name || userObj.manager_code || '';
-            document.getElementById('hatChoiceModal').style.display = 'flex';
+            document.getElementById('accountHatName').innerText = userObj.username || '';
+            const wrap = document.getElementById('accountHatOptions');
+            wrap.innerHTML = hats.map(h => {
+                const info = HAT_INFO[h];
+                return `<button class="btn-primary" style="margin:0; background:${info.gradient}; box-shadow:none;" onclick="chooseAccountHat('${h}')">${info.icon} ${info.label}<br><small style="font-weight:400; opacity:0.85;">${info.sub}</small></button>`;
+            }).join('');
+            document.getElementById('accountHatModal').style.display = 'flex';
         }
-        function closeHatChoiceModal() { document.getElementById('hatChoiceModal').style.display = 'none'; }
-        function chooseHatManager() { const u = pendingHatUser; closeHatChoiceModal(); if (u) loginAsManager(u); }
-        async function chooseHatClient() {
-            const u = pendingHatUser; closeHatChoiceModal(); if (!u) return;
-            // אחרי בחירת "חשבון שלי" — בדוק ב-localStorage וגם בענן אם יש חשבון עסקי
-            const hasBiz = hasBizAccount(u.user_id) || await checkBizAccountCloud(u.user_id);
-            if (hasBiz) { askBizHatChoice(u); return; }
-            loginAsUser(u);
+        function closeAccountHatModal() { document.getElementById('accountHatModal').style.display = 'none'; }
+        function chooseAccountHat(hat) {
+            const u = pendingHatUser; closeAccountHatModal(); if (!u) return;
+            if (hat === 'manager') loginAsManager(u);
+            else if (hat === 'business') loginAsUser(u, true);
+            else loginAsUser(u, false);
         }
-
-        // ====== בחירת אישי / עסקי ======
-        let _pendingBizUser = null;
-        function askBizHatChoice(userObj) {
-            _pendingBizUser = userObj;
-            document.getElementById('bizHatName').innerText = userObj.username || '';
-            document.getElementById('bizHatModal').style.display = 'flex';
-        }
-        function closeBizHatModal() { document.getElementById('bizHatModal').style.display = 'none'; }
-        function chooseModePersonal() { const u = _pendingBizUser; closeBizHatModal(); if (u) loginAsUser(u, false); }
-        function chooseModeBiz()      { const u = _pendingBizUser; closeBizHatModal(); if (u) loginAsUser(u, true); }
 
         // ====== מנהל בכיר: ניהול קבוצות ומנהלים ======
         function generateGroupCode() {
@@ -1986,7 +2060,11 @@
                 window._adminBizOpenDates = bizOpenDates;
                 document.getElementById('adminBizCount').innerText = bizUsers.length;
                 renderAdminBiz(bizUsers);
-            } catch(e) { document.getElementById('adminBizTable').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-light);">שגיאה בטעינת חשבונות עסקיים.</td></tr>'; }
+                _setTickerContext('admin'); refreshAdminTicker(all, managers, central, bizUsers);
+            } catch(e) {
+                document.getElementById('adminBizTable').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-light);">שגיאה בטעינת חשבונות עסקיים.</td></tr>';
+                _setTickerContext('admin'); refreshAdminTicker(all, managers, central, []);
+            }
         }
 
         function renderAdminBiz(list) {
@@ -2118,10 +2196,18 @@
             refreshManagerInquiryBadge();
             if (window._mgrInqPoll) clearInterval(window._mgrInqPoll);
             window._mgrInqPoll = setInterval(refreshManagerInquiryBadge, 30000);
+            _setTickerContext('manager'); refreshManagerTicker(members, managerObj);
         }
 
         // מעבר מהיר מהפאנל ניהול אל התקציב האישי של אותו חשבון
-        function managerSwitchToBudget() { if (currentManagerSession) loginAsUser(currentManagerSession); }
+        // FIX: בעבר הלך תמיד ישירות לחשבון האישי, גם אם למנהל יש גם חשבון עסקי - התעלם מהכובע
+        // השלישי. עכשיו בודק אם יש גם חשבון עסקי; אם כן מציג בחירה (אישי/עסקי), אחרת נכנס ישר.
+        async function managerSwitchToBudget() {
+            if (!currentManagerSession) return;
+            const hasBiz = hasBizAccount(currentManagerSession.user_id) || await checkBizAccountCloud(currentManagerSession.user_id);
+            if (hasBiz) { askAccountHatChoice(currentManagerSession, ['personal', 'business']); return; }
+            loginAsUser(currentManagerSession);
+        }
 
         // ====== פרופיל הקבוצה (סגנון וואטסאפ) ======
         let _pendingAvatar = '';
@@ -2521,9 +2607,6 @@
             const banner = document.getElementById('adminImpersonationBanner');
             if (isImpersonating) { banner.innerText = `אתה מחובר כעת לחשבון הלקוח: ${userObj.username} | לחץ כאן לחזרה לפאנל המנהל`; banner.style.display = 'block'; } else { banner.style.display = 'none'; }
             
-            // כפתור מעבר לניהול הקהילה - רק אם החשבון הוא גם מנהל ואיננו במצב התחזות
-            const toMgrBtn = document.getElementById('toManagerPanelBtn');
-            if (toMgrBtn) toMgrBtn.style.display = (isManagerAccount(userObj) && !isImpersonating) ? 'inline-flex' : 'none';
             // כפתור צ'אט הקהילה - רק אם הלקוח משתייך לקבוצה (לא רלוונטי במצב עסקי)
             const chatBtn = document.getElementById('userCommunityChatBtn');
             if (chatBtn) chatBtn.style.display = (userObj.group_code && !isBiz) ? 'flex' : 'none';
@@ -2536,46 +2619,24 @@
             // החלת מצב עסקי / אישי
             if (isBiz) { applyBizMode(); } else { exitBizMode(); }
 
-            // ====== כפתורי מעבר מהיר בין אישי ↔ עסקי ======
-            const hasBiz = hasBizAccount(userObj.user_id);
-            // סרגל צד (desktop)
-            const sbBtn = document.getElementById('sidebarModeSwitchBtn');
-            if (sbBtn) {
-                sbBtn.style.display = hasBiz ? 'flex' : 'none';
-                if (hasBiz) {
-                    sbBtn.style.background = isBiz
-                        ? 'linear-gradient(135deg,#eff6ff,#dbeafe)'
-                        : 'linear-gradient(135deg,#fef9ea,#fef3c7)';
-                    sbBtn.style.color      = isBiz ? '#1d4ed8' : '#b45309';
-                    sbBtn.style.borderColor= isBiz ? '#93c5fd' : '#f0c060';
-                    sbBtn.innerHTML        = isBiz ? '👤 חזור לחשבון האישי' : '💼 עבור לחשבון העסקי';
-                }
-            }
-            // top-bar (desktop + mobile)
-            const tbBtn = document.getElementById('topBarModeSwitchBtn');
-            if (tbBtn) {
-                tbBtn.style.display = hasBiz ? 'inline-flex' : 'none';
-                if (hasBiz) {
-                    tbBtn.style.color       = isBiz ? '#1d4ed8' : '#b45309';
-                    tbBtn.style.borderColor = isBiz ? '#93c5fd' : '#e4c97e';
-                    tbBtn.style.background  = '';
-                    tbBtn.innerHTML         = isBiz ? '👤 אישי' : '💼 עסקי';
-                }
-            }
-            // mobile nav
-            const mbBtn = document.getElementById('mobModeSwitchBtn');
-            const mbIcon = document.getElementById('mobModeSwitchIcon');
-            const mbLabel = document.getElementById('mobModeSwitchLabel');
-            if (mbBtn) {
-                mbBtn.style.display = hasBiz ? 'flex' : 'none';
-                if (hasBiz) {
-                    mbBtn.style.color = isBiz ? '#1d4ed8' : '#b45309';
-                    if (mbIcon)  mbIcon.innerText  = isBiz ? '👤' : '💼';
-                    if (mbLabel) mbLabel.innerText  = isBiz ? 'אישי' : 'עסקי';
-                }
-            }
-            switchView('main'); initSystemDates(); loadCurrentMonthData(); fetchAllUserMonths(); 
+            // ====== כפתור מעבר חשבון מאוחד (ליד הפרופיל) - מוצג אם יש לפחות כובע אחר אחד ======
+            // FIX: החליף 4 כפתורים נפרדים (ניהול קהילה + מעבר אישי/עסקי בסיידבר/טופ-בר/מובייל)
+            // בכפתור יחיד. הלוגיקה בפועל (מה קורה בלחיצה) ב-handleAccountSwitch.
+            const switchBtn = document.getElementById('switchAccountBtn');
+            const _updateSwitchBtnVisibility = (hasBiz) => { if (switchBtn) switchBtn.style.display = (!isImpersonating && (isManagerAccount(userObj) || hasBiz)) ? 'inline-flex' : 'none'; };
+            // FIX: הבדיקה הסתמכה רק על localStorage ('biz_mode_' + userId) - אם החשבון העסקי נפתח
+            // ממכשיר/דפדפן אחר (או ע"י המנהל דרך פאנל הניהול), הדגל המקומי לא היה קיים, והכפתור
+            // פשוט לא הופיע אף פעם למרות שיש חשבון עסקי אמיתי. מציגים מיד לפי הבדיקה המקומית
+            // המהירה, ואז מוודאים מול הענן (אמין בין מכשירים) ומעדכנים אם צריך.
+            _updateSwitchBtnVisibility(hasBizAccount(userObj.user_id));
+            if (!isImpersonating) checkBizAccountCloud(userObj.user_id).then(cloudHasBiz => { if (cloudHasBiz) _updateSwitchBtnVisibility(true); });
+            switchView('main'); initSystemDates();
+            // FIX: מחכים ששני הטעינות יסתיימו (getLiveSnapshot/allUserMonthsData) לפני שמרעננים את
+            // הסרגל האישי - אחרת התובנות עלולות להתבסס על נתונים ישנים/ריקים מרגע ההתחברות.
+            _setTickerContext('personal');
+            Promise.all([loadCurrentMonthData(), fetchAllUserMonths()]).then(() => { refreshPersonalizedTicker(); }).catch(() => {});
             loadUserSettings();
+            _trashCache = null; _uploadHistoryCache = null; updateTrashBadge();
             refreshUserInquiryBadge();
             if (!window._userInqPoll) window._userInqPoll = setInterval(refreshUserInquiryBadge, 30000);
         }
@@ -2607,13 +2668,23 @@
             const mobSalik = document.getElementById('mobBtnSalik'); if (mobSalik) mobSalik.style.display = 'none';
         }
 
-        // מעבר מהיר מהתקציב האישי אל פאנל ניהול הקהילה (אותו חשבון)
-        function userSwitchToManager() { if (tempUserSession && isManagerAccount(tempUserSession)) loginAsManager(tempUserSession); }
-
-        // מעבר מהיר בין חשבון אישי לעסקי (ושמירת הכל)
-        function quickSwitchMode() {
+        // FIX: כפתור מעבר חשבון יחיד (ליד הפרופיל) - מחליף את userSwitchToManager/quickSwitchMode
+        // שהיו מפוזרים על פני כמה כפתורים שונים. לוחצים פעם אחת: אם יש רק כובע אחר אחד (למשל רק
+        // עסקי, או רק מנהל) - עוברים אליו ישר בלי לשאול. אם יש שני כובעים אחרים (גם מנהל וגם עסקי) -
+        // קופצת אותה שאלת בחירה שמשמשת גם בהתחברות (askAccountHatChoice).
+        async function handleAccountSwitch() {
             if (!tempUserSession) return;
-            loginAsUser(tempUserSession, !tempUserSession._bizMode);
+            const currentHat = tempUserSession._bizMode ? 'business' : 'personal';
+            const hats = await getAvailableHats(tempUserSession);
+            const others = hats.filter(h => h !== currentHat);
+            if (!others.length) return;
+            if (others.length === 1) {
+                const h = others[0];
+                if (h === 'manager') loginAsManager(tempUserSession);
+                else loginAsUser(tempUserSession, h === 'business');
+                return;
+            }
+            askAccountHatChoice(tempUserSession, others);
         }
 
         // ===== בנייה מחדש של dailyExpenseLogs מתוך שורות הטבלה =====
@@ -2743,6 +2814,247 @@
         }
         function closeProfileUpdateModal() { document.getElementById('profileUpdateModal').style.display = 'none'; }
 
+        // ===== סרגל רץ - טיפים פיננסיים כלליים (תוכן קבוע, לא תלוי AI/רשת) =====
+        const ECON_TICKER_TIPS = [
+            '💡 חוק ה-50/30/20: 50% לצרכים חיוניים, 30% לרצונות, 20% לחיסכון והשקעה.',
+            '📊 קרן חירום: 3-6 חודשי הוצאות מחיה נזילה וזמינה מיד — אפילו מתחת 3 חודשים יותר טוב מאפס.',
+            '📈 ריבית דריבית: התחל לחסוך כרגע, גם אם בסכום קטן — הזמן הוא הכוח הגדול ביותר.',
+            '💳 כרטיס אשראי בריבית גבוהה? סלק אותו לפני כל השקעה — חיזוי בטוח של 20% תשואה.',
+            '🏦 השוואת בנקים: הבדל של 0.5% בריבית משכנתא = עשרות אלפים בחיסכון לאורך 25 שנות.',
+            '📉 דיברסיפיקציה: אל תשים הכל בנכס אחד — פזר בין מניות, אגרות חוב, נדלן.',
+            '🎯 יעד ספציפי עם תאריך נעשה בסבירות 10 פעמים גבוהה יותר מיעד כללי בלא תאריך.',
+            '🛒 רשימת קניות קודם? חוסכת 20-30% מהמזון החודשי — המוח שלך קונה פחות בדוקן.',
+            '📅 בדוק תקציב יחד בני הזוג פעם בשבוע — זה משקפע בעיות עוד לפני שהן גדלות.',
+            '💰 "שלם לעצמך קודם": הפרש לחיסכון מהמשכורת לפני שתוציא על כל השאר.',
+            '🔍 עמלה של 1% בשנה = 30% מהתשואה שלך מופץ! בדוק את עמלות הקרנות שלך.',
+            '🏠 משכנתא/שכירות צריכה להיות עד 33% מהכנסה — יותר מזה = לחץ פיננסי.',
+            '📱 מנויים "שנשכחו" = דליפה גדולה בתקציב. ביקר ברשימת כל המנויים שלך כל רבעון.',
+            '🌍 אינפלציה שורפת כסף בחיסכון בלי השקעה — בחר נכס שמהתם בריבית או תשואה.',
+            '🧾 דוח אשראי חינם בשנה: בדוק שאין חיובים זרים או הזיות — זה קורה יותר מדי.',
+            '⏳ התחל מהיום, אפילו עם ₪100 — ההרגל גדול יותר מהסכום ההתחלתי.',
+            '💸 דירוג עצמי: מה הוצאה חיוני וראיתם אותה רק בחודש האחרון? אולי ניתן לחסוך.',
+            '🎁 קנה יותר בחודשים בהנחה (נובמבר-דצמבר) — אל תשתרי בימים רגילים.',
+            '🏦 הלוואה משפחתי > הלוואה מהבנק: רבית 0% טובה הרבה יותר מ-5-7%.',
+            '💼 בחודש כמסתו עלה הוצאות של 30%? לא בשם קטנות — תדרוש שכר עלייה.',
+            '📊 עקוב יומי בהוצאות = מודעות גבוהה. רוב אנשים מופתעים כמה הם מוציאים.',
+            '🎯 יעד שנתי לחיסכון קונקרטי — למשל "₪10,000 בשנה" — זה עוזר בממש.',
+            '🚗 רכב: בן 8+ שנים מזל גבוה יותר בתחזוקה — קנה כלי קדום אם ניתן.',
+            '🏡 שכרית > שיכרות כרטיס אשראי: ריבית נמוכה = עלות אמיתית נמוכה יותר.',
+            '📈 השקעה ה-100 הראשונה קשה יותר מהשקעה ה-10,000. התחל עכשיו.',
+            '💰 "בטוח חיים" לא תמיד הכרחי — בדוק את צרכיך בפועל לפני הקנייה.',
+            '🌱 כל ₪100 שחוסכת היום = ₪1000+ בעוד 40 שנה (ריבית + דריבית).',
+            '🔐 סיסמה חזקה על חשבון בנק וכרטיס = גן עדן בשכבה הראשונה של אבטחה.',
+            '📊 גרפים כדוח? מתחזק את ההרגל חודשי — תראה הצלחה בצורה חזותית.',
+            '✅ תקציב שלא עולה על דף נייר הוא תקציב מחודל — כתוב את שלך היום.'
+        ];
+        function renderTickerItems(items) {
+            const track = document.getElementById('econTickerTrack'); if (!track) return;
+            // FIX: הסרגל לעולם לא נשאר ריק - אם מסיבה כלשהי מגיעה רשימה ריקה/לא תקינה, נופלים
+            // חזרה לטיפים הכלליים במקום להציג כלום.
+            const safeItems = (Array.isArray(items) && items.length) ? items : ECON_TICKER_TIPS;
+            const sep = '<span class="econ-ticker-sep">•</span>';
+            const oneRound = safeItems.map(t => `<span class="econ-ticker-item">${escapeHtml(t)}</span>${sep}`).join('');
+            // FIX: כשיש מעט מאוד תוכן (למשל תובנה קצרה אחת, "אין עדיין מספיק נתונים..."), עותק
+            // בודד היה צר בהרבה מרוחב המסך. שכפול פשוט של פעמיים לא הספיק כדי לכסות את כל הרוחב
+            // לאורך כל האנימציה - וזה בדיוק מה שנראה כ"סרגל ריק" (רווח לבן/ריק שחולף על המסך).
+            // הפתרון: חוזרים על אותו תוכן (גם אם זהה) כמה פעמים שצריך עד שעותק בודד רחב לפחות
+            // כמו המסך, ורק אז משכפלים אותו פעמיים ליצירת לולאה חלקה - כך שהסרגל תמיד מלא.
+            track.innerHTML = oneRound;
+            let rounds = 1;
+            const minWidth = Math.max(window.innerWidth || 0, 600) * 1.25;
+            while (track.scrollWidth < minWidth && rounds < 30) { rounds++; track.innerHTML = oneRound.repeat(rounds); }
+            const fullRound = oneRound.repeat(rounds);
+            // משכפלים את הרצף (המורחב) פעמיים כדי שהאנימציה (translateX עד 50%-) תיצור לולאה חלקה בלי "קפיצה"
+            track.innerHTML = fullRound + fullRound;
+            // FIX: משך האנימציה היה קבוע (90s) בלי קשר לכמות התוכן - רשימה ארוכה הייתה חייבת "לרוץ"
+            // הרבה יותר מהר כדי לעבור את כל הרוחב שלה תוך 90 שניות (מרגיש "מהר מדי"), ורשימה קצרה
+            // זחלה לאט. קובעים מהירות קבועה (פיקסלים לשנייה) ומחשבים את המשך לפי הרוחב בפועל.
+            // FIX: החישוב היה בתוך requestAnimationFrame - לא מהימן (לא תמיד יורה בזמן, בעיקר
+            // בטאב לא פעיל/ברקע), ובפועל ה-duration נשאר תקוע על ברירת המחדל. קריאת scrollWidth
+            // מיד אחרי עדכון ה-innerHTML כופה reflow סינכרוני - איטי בזניחות אך אמין ב-100%.
+            const singleCopyWidth = track.scrollWidth / 2;
+            const speedPxPerSec = 55; // מהירות קריאה נוחה קבועה
+            const duration = Math.max(20, singleCopyWidth / speedPxPerSec);
+            track.style.animationDuration = duration + 's';
+        }
+        // תצוגה ראשונית (לפני התחברות / לפני שהתובנות האישיות מוכנות) - טיפים כלליים קבועים
+        function initEconTicker() { renderTickerItems(ECON_TICKER_TIPS); }
+        // FIX: רשת ביטחון נוספת - בודקים מעת לעת שהסרגל באמת לא ריק בפועל ב-DOM (למשל אם קריסת
+        // JS באמצע רינדור השאירה אותו חצי-מעודכן), ומתקנים באופן אקטיבי אם כן.
+        function _ensureTickerNeverEmpty() {
+            const track = document.getElementById('econTickerTrack'); if (!track) return;
+            if (!track.children.length || !track.textContent.trim()) renderTickerItems(ECON_TICKER_TIPS);
+        }
+        setInterval(_ensureTickerNeverEmpty, 30000);
+
+        // ===================================================================
+        // ====== סרגל רץ מותאם אישית - AI מנתח את נתוני הלקוח עצמו ======
+        // לאחר התחברות, הסרגל עובר מטיפים כלליים לתובנות אמיתיות על החודש הנוכחי של
+        // הלקוח (מגמות מול חודשים קודמים, קטגוריה עם ההוצאה הגדולה, חריגות מהיעד וכו').
+        // יש תמיד גם גרסה מקומית (בלי AI) כברירת מחדל/גיבוי, כדי שהסרגל אף פעם לא "ייתקע"
+        // על הטיפים הכלליים סתם כי אין מפתח AI או שהקריאה נכשלה - בדיוק כמו runMonthlyInsights.
+        // ===================================================================
+        function buildLocalTickerInsights() {
+            const snap = getLiveSnapshot();
+            let income = 0; (snap.income || []).forEach(i => income += Number(i.amount) || 0);
+            const cats = [].concat(snap.fixed || [], snap.variable || []);
+            const totalExp = cats.reduce((s, c) => s + (Number(c.actual) || 0), 0);
+            const items = [];
+            if (income > 0) {
+                const bal = income - totalExp; const rate = Math.round((bal / income) * 100);
+                items.push(bal >= 0 ? `💰 נותרו לך ₪${bal.toLocaleString()} החודש (${rate}% מההכנסה)` : `⚠️ חריגה של ₪${Math.abs(bal).toLocaleString()} מההכנסה החודש`);
+            }
+            const top = cats.filter(c => c.actual > 0).sort((a, b) => b.actual - a.actual)[0];
+            if (top) items.push(`📊 ההוצאה הגדולה ביותר החודש: ${top.name} (₪${Number(top.actual).toLocaleString()})`);
+            const prev = (allUserMonthsData || []).filter(m => !isSameMonthStr(m.month_str, workingMonthStr)).slice(-1)[0];
+            if (prev) {
+                let prevExp = 0; (prev.data.fixed || []).concat(prev.data.variable || []).forEach(c => prevExp += Number(c.actual) || 0);
+                if (prevExp > 0) {
+                    const diff = Math.round(((totalExp - prevExp) / prevExp) * 100);
+                    if (diff > 5) items.push(`📈 ההוצאות עלו ${diff}% לעומת ${prev.month_str}`);
+                    else if (diff < -5) items.push(`📉 הצלחת להוריד הוצאות ${Math.abs(diff)}% לעומת ${prev.month_str}`);
+                }
+            }
+            const over = cats.filter(c => c.target > 0 && c.actual > c.target);
+            if (over.length) items.push(`⚠️ חריגה מהיעד ב-${over.length} קטגוריות: ${over.map(c => c.name).join(', ')}`);
+            else if (cats.some(c => c.target > 0)) items.push('✅ אין חריגות מהיעדים שהגדרת החודש — כל הכבוד!');
+            // הערה: אם אין נתונים — מחזירים רשימה ריקה בכוונה. הטיפים הכלליים מתווספים תמיד
+            // ב-_composeTickerContent, כך שהסרגל אף פעם לא נשאר עם "אין נתונים" בלבד.
+            return items;
+        }
+        // FIX: לפי בקשת המשתמש - הסרגל מציג *גם* ניתוח אישי *וגם* טיפים מעניינים מעולם הפיננסים,
+        // ביחד, בלי הפסקות ובלי שטח ריק. במקום שהניתוח האישי "יחליף" את הטיפים (וכשאין נתונים
+        // נשארות 4 הודעות "הזן נתונים" והסרגל מתרוקן) - מרכיבים רשימה אחת: קודם התובנות האישיות
+        // (אם יש), ואז כל 30 הטיפים הכלליים. כך תמיד יש עשרות פריטים = לולאה אינסופית מלאה.
+        function _composeTickerContent(personalInsights) {
+            const personal = (Array.isArray(personalInsights) ? personalInsights : []).filter(x => typeof x === 'string' && x.trim());
+            // מערבבים את הטיפים הכלליים בסדר אקראי קל בכל רענון כדי שלא ירגישו זהים לגמרי בכל פעם
+            const tips = ECON_TICKER_TIPS.slice();
+            for (let i = tips.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = tips[i]; tips[i] = tips[j]; tips[j] = t; }
+            // התובנות האישיות קודם (הכי רלוונטיות למשתמש), אחריהן הטיפים הכלליים
+            return personal.concat(tips);
+        }
+        async function refreshPersonalizedTicker() {
+            if (!tempUserSession) return;
+            const cacheKey = tempUserSession.user_id + '|' + workingMonthStr;
+            const storageKey = 'ticker_insights_' + tempUserSession.user_id;
+            // FIX: מטמון של 6 שעות היה גורם לתחושה שהסרגל "נתקע" על אותו תוכן לכל אורך הכניסה -
+            // המשתמש רואה את אותן תובנות שוב ושוב בכל לולאה ומרגיש שזה "לא ממשיך". מקוצר ל-45 דקות,
+            // ומשולב עם רענון תקופתי (ר' _tickerAutoRefreshTimer למטה) כך שבפועל מתעדכן תוך כדי שימוש.
+            try {
+                const raw = localStorage.getItem(storageKey);
+                if (raw) {
+                    const cached = JSON.parse(raw);
+                    if (cached.key === cacheKey && Array.isArray(cached.items) && cached.items.length && (Date.now() - cached.generatedAt) < 45 * 60 * 1000) {
+                        // גם תוכן מהמטמון עובר הרכבה עם הטיפים הכלליים - אף פעם לא רק תובנות בודדות
+                        renderTickerItems(_composeTickerContent(cached.items));
+                        return;
+                    }
+                }
+            } catch (e) {}
+
+            // תובנות מקומיות (בלי AI) - מוצגות מיד, ומחושבות מחדש מנתונים חיים בכל רענון (לא סטטיות)
+            // ותמיד מורכבות יחד עם הטיפים הכלליים (ניתוח אישי + מידע פיננסי מעניין)
+            renderTickerItems(_composeTickerContent(buildLocalTickerInsights()));
+            if (!hasAiKey()) return;
+
+            try {
+                const snap = getLiveSnapshot();
+                let income = 0; (snap.income || []).forEach(i => income += Number(i.amount) || 0);
+                const cats = [].concat(snap.fixed || [], snap.variable || []).filter(c => c.actual > 0 || c.target > 0).map(c => ({ name: c.name, actual: c.actual, target: c.target }));
+                const totalExp = cats.reduce((s, c) => s + (Number(c.actual) || 0), 0);
+                const history = (allUserMonthsData || []).filter(m => !isSameMonthStr(m.month_str, workingMonthStr)).slice(-3).map(m => {
+                    let inc = 0, exp = 0; (m.data.income || []).forEach(i => inc += Number(i.amount) || 0); (m.data.fixed || []).concat(m.data.variable || []).forEach(c => exp += Number(c.actual) || 0);
+                    return { month: m.month_str, income: inc, expense: exp };
+                });
+                const prompt = `אתה יועץ פיננסי אישי. קיבלת את נתוני התקציב האמיתיים של לקוח - נתח אותם וצור 5-8 תובנות קצרות מאוד (עד 90 תווים כל אחת, בעברית, עם אימוג'י בתחילת כל תובנה), קונקרטיות ומבוססות על המספרים בפועל (לא כלליות/גנריות), בסגנון "סרגל חדשות רץ".
+חודש נוכחי (${workingMonthStr}): הכנסות ₪${income}, הוצאות ₪${totalExp}, קטגוריות (שם/בפועל/יעד): ${JSON.stringify(cats)}.
+חודשים קודמים (הכנסה/הוצאה): ${JSON.stringify(history)}.
+החזר אך ורק מערך JSON תקין של מחרוזות, בלי טקסט נוסף: ["תובנה 1", "תובנה 2", ...]`;
+                const txt = await geminiGenerate([{ text: prompt }], { json: true, retries: 1 });
+                const arr = safeJsonParse(txt);
+                const items = Array.isArray(arr) ? arr.filter(x => typeof x === 'string' && x.trim()).slice(0, 10) : [];
+                if (items.length) {
+                    // התובנות מ-AI מוצגות יחד עם הטיפים הכלליים (ניתוח אישי + מידע פיננסי), לא לבד
+                    renderTickerItems(_composeTickerContent(items));
+                    // במטמון שומרים רק את התובנות האישיות; ההרכבה עם הטיפים קורית מחדש בכל רינדור
+                    try { localStorage.setItem(storageKey, JSON.stringify({ key: cacheKey, items, generatedAt: Date.now() })); } catch (e) {}
+                }
+            } catch (e) {
+                console.error('רענון תובנות AI לסרגל נכשל - נשארים עם התובנות המקומיות:', e);
+            }
+        }
+
+        // ===================================================================
+        // ====== סרגל רץ - פאנל מנהל בכיר / פאנל מנהל קבוצה ======
+        // כאן התוכן הוא סטטיסטי-עובדתי (מספר לקוחות, הצטרפויות, קבוצות) ולא AI - אין צורך
+        // ב"ניתוח" יצירתי, רק בהצגת מספרים אמיתיים שכבר בידינו ממילא מהטעינה של הפאנל.
+        // ===================================================================
+        function buildAdminTickerInsights(all, managers, central, bizUsers) {
+            const items = [];
+            items.push(`📋 סה"כ ${all.length} לקוחות רשומים במערכת`);
+            items.push(`👥 ${managers.length} קבוצות/מנהלים פעילים`);
+            if (central.length) items.push(`🏛️ ${central.length} לקוחות ללא שיוך לקבוצה`);
+            if (bizUsers && bizUsers.length) items.push(`💼 ${bizUsers.length} חשבונות עסקיים פתוחים`);
+            // הצטרפויות אחרונות - תלוי אם לטבלת users יש עמודת created_at בפועל
+            const withDates = all.filter(u => u.created_at);
+            if (withDates.length) {
+                const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                const newThisWeek = withDates.filter(u => new Date(u.created_at).getTime() >= weekAgo).length;
+                if (newThisWeek > 0) items.push(`🆕 ${newThisWeek} לקוחות חדשים הצטרפו השבוע`);
+            }
+            // הקבוצה הגדולה ביותר
+            if (managers.length) {
+                const memberCounts = {};
+                managers.forEach(m => { memberCounts[m.manager_code] = 0; });
+                all.forEach(u => { if (u.group_code && memberCounts.hasOwnProperty(u.group_code)) memberCounts[u.group_code]++; });
+                const top = managers.slice().sort((a, b) => (memberCounts[b.manager_code] || 0) - (memberCounts[a.manager_code] || 0))[0];
+                if (top && memberCounts[top.manager_code] > 0) items.push(`🏆 הקבוצה הגדולה ביותר: ${top.manager_group_name || top.username} (${memberCounts[top.manager_code]} חברים)`);
+            }
+            if (!items.length) items.push('💡 עדיין אין נתונים להצגה.');
+            return items;
+        }
+        function refreshAdminTicker(all, managers, central, bizUsers) { renderTickerItems(buildAdminTickerInsights(all, managers, central, bizUsers || [])); }
+
+        function buildManagerTickerInsights(members, managerObj) {
+            const items = [];
+            items.push(`👥 בקבוצה "${managerObj.manager_group_name || managerObj.username || ''}" יש ${members.length} חברים`);
+            const withDates = members.filter(u => u.created_at);
+            if (withDates.length) {
+                const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                const newThisWeek = withDates.filter(u => new Date(u.created_at).getTime() >= weekAgo).length;
+                if (newThisWeek > 0) items.push(`🆕 ${newThisWeek} חברים חדשים הצטרפו לקבוצה השבוע`);
+            }
+            if (!members.length) items.push('💡 עדיין אין חברים בקבוצה — שתף/י את קוד הקבוצה כדי להתחיל.');
+            return items;
+        }
+        function refreshManagerTicker(members, managerObj) { renderTickerItems(buildManagerTickerInsights(members, managerObj)); }
+
+        // ===================================================================
+        // ====== רענון תקופתי של הסרגל - כדי שבאמת "ימשיך" ולא ילולאה לנצח על אותה קבוצת
+        // תובנות שנטענה פעם אחת בהתחברות. כל כמה דקות מרעננים מחדש לפי ההקשר הנוכחי
+        // (דשבורד אישי / פאנל מנהל / פאנל מנהל בכיר) - התובנות המקומיות תמיד מחושבות מחדש
+        // מנתונים חיים, ותובנות ה-AI מתעדכנות בפועל ברגע שפג תוקף המטמון של 45 דקות. ======
+        // ===================================================================
+        let _tickerContext = null; // 'personal' | 'admin' | 'manager'
+        function _setTickerContext(type) { _tickerContext = type; }
+        function _refreshTickerForCurrentContext() {
+            try {
+                if (_tickerContext === 'personal') { refreshPersonalizedTicker(); }
+                else if (_tickerContext === 'admin') {
+                    const all = window._adminAllUsers || [];
+                    const managers = all.filter(u => !!u.manager_code);
+                    const central = all.filter(u => !u.group_code && !u.manager_code);
+                    refreshAdminTicker(all, managers, central, window._adminBizUsers || []);
+                } else if (_tickerContext === 'manager' && currentManagerSession) {
+                    refreshManagerTicker(window._mgrMembersData || [], currentManagerSession);
+                }
+            } catch (e) { console.error('רענון תקופתי של הסרגל נכשל:', e); }
+        }
+        if (!window._tickerAutoRefreshTimer) {
+            window._tickerAutoRefreshTimer = setInterval(_refreshTickerForCurrentContext, 5 * 60 * 1000);
+        }
+
         // ===== מצב כהה (Dark Mode) =====
         function applyStoredTheme() {
             const t = localStorage.getItem('app_theme') === 'dark' ? 'dark' : 'light';
@@ -2769,6 +3081,40 @@
         async function saveUserSettings() {
             try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__settings__', data: userSettings }); } catch(e) {}
         }
+        // FIX: קצב חיסכון ממוצע לחודש, מבוסס על כל החודשים שהסתיימו בפועל (הכנסות פחות הוצאות,
+        // כולל חודשים שליליים - לא "מרוקן" אותם ל-0 כמו computeAnnualSavings, כי המלצה כנה על קצב
+        // חייבת לשקף גם חודשי גירעון, אחרת ההמלצה תהיה אופטימית מדי). לא כולל את החודש הפעיל
+        // (עדיין לא הסתיים, אז לא יציג ממוצע אמין).
+        function computeAvgMonthlySavingsPace() {
+            const months = (allUserMonthsData || []).filter(m => !isSameMonthStr(m.month_str, workingMonthStr));
+            if (!months.length) return null;
+            let total = 0;
+            months.forEach(m => {
+                const d = m.data || {};
+                let inc = 0, exp = 0;
+                (d.income || []).forEach(i => inc += Number(i.amount) || 0);
+                (d.fixed || []).forEach(f => exp += Number(f.actual) || 0);
+                (d.variable || []).forEach(v => exp += Number(v.actual) || 0);
+                total += (inc - exp);
+            });
+            return total / months.length;
+        }
+        // המלצה לגבי יעד חיסכון בודד: לפי קצב החיסכון הממוצע ההיסטורי, כמה חודשים נדרשים ומתי בערך
+        function goalRecommendationHtml(goal) {
+            const remaining = (Number(goal.target) || 0) - (Number(goal.saved) || 0);
+            if (remaining <= 0) return '';
+            const pace = computeAvgMonthlySavingsPace();
+            if (pace === null) {
+                return `<div style="font-size:0.78rem; color:var(--text-light); margin-top:6px;">💡 עדיין אין מספיק היסטוריית חודשים כדי להעריך קצב חיסכון.</div>`;
+            }
+            if (pace <= 0) {
+                return `<div style="font-size:0.78rem; color:var(--danger); margin-top:6px;">⚠️ בקצב הממוצע הנוכחי (₪${Math.round(pace).toLocaleString()}/חודש) לא תגיעי ליעד — כדאי להגדיל חיסכון או לצמצם הוצאות.</div>`;
+            }
+            const monthsNeeded = Math.ceil(remaining / pace);
+            const target = new Date(); target.setMonth(target.getMonth() + monthsNeeded);
+            const targetLabel = target.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+            return `<div style="font-size:0.78rem; color:var(--text-light); margin-top:6px;">💡 בקצב חיסכון ממוצע של ₪${Math.round(pace).toLocaleString()}/חודש, צפוי להגיע ליעד תוך כ-${monthsNeeded} חודשים (~${escapeHtml(targetLabel)}).</div>`;
+        }
         function renderSavingsGoals() {
             const el = document.getElementById('savingsGoalsList'); if (!el) return;
             const goals = userSettings.savings_goals || [];
@@ -2785,6 +3131,7 @@
                     </div>
                     <div style="background:var(--border); border-radius:10px; height:14px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:linear-gradient(90deg,#10b981,#059669); transition:width .4s;"></div></div>
                     <div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">₪${Number(g.saved).toLocaleString()} מתוך ₪${Number(g.target).toLocaleString()} (${pct}%)</div>
+                    ${pct >= 100 ? '' : goalRecommendationHtml(g)}
                 </div>`;
             }).join('');
         }
@@ -2798,7 +3145,11 @@
             userSettings.savings_goals.push({ name, target, saved });
             saveUserSettings(); renderSavingsGoals(); closeAddGoalModal();
         }
-        function deleteSavingsGoal(i) { userSettings.savings_goals.splice(i, 1); saveUserSettings(); renderSavingsGoals(); }
+        function deleteSavingsGoal(i) {
+            const goal = (userSettings.savings_goals || [])[i];
+            if (goal) pushToTrash({ kind: 'savingsGoal', monthStr: null, payload: goal });
+            userSettings.savings_goals.splice(i, 1); saveUserSettings(); renderSavingsGoals();
+        }
         function adjustGoal(i) {
             const cur = userSettings.savings_goals[i]; const v = prompt(`כמה נחסך עד כה ל"${cur.name}"? (₪)`, cur.saved);
             if (v === null) return; const n = Number(v); if (isNaN(n)) return alert("מספר לא תקין");
@@ -2843,6 +3194,19 @@
             if (target > 0) {
                 html += `<div style="background:var(--border); border-radius:10px; height:14px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:linear-gradient(90deg,#10b981,#059669); transition:width .4s;"></div></div>
                     <div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">${pct}% מהיעד השנתי ${pct >= 100 ? '🏆' : ''}</div>`;
+                // המלצה: כמה צריך לחסוך בממוצע לחודש מכאן ועד סוף השנה כדי להגיע ליעד
+                const remainingAnnual = target - info.total;
+                if (remainingAnnual <= 0) {
+                    html += `<div style="font-size:0.82rem; color:var(--success); margin-top:6px; font-weight:600;">🏆 היעד השנתי כבר הושג!</div>`;
+                } else {
+                    const monthsLeft = Math.max(1, 12 - new Date().getMonth()); // כולל החודש הנוכחי
+                    const perMonth = remainingAnnual / monthsLeft;
+                    html += `<div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">💡 נותרו ${monthsLeft} חודשים לסוף ${info.year} — כדי להגיע ליעד צריך לחסוך בממוצע ₪${Math.round(perMonth).toLocaleString()}/חודש מכאן ואילך.</div>`;
+                }
+            } else {
+                // FIX: בלי יעד מוגדר (target=0, ברירת המחדל) לא הייתה מוצגת שום המלצה ולא אפילו רמז
+                // שיש בכלל פיצ'ר כזה - המשתמש לא היה מבין למה הוא "לא רואה המלצות". עכשיו יש הכוונה ברורה.
+                html += `<div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">💡 עדיין לא הוגדר יעד חיסכון שנתי — לחץ "קבע יעד שנתי" למעלה כדי לקבל כאן המלצה חודשית מותאמת.</div>`;
             }
 
             if (info.byMonth.length) {
@@ -3001,6 +3365,25 @@
         function isSameMonthStr(a, b) {
             const norm = s => (s || '').replace(/,/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
             return norm(a) === norm(b);
+        }
+        // FIX: ממיר "יוני 2026" / "עסקי - יוני 2026" למפתח מספרי (שנה*100+חודש) לצורך מיון כרונולוגי -
+        // כדי שברשימת "חודשים קודמים" תמיד יופיע החודש שלפני הנוכחי ראשון, לא חודש ישן אקראי.
+        // שמות החודשים נגזרים דינמית מ-toLocaleDateString (לא hardcoded) כדי להתאים בדיוק לאיך
+        // שהדפדפן עצמו מייצר את ה-month_str (ר' initSystemDates), כולל הבדלי איות בין דפדפנים.
+        function monthStrSortKey(monthStr) {
+            if (!monthStr) return -1;
+            const s = String(monthStr).replace(/^עסקי - /, '').replace(/,/g, '').replace(/\s+/g, ' ').trim();
+            const m = s.match(/^(.+?)\s+(\d{4})$/);
+            if (!m) return -1;
+            if (!monthStrSortKey._names) {
+                const names = [];
+                for (let i = 0; i < 12; i++) names.push(new Date(2000, i, 1).toLocaleDateString('he-IL', { month: 'long' }).trim());
+                monthStrSortKey._names = names;
+            }
+            const idx = monthStrSortKey._names.indexOf(m[1]);
+            const yearNum = parseInt(m[2], 10);
+            if (idx === -1 || isNaN(yearNum)) return -1;
+            return yearNum * 100 + (idx + 1);
         }
 
         // מוסיף רשומה (הכנסה/הוצאה) לחודש שאינו בהכרח החודש המוצג כרגע — טוען/יוצר נתוני החודש,
@@ -3176,6 +3559,8 @@
             let logs = JSON.parse(tr.getAttribute('data-logs') || "[]");
             if (index < 0 || index >= logs.length) return;
             const removed = logs.splice(index, 1)[0];
+            const categoryName = (tr.querySelector('.name-input') && tr.querySelector('.name-input').value || '').trim();
+            pushToTrash({ kind: 'log', monthStr: workingMonthStr, payload: { categoryName, log: removed } });
             tr.setAttribute('data-logs', JSON.stringify(logs));
             const actualInput = tr.querySelector('.actual-val');
             actualInput.value = round1((Number(actualInput.value) || 0) - (Number(removed.amount) || 0));
@@ -3188,7 +3573,10 @@
         // מחיקת כל הפעולות מקטגוריה
         function deleteAllLogsFromRow(btn) {
             const tr = btn.closest('tr'); if (!tr) return;
-            if (!confirm('למחוק את כל פעולות הערסל בקטגוריה זו?\nהפעולה לא ניתנת לביטול.')) return;
+            if (!confirm('למחוק את כל פעולות הערסל בקטגוריה זו?\n(אפשר לשחזר אחר כך מ"סל המיחזור")')) return;
+            const logs = JSON.parse(tr.getAttribute('data-logs') || "[]");
+            const categoryName = (tr.querySelector('.name-input') && tr.querySelector('.name-input').value || '').trim();
+            if (logs.length) pushToTrash({ kind: 'allLogs', monthStr: workingMonthStr, payload: { categoryName, logs } });
             tr.setAttribute('data-logs', '[]');
             const actualInput = tr.querySelector('.actual-val');
             actualInput.value = '';
@@ -3329,7 +3717,28 @@
         function toggleFixedDone(chk) { const tr = chk.closest('tr'); const actualInput = tr.querySelector('.actual-val'); actualInput.value = chk.checked ? (tr.querySelector('.target-val').value || 0) : ''; calculateAll(true); }
         function addIncomeRow() { const name = document.getElementById('addIncomeName').value; const amount = document.getElementById('addIncomeAmount').value; if(!name) return; appendIncomeRowUI(document.getElementById('incomeBody'), name, amount); document.getElementById('addIncomeName').value=''; document.getElementById('addIncomeAmount').value=''; calculateAll(true); }
         function addExpenseRow(type) { const name = document.getElementById(`add${capitalize(type)}Name`).value; const target = document.getElementById(`add${capitalize(type)}Target`).value; const actual = document.getElementById(`add${capitalize(type)}Actual`).value; if(!name) return; appendExpenseRowUI(document.getElementById(`${type}Body`), name, target, actual, type, []); document.getElementById(`add${capitalize(type)}Name`).value=''; document.getElementById(`add${capitalize(type)}Target`).value=''; document.getElementById(`add${capitalize(type)}Actual`).value=''; calculateAll(true); }
-        function deleteRow(btn) { btn.closest('tr').remove(); calculateAll(true); }
+        function deleteRow(btn) {
+            const tr = btn.closest('tr');
+            const tbody = tr.parentElement;
+            const tbodyId = tbody ? tbody.id : '';
+            if (tbodyId === 'incomeBody') {
+                pushToTrash({ kind: 'income', monthStr: workingMonthStr, payload: {
+                    name: tr.querySelector('.name-input').value,
+                    amount: Number(tr.querySelector('.val-input').value) || 0,
+                    source: tr.getAttribute('data-source') || 'manual',
+                    date: tr.getAttribute('data-date') || ''
+                } });
+            } else if (tbodyId === 'fixedBody' || tbodyId === 'variableBody') {
+                pushToTrash({ kind: 'expenseRow', monthStr: workingMonthStr, payload: {
+                    section: tbodyId === 'fixedBody' ? 'fixed' : 'variable',
+                    name: tr.querySelector('.name-input').value,
+                    target: Number(tr.querySelector('.target-val').value) || 0,
+                    actual: Number(tr.querySelector('.actual-val').value) || 0,
+                    logs: JSON.parse(tr.getAttribute('data-logs') || '[]')
+                } });
+            }
+            tr.remove(); calculateAll(true);
+        }
         function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 
         function calculateAll(shouldSave = true) { 
@@ -3541,7 +3950,7 @@
                 }
                 // שמירה בהיסטוריה
                 if (window._pendingReceiptFingerprint) {
-                    addToUploadHistory('receipt', window._pendingReceiptFileName || 'סליקה', window._pendingReceiptFingerprint, {
+                    await addToUploadHistory('receipt', window._pendingReceiptFileName || 'סליקה', window._pendingReceiptFingerprint, {
                         store: aiData.store || '', amount: aiData.amount || 0, category: 'הכנסה עסקית', type: 'income'
                     });
                     window._pendingReceiptFingerprint = null;
@@ -3557,7 +3966,7 @@
             if (goToOtherMonth) {
                 await addEntryToOtherMonth(receiptMonthStr, { type: 'expense', category: aiData.category || "קניות כלליות", amount: round1(aiData.amount), store: aiData.store || "קבלה", date: validDate, source: 'ai' });
                 if (window._pendingReceiptFingerprint) {
-                    addToUploadHistory('receipt', window._pendingReceiptFileName || 'קבלה', window._pendingReceiptFingerprint, {
+                    await addToUploadHistory('receipt', window._pendingReceiptFileName || 'קבלה', window._pendingReceiptFingerprint, {
                         store: aiData.store || '', amount: aiData.amount || 0, category: aiData.category || ''
                     });
                     window._pendingReceiptFingerprint = null;
@@ -3583,7 +3992,7 @@
             document.getElementById('logDate').value = validDate;
             // שמירה בהיסטוריית העלאות
             if (window._pendingReceiptFingerprint) {
-                addToUploadHistory('receipt', window._pendingReceiptFileName || 'קבלה', window._pendingReceiptFingerprint, {
+                await addToUploadHistory('receipt', window._pendingReceiptFileName || 'קבלה', window._pendingReceiptFingerprint, {
                     store: aiData.store || '', amount: aiData.amount || 0, category: aiData.category || ''
                 });
                 window._pendingReceiptFingerprint = null;
@@ -3808,7 +4217,10 @@
                     type: type,
                     category: null,
                     include: true,
-                    _wasNegative: type === 'expense'
+                    _wasNegative: type === 'expense',
+                    // FIX: הסוג פה תמיד ניחוש לפי שינוי יתרה בין שורות - לא קריאה ישירה מעמודת חובה/זכות.
+                    // מסמנים 'guess' כדי שה-AI (ר' categorizeTransactions) יהיה רשאי לתקן את זה.
+                    _typeConfidence: 'guess'
                 });
             }
             return txs;
@@ -3826,7 +4238,7 @@
             const fp = await computeFileFingerprint(file);
             window._pendingBankFingerprint = fp;
             window._pendingBankFileName = file.name || 'קובץ בנק';
-            const dup = findDuplicateInHistory(fp, 'bank');
+            const dup = await findDuplicateInHistory(fp, 'bank');
             if (dup) {
                 const d = new Date(dup.uploadedAt).toLocaleDateString('he-IL');
                 const info = dup.result ? ' (' + (dup.result.txCount || '?') + ' תנועות, ' + (dup.result.month ? escapeHtml(dup.result.month) : '') + ')' : '';
@@ -4090,14 +4502,17 @@
                         // שמירת מידע אם הסכום היה שלילי (לזיהוי אוטומטי)
                         const absAmt2 = round1(amount);
                         if (absAmt2 === 0) continue;
-                        txs.push({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt2, type: type, category: null, include: true, _wasNegative: wasNegative });
+                        // FIX: הסימן היה מפורש בתא (שלילי/חיובי) או נקבע ע"פ כותרת עמודה מפורשת - סיווג אמין,
+                        // לכן ה-AI לא ידרוס אותו (ר' categorizeTransactions).
+                        txs.push({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt2, type: type, category: null, include: true, _wasNegative: wasNegative, _typeConfidence: 'high' });
                         continue;
                     }
 
                     // עיגול לספרה עשרונית אחת (54.5 ולא 54.52)
                     const absAmt = round1(amount);
                     if (absAmt === 0) continue;
-                    txs.push({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt, type: type, category: null, include: true, _wasNegative: false });
+                    // FIX: זו שורה שהגיעה מ-dualMode (עמודות חובה/זכות נפרדות) - קריאה ישירה ואמינה
+                    txs.push({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt, type: type, category: null, include: true, _wasNegative: false, _typeConfidence: 'high' });
                 }
             }
             return txs;
@@ -4123,22 +4538,55 @@
             return "כרטיס אשראי";
         }
 
+        // ============================================================================
+        // FIX: ה-AI אחראי כעת גם על ניתוח הדף עצמו (הכנסה/הוצאה) ולא רק על קטגוריה.
+        // הסיבה: ה-heuristic המקומי (שינוי יתרה בין שורות ב-PDF, או עמודת סכום יחידה
+        // בקובץ אקסל/CSV לא ברור) הוא ניחוש בלבד ויכול להתהפך כשסדר השורות/מבנה הדוח
+        // שונה מהצפוי - זה בדיוק מה שגרם לכך שהכנסות/הוצאות התחלפו אצל לקוח שייבא דוח
+        // רב-חודשי. עמודות חובה/זכות מפורשות (dualMode) נשארות אמינות ולא נדרסות ע"י ה-AI
+        // (ר' _typeConfidence:'high' ב-extractTransactions) - ה-AI מתקן רק את מה שממילא ניחוש.
+        // אם אין מפתח AI, או שהקריאה נכשלת - נשארים עם התוצאה המקומית (הייבוא לא נתקע).
+        // ============================================================================
         async function categorizeTransactions(txs) {
-            // הכנסות - סיווג מקומי לפי מילות מפתח
+            // שלב 1: סיווג מקומי בסיסי לכולם (heuristic/מילות מפתח) - תמיד יש לנו ברירת מחדל
             txs.filter(t => t.type === 'income').forEach(t => { t.category = localCategorizeIncome(t.store); });
-            // הוצאות - סיווג מקומי, והשאר ל-AI
-            const expenses = txs.filter(t => t.type === 'expense');
-            const unknown = []; expenses.forEach(t => { const c = localCategorize(t.store); if (c) t.category = c; else unknown.push(t); });
-            const splitCreditCards = () => { expenses.forEach(t => { if (t.category === "כרטיס אשראי") t.category = creditCardCategory(t.store); }); };
-            if (unknown.length === 0) { splitCreditCards(); applyCardSourcePrefix(expenses); return; }
-            const uniqueNames = [...new Set(unknown.map(t => t.store))];
+            const expenses0 = txs.filter(t => t.type === 'expense');
+            expenses0.forEach(t => { t.category = localCategorize(t.store) || "קניות כלליות"; });
+
+            const finalize = () => {
+                const expenses = txs.filter(t => t.type === 'expense');
+                expenses.forEach(t => { if (t.category === "כרטיס אשראי") t.category = creditCardCategory(t.store); });
+                applyCardSourcePrefix(expenses);
+            };
+
+            if (!hasAiKey()) { finalize(); return; }
+
             try {
-                const cats = "'כרטיס אשראי','משיכת מזומן','שיקים','עמלות בנק','חשבונות ותשתיות','ביטוח','חיסכון והשקעות','הלוואות ומשכנתא','בריאות','קניות סופר','דלק ונסיעות','פנאי ובילוי','אוכל בחוץ','טיפוח ופארם','ביגוד והנעלה','קניות כלליות'";
-                const prompt = `אתה מסווג תנועות בנק/אשראי ישראליות לקטגוריה אחת בלבד מתוך: ${cats}. הנחיות: "חיוב לכרטיס ויזה" וכדומה = 'כרטיס אשראי'; משיכת מזומן/כספומט = 'משיכת מזומן'; שיק/המחאה = 'שיקים'; עמלה/דמי ניהול = 'עמלות בנק'; חשמל/מים/ארנונה/סלולר/אינטרנט = 'חשבונות ותשתיות'; פיקדון/חיסכון/פנסיה = 'חיסכון והשקעות'; הלוואה/משכנתא = 'הלוואות ומשכנתא'; מסעדה/קפה = 'אוכל בחוץ'; סופר = 'קניות סופר'. אם באמת לא ברור בחר 'קניות כלליות'. החזר אך ורק אובייקט JSON תקין: מפתח = שם התנועה, ערך = הקטגוריה. התנועות: ${JSON.stringify(uniqueNames)}`;
+                const items = txs.map((t, i) => ({ i, desc: t.store, amount: t.amount, guess_type: t.type }));
+                const incomeCats = "'" + INCOME_CATEGORIES.join("','") + "'";
+                const expenseCats = "'כרטיס אשראי','משיכת מזומן','שיקים','עמלות בנק','חשבונות ותשתיות','ביטוח','חיסכון והשקעות','הלוואות ומשכנתא','בריאות','קניות סופר','דלק ונסיעות','פנאי ובילוי','אוכל בחוץ','טיפוח ופארם','ביגוד והנעלה','קניות כלליות'";
+                const prompt = `אתה מומחה לניתוח דפי בנק וכרטיסי אשראי ישראליים. קיבלת רשימת תנועות (JSON), לכל אחת יש אינדקס "i", תיאור "desc", סכום "amount", וניחוש ראשוני "guess_type" (income/expense) שנקבע לפי שינוי ביתרת החשבון בין שורות - הניחוש הזה לא תמיד מדויק.
+המשימה שלך לכל תנועה:
+1) "type": קבע "income" (כסף שנכנס - משכורת, העברה נכנסת, החזר, קצבה) או "expense" (כסף שיצא - קנייה, חיוב, משיכה, תשלום) לפי ההיגיון העסקי של התיאור, גם אם זה סותר את guess_type.
+2) "category": אם type=income בחר קטגוריה אחת בלבד מתוך ${incomeCats}. אם type=expense בחר קטגוריה אחת בלבד מתוך ${expenseCats}. הנחיות לקטגוריית הוצאה: "חיוב לכרטיס ויזה" וכדומה = 'כרטיס אשראי'; משיכת מזומן/כספומט = 'משיכת מזומן'; שיק/המחאה = 'שיקים'; עמלה/דמי ניהול = 'עמלות בנק'; חשמל/מים/ארנונה/סלולר/אינטרנט = 'חשבונות ותשתיות'; פיקדון/חיסכון/פנסיה = 'חיסכון והשקעות'; הלוואה/משכנתא = 'הלוואות ומשכנתא'; מסעדה/קפה = 'אוכל בחוץ'; סופר = 'קניות סופר'. אם באמת לא ברור בחר 'קניות כלליות' (הוצאה) או 'הכנסה אחרת' (הכנסה).
+החזר אך ורק מערך JSON תקין ללא טקסט נוסף: [{"i": מספר, "type": "income"/"expense", "category": "..."}, ...]. התנועות: ${JSON.stringify(items)}`;
                 const txt = await geminiGenerate([{ text: prompt }], { json: true, retries: 2 });
-                const map = safeJsonParse(txt) || {}; unknown.forEach(t => { t.category = (map[t.store] && ALL_CATEGORIES.indexOf(map[t.store]) > -1) ? map[t.store] : "קניות כלליות"; });
-                splitCreditCards(); applyCardSourcePrefix(expenses);
-            } catch (e) { unknown.forEach(t => { t.category = "קניות כלליות"; }); splitCreditCards(); applyCardSourcePrefix(expenses); }
+                const arr = safeJsonParse(txt);
+                if (Array.isArray(arr)) {
+                    arr.forEach(r => {
+                        if (!r || typeof r.i !== 'number') return;
+                        const t = txs[r.i]; if (!t) return;
+                        // FIX: לא דורסים סיווג 'high' confidence (עמודות חובה/זכות מפורשות בקובץ) -
+                        // רק את הניחושים (PDF / עמודת סכום יחידה עמומה) ה-AI רשאי לתקן.
+                        if (t._typeConfidence !== 'high' && (r.type === 'income' || r.type === 'expense')) t.type = r.type;
+                        const validCats = t.type === 'income' ? INCOME_CATEGORIES : ALL_CATEGORIES;
+                        if (r.category && validCats.indexOf(r.category) > -1) t.category = r.category;
+                    });
+                }
+            } catch (e) {
+                console.error('ניתוח AI של דף הבנק נכשל - ממשיכים עם הסיווג המקומי:', e);
+            }
+            finalize();
         }
 
         // הוספת קידומת שם כרטיס לכל קטגוריה כאשר המשתמש בחר "שייך לכרטיס"
@@ -4171,9 +4619,9 @@
             
             document.getElementById('bankReviewBody').innerHTML = parsedBankTransactions.map((t, i) => {
                 const isInc = t.type === 'income';
-                const typeBadge = isInc
-                    ? '<span style="background:#dcfce7;color:#16a34a;border-radius:6px;padding:2px 6px;font-size:0.72rem;font-weight:700;">הכנסה</span>'
-                    : '<span style="background:#fee2e2;color:#dc2626;border-radius:6px;padding:2px 6px;font-size:0.72rem;font-weight:700;">הוצאה</span>';
+                // FIX: הבאדג' הפך לכפתור לחיץ - מאפשר לתקן ידנית טעות סיווג הכנסה/הוצאה (של ה-heuristic או ה-AI)
+                // לפני שהנתונים נכתבים בפועל, במקום שיתגלה רק אחרי שהם כבר בתקציב.
+                const typeBadge = `<button type="button" onclick="toggleTxType(${i})" title="לחץ להחלפת הכנסה/הוצאה" style="background:${isInc ? '#dcfce7' : '#fee2e2'};color:${isInc ? '#16a34a' : '#dc2626'};border:1px dashed ${isInc ? '#16a34a' : '#dc2626'};border-radius:6px;padding:2px 6px;font-size:0.72rem;font-weight:700;cursor:pointer;">${isInc ? 'הכנסה' : 'הוצאה'} ⇄</button>`;
                 const dupBadge = t.duplicate ? ' <span style="background:#fef3c7;color:#b45309;border-radius:6px;padding:2px 6px;font-size:0.72rem;font-weight:700;">⚠️ ייתכן כפול</span>' : '';
                 const amtColor = isInc ? '#16a34a' : '#dc2626';
                 const amtSign = isInc ? '+' : '−';
@@ -4183,6 +4631,15 @@
                 const rowBg = t.duplicate ? ' style="background:#fffbeb;"' : '';
                 return `<tr${rowBg}><td style="text-align:center;"><input type="checkbox" class="checkbox-done" ${t.include ? 'checked' : ''} onchange="parsedBankTransactions[${i}].include=this.checked; updateBankTotal();"></td><td style="white-space:nowrap; font-size:0.85rem;">${new Date(t.date).toLocaleDateString('he-IL')}</td><td style="font-size:0.88rem;">${typeBadge}${dupBadge}<br>${escapeHtml(t.store)}</td><td style="font-weight:700; white-space:nowrap; color:${amtColor};">${amtSign}₪${fmtNum(t.amount)}</td><td>${catCell}</td></tr>`;
             }).join('');
+        }
+
+        // החלפה ידנית של הכנסה/הוצאה בשורת סקירה - רשת ביטחון אחרונה כשה-AI/heuristic טעו
+        function toggleTxType(i) {
+            const t = parsedBankTransactions[i]; if (!t) return;
+            t.type = t.type === 'income' ? 'expense' : 'income';
+            t._typeConfidence = 'manual'; // תיקון ידני של המשתמש - סופי, לא נדרס יותר
+            t.category = t.type === 'income' ? localCategorizeIncome(t.store) : (localCategorize(t.store) || "קניות כלליות");
+            renderBankReview();
         }
 
         // ===== זיהוי תנועות כפולות (מול מה שכבר קיים בחודש, ובתוך אותו קובץ) =====
@@ -4269,14 +4726,28 @@
         // ===================================================================
         // ====== היסטוריית קבצים שהועלו — קבלות וייבוא בנק ======
         // ===================================================================
-        function getUploadHistory() {
+        // FIX: ההיסטוריה נשמרה בעבר רק ב-localStorage של הדפדפן שביצע את ההעלאה - לכן לא הייתה
+        // גלויה כלל ממכשיר/דפדפן אחר (גם באותו חשבון!). עכשיו נשמרת גם בענן (טבלת month_data,
+        // בשורה מיוחדת '__upload_history__', באותה שיטה כמו userSettings) כך שהיא זהה בכל מקום.
+        // localStorage נשאר כמטמון מהיר/גיבוי אופליין בלבד.
+        let _uploadHistoryCache = null;
+        async function getUploadHistory() {
             if (!tempUserSession) return [];
-            try { const raw = localStorage.getItem('upload_hist_' + tempUserSession.user_id); return raw ? JSON.parse(raw) : []; }
-            catch(e) { return []; }
+            if (_uploadHistoryCache) return _uploadHistoryCache;
+            let local = [];
+            try { const raw = localStorage.getItem('upload_hist_' + tempUserSession.user_id); local = raw ? JSON.parse(raw) : []; } catch(e) {}
+            try {
+                const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', '__upload_history__');
+                const cloud = (data && data.length > 0 && Array.isArray(data[0].data)) ? data[0].data : [];
+                _uploadHistoryCache = cloud.length ? cloud : local;
+            } catch(e) { _uploadHistoryCache = local; }
+            return _uploadHistoryCache;
         }
-        function _saveUploadHistory(list) {
+        async function _saveUploadHistory(list) {
+            _uploadHistoryCache = list;
             if (!tempUserSession) return;
             try { localStorage.setItem('upload_hist_' + tempUserSession.user_id, JSON.stringify(list.slice(-80))); } catch(e) {}
+            try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__upload_history__', data: list.slice(-200) }); } catch(e) {}
         }
         // טביעת אצבע מהירה של קובץ: גודל + 8KB ראשונים (FNV-1a hash)
         async function computeFileFingerprint(file) {
@@ -4289,13 +4760,144 @@
                 return 'fp_' + file.size + '_' + h.toString(16);
             } catch(e) { return 'fp_' + file.size + '_' + (file.name || '?').replace(/\s/g,''); }
         }
-        function findDuplicateInHistory(fingerprint, type) {
-            return getUploadHistory().filter(function(h){ return h.fingerprint === fingerprint && h.type === type; }).pop() || null;
+        async function findDuplicateInHistory(fingerprint, type) {
+            const history = await getUploadHistory();
+            return history.filter(function(h){ return h.fingerprint === fingerprint && h.type === type; }).pop() || null;
         }
-        function addToUploadHistory(type, fileName, fingerprint, result) {
-            const history = getUploadHistory();
+        async function addToUploadHistory(type, fileName, fingerprint, result) {
+            const history = await getUploadHistory();
             history.push({ type, fileName, fingerprint, uploadedAt: new Date().toISOString(), result: result || {} });
-            _saveUploadHistory(history);
+            await _saveUploadHistory(history);
+        }
+
+        // ===================================================================
+        // ====== סל מיחזור — שחזור מחיקות (הכנסה/הוצאה/לוג/יעד חיסכון) ======
+        // נשמר בענן (כמו __settings__/__upload_history__) כדי שיהיה זמין מכל מכשיר,
+        // בדיוק כמו שתיקנו את היסטוריית ההעלאות - אחרת מחיקה בטעות במכשיר אחד לא
+        // תהיה ניתנת לשחזור ממכשיר אחר של אותו משתמש.
+        // ===================================================================
+        let _trashCache = null;
+        async function loadTrash() {
+            if (!tempUserSession) return [];
+            if (_trashCache) return _trashCache;
+            let local = [];
+            try { const raw = localStorage.getItem('trash_' + tempUserSession.user_id); local = raw ? JSON.parse(raw) : []; } catch(e) {}
+            try {
+                const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', '__trash__');
+                const cloud = (data && data.length > 0 && Array.isArray(data[0].data)) ? data[0].data : [];
+                _trashCache = cloud.length ? cloud : local;
+            } catch(e) { _trashCache = local; }
+            return _trashCache;
+        }
+        async function saveTrash(list) {
+            _trashCache = list;
+            if (!tempUserSession) return;
+            try { localStorage.setItem('trash_' + tempUserSession.user_id, JSON.stringify(list.slice(-200))); } catch(e) {}
+            try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__trash__', data: list.slice(-200) }); } catch(e) {}
+        }
+        async function pushToTrash(item) {
+            const list = await loadTrash();
+            item.id = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+            item.deletedAt = new Date().toISOString();
+            list.push(item);
+            await saveTrash(list);
+            updateTrashBadge();
+        }
+        function updateTrashBadge() {
+            const btn = document.getElementById('trashBinBtn'); if (!btn) return;
+            loadTrash().then(list => {
+                const n = list.length;
+                btn.querySelector('.trash-count') && (btn.querySelector('.trash-count').textContent = n > 0 ? String(n) : '');
+            });
+        }
+        function trashItemLabel(item) {
+            const p = item.payload || {};
+            if (item.kind === 'income') return `הכנסה שנמחקה: "${p.name || ''}" — ₪${fmtNum(p.amount || 0)} (${escapeHtml(item.monthStr || '')})`;
+            if (item.kind === 'expenseRow') return `קטגוריית הוצאה שנמחקה: "${p.name || ''}" — בפועל ₪${fmtNum(p.actual || 0)}${(p.logs && p.logs.length) ? ' · ' + p.logs.length + ' פעולות' : ''} (${escapeHtml(item.monthStr || '')})`;
+            if (item.kind === 'log') return `פעולה שנמחקה מ-"${p.categoryName || ''}": ${escapeHtml(p.log && p.log.store || '')} — ₪${fmtNum(p.log && p.log.amount || 0)} (${escapeHtml(item.monthStr || '')})`;
+            if (item.kind === 'allLogs') return `כל הפעולות (${(p.logs || []).length}) שנמחקו מ-"${p.categoryName || ''}" (${escapeHtml(item.monthStr || '')})`;
+            if (item.kind === 'savingsGoal') return `יעד חיסכון שנמחק: "${p.name || ''}" — יעד ₪${fmtNum(p.target || 0)}`;
+            return 'פריט שנמחק';
+        }
+        async function renderTrashModal() {
+            const el = document.getElementById('trashList'); if (!el) return;
+            el.innerHTML = '<p style="text-align:center; color:var(--text-light);">טוען...</p>';
+            const list = (await loadTrash()).slice().reverse();
+            if (!list.length) { el.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:2rem 0;">🗑️ סל המיחזור ריק.</p>'; return; }
+            el.innerHTML = list.map(item => {
+                const d = new Date(item.deletedAt).toLocaleString('he-IL');
+                return `<div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px;">`
+                    + `<div style="min-width:0;"><div style="font-size:0.88rem; color:var(--text-dark); overflow-wrap:anywhere;">${trashItemLabel(item)}</div>`
+                    + `<div style="font-size:0.72rem; color:var(--text-light); margin-top:2px;">נמחק: ${d}</div></div>`
+                    + `<button class="btn-outline" style="white-space:nowrap; color:#059669; border-color:#a7f3d0;" onclick="restoreTrashItem('${item.id}')">↩️ שחזר</button>`
+                    + `</div>`;
+            }).join('');
+        }
+        function openTrashModal() { document.getElementById('trashModal').style.display = 'flex'; renderTrashModal(); }
+        function closeTrashModal() { document.getElementById('trashModal').style.display = 'none'; }
+
+        async function restoreTrashItem(id) {
+            const list = await loadTrash();
+            const idx = list.findIndex(x => x.id === id);
+            if (idx === -1) return;
+            const item = list[idx];
+            try {
+                if (item.kind === 'savingsGoal') {
+                    userSettings.savings_goals = userSettings.savings_goals || [];
+                    userSettings.savings_goals.push(item.payload);
+                    saveUserSettings(); renderSavingsGoals();
+                } else if (isSameMonthStr(item.monthStr, workingMonthStr)) {
+                    // החודש פתוח כרגע על המסך - שחזור ישיר ל-DOM
+                    if (item.kind === 'income') {
+                        appendIncomeRowUI(document.getElementById('incomeBody'), item.payload.name, item.payload.amount, item.payload.source, item.payload.date);
+                    } else if (item.kind === 'expenseRow') {
+                        appendExpenseRowUI(document.getElementById(item.payload.section + 'Body'), item.payload.name, item.payload.target, item.payload.actual, item.payload.section, item.payload.logs || []);
+                    } else if (item.kind === 'log') {
+                        const row = resolveCategoryRow(item.payload.categoryName);
+                        let logs = JSON.parse(row.getAttribute('data-logs') || '[]');
+                        logs.push(item.payload.log);
+                        row.setAttribute('data-logs', JSON.stringify(logs));
+                        const actualInput = row.querySelector('.actual-val');
+                        actualInput.value = round1((Number(actualInput.value) || 0) + (Number(item.payload.log.amount) || 0));
+                        renderLogsInsideRow(row, true);
+                    } else if (item.kind === 'allLogs') {
+                        const row = resolveCategoryRow(item.payload.categoryName);
+                        let logs = JSON.parse(row.getAttribute('data-logs') || '[]').concat(item.payload.logs || []);
+                        row.setAttribute('data-logs', JSON.stringify(logs));
+                        const restoredSum = (item.payload.logs || []).reduce((s, l) => s + (Number(l.amount) || 0), 0);
+                        const actualInput = row.querySelector('.actual-val');
+                        actualInput.value = round1((Number(actualInput.value) || 0) + restoredSum);
+                        renderLogsInsideRow(row, true);
+                    }
+                    calculateAll(true);
+                } else if (item.monthStr) {
+                    // הפריט שייך לחודש אחר מזה שפתוח כרגע - כותבים ישירות לענן לחודש הנכון
+                    if (item.kind === 'income') {
+                        await addEntryToOtherMonth(item.monthStr, { type: 'income', name: item.payload.name, amount: item.payload.amount, source: item.payload.source || 'restore', date: item.payload.date });
+                    } else if (item.kind === 'expenseRow') {
+                        if (item.payload.logs && item.payload.logs.length) {
+                            for (const l of item.payload.logs) { await addEntryToOtherMonth(item.monthStr, { type: 'expense', category: item.payload.name, amount: l.amount, store: l.store, date: l.date, source: 'restore' }); }
+                        } else if (item.payload.actual > 0) {
+                            await addEntryToOtherMonth(item.monthStr, { type: 'expense', category: item.payload.name, amount: item.payload.actual, store: 'שוחזר מסל המיחזור', date: new Date().toISOString().split('T')[0], source: 'restore' });
+                        }
+                    } else if (item.kind === 'log') {
+                        await addEntryToOtherMonth(item.monthStr, { type: 'expense', category: item.payload.categoryName, amount: item.payload.log.amount, store: item.payload.log.store, date: item.payload.log.date, source: 'restore' });
+                    } else if (item.kind === 'allLogs') {
+                        for (const l of (item.payload.logs || [])) { await addEntryToOtherMonth(item.monthStr, { type: 'expense', category: item.payload.categoryName, amount: l.amount, store: l.store, date: l.date, source: 'restore' }); }
+                    }
+                    alert('הפריט שוחזר לחודש "' + item.monthStr + '" (חודש אחר מזה שפתוח כרגע).');
+                    fetchAllUserMonths();
+                } else {
+                    alert('לא ניתן לשחזר פריט זה — חסר שיוך לחודש.');
+                    return;
+                }
+                list.splice(idx, 1);
+                await saveTrash(list);
+                renderTrashModal();
+                updateTrashBadge();
+            } catch (e) {
+                alert('שחזור נכשל: ' + (e.message || e));
+            }
         }
 
         // ====== UI ======
@@ -4304,13 +4906,14 @@
             renderUploadHistory(tab || 'all');
         }
         function closeUploadHistoryModal() { document.getElementById('uploadHistoryModal').style.display = 'none'; }
-        function clearUploadHistory() {
-            if (!confirm('למחוק את כל היסטוריית ההעלאות?')) return;
+        async function clearUploadHistory() {
+            if (!confirm('למחוק את כל היסטוריית ההעלאות? (גם מהענן, בכל המכשירים)')) return;
             if (!tempUserSession) return;
             try { localStorage.removeItem('upload_hist_' + tempUserSession.user_id); } catch(e) {}
+            await _saveUploadHistory([]);
             renderUploadHistory('all');
         }
-        function renderUploadHistory(tab) {
+        async function renderUploadHistory(tab) {
             const el = document.getElementById('uploadHistoryList'); if (!el) return;
             window._histCurrentTab = tab;
             ['histTabAll','histTabReceipt','histTabBank'].forEach(function(id){
@@ -4327,7 +4930,8 @@
             if (selAll) selAll.checked = false;
             updateHistSelectedCount();
 
-            const history = getUploadHistory().slice().reverse();
+            el.innerHTML = '<p style="text-align:center; color:var(--text-light);">טוען...</p>';
+            const history = (await getUploadHistory()).slice().reverse();
             const filtered = tab === 'all' ? history : history.filter(function(h){ return h.type === tab; });
 
             if (!filtered.length) {
@@ -4377,11 +4981,11 @@
             updateHistSelectedCount();
         }
 
-        function exportSelectedHistory(format) {
+        async function exportSelectedHistory(format) {
             const cbs = Array.from(document.querySelectorAll('.hist-export-cb:checked'));
             if (!cbs.length) { alert('אנא בחר לפחות ייבוא אחד לייצוא.'); return; }
             const tab = window._histCurrentTab || 'all';
-            const history = getUploadHistory().slice().reverse();
+            const history = (await getUploadHistory()).slice().reverse();
             const filtered = tab === 'all' ? history.filter(h => h.type !== 'receipt') : history.filter(h => h.type === 'bank');
             const selectedItems = cbs.map(cb => filtered[parseInt(cb.dataset.idx)]).filter(Boolean);
             if (!selectedItems.length) { alert('לא נמצאו נתונים לייצוא.'); return; }
@@ -4426,6 +5030,9 @@
                     ['תאריך','בית עסק / פירוט','סכום (₪)','סוג','קטגוריה'],
                     ...dataRows
                 ]);
+                ws['!cols'] = [{ wch:14 },{ wch:28 },{ wch:13 },{ wch:10 },{ wch:18 }];
+                ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:4} }];
+                _applyCurrencyFormat(ws);
                 const sheetName = ('ייבוא '+(i+1)+' '+((item.result&&item.result.month)||'')).substring(0,30);
                 XLSX.utils.book_append_sheet(wb, ws, sheetName);
             });
@@ -4457,46 +5064,71 @@
                 }
             }
 
+            // FIX: כל השלב הבא היה בעבר בלי שום try/catch, וההיסטוריה נשמרה רק בסוף הכל.
+            // אם קריאת רשת נכשלה באמצע (במיוחד בלולאת "חודשים אחרים" מתחת), הפונקציה הייתה
+            // נזרקת עם שגיאה לא-מטופלת: חלק מהחודשים כבר נכתבו בפועל אבל ההיסטוריה מעולם לא
+            // נשמרה - בלי שום הודעת שגיאה למשתמש. זה בדיוק המתכון לכך שהמשתמש ינסה לייבא שוב
+            // "בעיוורון" (כי לא ראה אישור/היסטוריה) ויצור כפילויות אמיתיות. עכשיו: כל כתיבה עטופה,
+            // התנועות שבאמת הצליחו נאספות ל-importedTransactions ונרשמות בהיסטוריה תמיד (גם אם חלק
+            // נכשל), וכשל בחודש ספציפי לא עוצר את שאר החודשים ומוצג למשתמש בבירור בסוף.
             let expCount = 0; let incCount = 0; let totalExp = 0;
-            sameMonth.forEach(t => {
-                if (t.type === 'income') {
-                    appendIncomeRowUI(document.getElementById('incomeBody'), t.store, t.amount, 'import', t.date);
-                    incCount++;
-                } else {
-                    addLogToCategory(t.category || "קניות כלליות", t.amount, t.store, t.date);
-                    expCount++;
-                    totalExp += t.amount || 0;
-                }
-            });
-            if (sameMonth.length) calculateAll(true);
+            const importedTransactions = [];
+            try {
+                sameMonth.forEach(t => {
+                    if (t.type === 'income') {
+                        appendIncomeRowUI(document.getElementById('incomeBody'), t.store, t.amount, 'import', t.date);
+                        incCount++;
+                    } else {
+                        addLogToCategory(t.category || "קניות כלליות", t.amount, t.store, t.date);
+                        expCount++;
+                        totalExp += t.amount || 0;
+                    }
+                    importedTransactions.push(t);
+                });
+                if (sameMonth.length) calculateAll(true);
+            } catch (e) {
+                console.error('שגיאה בכתיבת תנועות לחודש הנוכחי:', e);
+                alert('אירעה שגיאה באמצע כתיבת התנועות לחודש הנוכחי. חלק מהשורות אולי כבר נוספו למסך — בדוק לפני שתנסה לייבא שוב, כדי למנוע כפילויות.\n\n' + (e.message || e));
+            }
 
             // תנועות שמשוייכות לחודשים אחרים - נשמרות ישירות לענן, לחודש הנכון של כל אחת
             let otherCount = 0;
+            const failedMonths = [];
             for (const monthStr of Object.keys(otherMonthsMap)) {
                 for (const t of otherMonthsMap[monthStr]) {
-                    if (t.type === 'income') {
-                        await addEntryToOtherMonth(monthStr, { type: 'income', name: t.store, amount: t.amount, source: 'import', date: t.date });
-                    } else {
-                        await addEntryToOtherMonth(monthStr, { type: 'expense', category: t.category || "קניות כלליות", amount: t.amount, store: t.store, date: t.date, source: 'import' });
+                    try {
+                        if (t.type === 'income') {
+                            await addEntryToOtherMonth(monthStr, { type: 'income', name: t.store, amount: t.amount, source: 'import', date: t.date });
+                        } else {
+                            await addEntryToOtherMonth(monthStr, { type: 'expense', category: t.category || "קניות כלליות", amount: t.amount, store: t.store, date: t.date, source: 'import' });
+                        }
+                        otherCount++;
+                        importedTransactions.push(t);
+                    } catch (e) {
+                        console.error('שגיאה בשמירת תנועה לחודש ' + monthStr + ':', e);
+                        if (failedMonths.indexOf(monthStr) === -1) failedMonths.push(monthStr);
                     }
-                    otherCount++;
                 }
             }
 
-            // שמירה בהיסטוריה — כולל הפרטים המלאים של התנועות לייצוא עתידי
+            // שמירה בהיסטוריה — תמיד לפי מה שבאמת נכתב בהצלחה (importedTransactions), לא לפי כל מה
+            // שנבחר. כך ההיסטוריה לעולם לא "נעלמת" גם כשהייתה תקלה חלקית.
             if (window._pendingBankFingerprint) {
-                addToUploadHistory('bank', window._pendingBankFileName || 'קובץ בנק', window._pendingBankFingerprint, {
-                    txCount: selected.length,
-                    total: Math.round(totalExp),
-                    month: workingMonthStr,
-                    transactions: selected.map(t => ({
-                        date: t.date || '',
-                        store: t.store || '',
-                        amount: t.amount || 0,
-                        type: t.type || 'expense',
-                        category: t.category || ''
-                    }))
-                });
+                try {
+                    await addToUploadHistory('bank', window._pendingBankFileName || 'קובץ בנק', window._pendingBankFingerprint, {
+                        txCount: importedTransactions.length,
+                        total: Math.round(totalExp),
+                        month: workingMonthStr,
+                        failedMonths: failedMonths,
+                        transactions: importedTransactions.map(t => ({
+                            date: t.date || '',
+                            store: t.store || '',
+                            amount: t.amount || 0,
+                            type: t.type || 'expense',
+                            category: t.category || ''
+                        }))
+                    });
+                } catch (e) { console.error('שמירת היסטוריית הייבוא נכשלה:', e); }
                 window._pendingBankFingerprint = null;
             }
             closeBankImportModal();
@@ -4504,7 +5136,8 @@
             const otherMonthsList = Object.keys(otherMonthsMap);
             const otherNote = otherMonthsList.length ? `\n\n📅 ${otherCount} תנועות שייכות לחודשים אחרים (לפי תאריך) ונוספו ישירות לחודשים: ${otherMonthsList.join(', ')}.` : '';
             const skippedNote = skippedNewMonths.length ? `\n\n⏭️ דילגנו על החודשים הבאים לפי בחירתך ולא פתחנו עבורם תזרים חדש: ${skippedNewMonths.join(', ')}.` : '';
-            alert(`הייבוא הושלם בהצלחה!\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}${skippedNote}`);
+            const failedNote = failedMonths.length ? `\n\n⚠️ שגיאה בשמירת חלק מהתנועות לחודשים: ${failedMonths.join(', ')}. בדוק את החודשים האלה — ואם חסר משהו, ייבא מחדש רק את התנועות החסרות (לא את כל הקובץ, כדי למנוע כפילות).` : '';
+            alert(`הייבוא הושלם${failedMonths.length ? ' (עם שגיאות חלקיות)' : ' בהצלחה'}!\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}${skippedNote}${failedNote}`);
             fetchAllUserMonths();
         }
 
@@ -4513,8 +5146,11 @@
             const { data } = await _supabase.from('month_data').select('month_str, data').eq('user_id', tempUserSession.user_id);
             const isBiz = !!(tempUserSession && tempUserSession._bizMode);
             // פילטור חודשים לפי מצב: עסקי רואה רק חודשים עסקיים, אישי רואה רק אישיים
+            // FIX: '__upload_history__' ו-'__trash__' הן שורות מטא-דאטה פנימיות (נשמרות תחת אותו
+            // user_id כמו חודשי התקציב האמיתיים) - חייבות להיות מוחרגות פה בדיוק כמו __settings__,
+            // אחרת הן "יופיעו" ברשימת החודשים כאילו הן חודש תקציב אמיתי (ואף יישלחו לייצוא/דוחות).
             const months = (data || []).filter(d => {
-                if (d.month_str === '__settings__' || d.month_str === '__biz_settings__') return false;
+                if (['__settings__', '__biz_settings__', '__upload_history__', '__trash__'].indexOf(d.month_str) > -1) return false;
                 const normStr = d.month_str.replace(/,/g, '').replace(/\s+/g, ' ').trim();
                 const isBizMonth = normStr.startsWith('עסקי - ');
                 return isBiz ? isBizMonth : !isBizMonth;
@@ -4523,20 +5159,97 @@
             const listElement = document.getElementById('historyList'); listElement.innerHTML = '';
             // הסרת דופליקציות - כל חודש מופיע רק פעם אחת
             const pastMonthsSet = new Set(months.map(d => d.month_str).filter(m => m !== workingMonthStr));
-            const pastMonths = Array.from(pastMonthsSet);
+            // FIX: מיון כרונולוגי יורד - כך שהחודש הקודם לנוכחי תמיד ראשון ברשימה, לא חודש ישן כלשהו
+            // (לפני התיקון הסדר היה תלוי בסדר ההחזרה השרירותי של Supabase).
+            const pastMonths = Array.from(pastMonthsSet).sort((a, b) => monthStrSortKey(b) - monthStrSortKey(a));
             if(pastMonths.length === 0) { listElement.innerHTML = '<li style="color: var(--text-light); font-size: 0.95rem;">אין חודשים קודמים</li>'; }
             else { pastMonths.forEach(month => { const li = document.createElement('li'); li.className = 'history-item'; li.style.display = 'flex'; li.style.justifyContent = 'space-between'; li.style.alignItems = 'center'; li.innerHTML = `<span>${month.replace('עסקי - ', '')}</span><div style="display:flex; gap:0.5rem; flex-wrap:wrap;"><button class="btn-link" style="padding:0.25rem 0.5rem; font-size:0.8rem; white-space:nowrap;" onclick="editPastMonth('${month}'); event.stopPropagation();">✏️</button><button class="btn-link" style="padding:0.25rem 0.5rem; font-size:0.8rem; white-space:nowrap;" title="צפה בדוח" onclick="showMonthHistoryModal('${month}'); event.stopPropagation();">📊</button></div>`; listElement.appendChild(li); }); }
             renderAnnualSavings();
         }
 
-        function openReportsModal() {
-            if (allUserMonthsData.length === 0) return alert("אין מספיק נתונים להפקת דוחות.");
-            const selectStart = document.getElementById('reportStartMonth'); const selectEnd = document.getElementById('reportEndMonth');
-            selectStart.innerHTML = ''; selectEnd.innerHTML = '';
-            allUserMonthsData.forEach(m => { selectStart.innerHTML += `<option value="${m.month_str}">${m.month_str}</option>`; selectEnd.innerHTML += `<option value="${m.month_str}">${m.month_str}</option>`; });
-            document.getElementById('reportsModal').style.display = 'flex';
+        // FIX: כל חודשי המשתמש, כולל החודש הפעיל (אפילו אם עדיין לא נשמר ל-DB), ממוינים
+        // כרונולוגית (לא לפי סדר החזרה שרירותי מהשרת) - בסיס משותף לכל טאבי מרכז הייצוא.
+        function _allMonthsChronological() {
+            const list = (allUserMonthsData || []).map(m => m.month_str);
+            if (!list.some(m => isSameMonthStr(m, workingMonthStr))) list.push(workingMonthStr);
+            return list.sort((a, b) => monthStrSortKey(a) - monthStrSortKey(b));
         }
-        function closeReportsModal() { document.getElementById('reportsModal').style.display = 'none'; }
+        // אוסף את כל החודשים בטווח הנבחר בטאב "טווח חודשים" - עם נתוני החודש הפעיל תמיד "חיים" (מהמסך),
+        // גם אם עדיין לא הספיקו להישמר לענן.
+        function _getReportRangeMonths() {
+            const fromEl = document.getElementById('reportStartMonth'); const toEl = document.getElementById('reportEndMonth');
+            if (!fromEl || !toEl || !fromEl.value || !toEl.value) return [];
+            const k1 = monthStrSortKey(fromEl.value), k2 = monthStrSortKey(toEl.value);
+            const lo = Math.min(k1, k2), hi = Math.max(k1, k2);
+            const result = [];
+            (allUserMonthsData || []).forEach(m => {
+                const k = monthStrSortKey(m.month_str);
+                if (k >= lo && k <= hi) result.push({ month_str: m.month_str, data: isSameMonthStr(m.month_str, workingMonthStr) ? getLiveSnapshot() : m.data });
+            });
+            const curKey = monthStrSortKey(workingMonthStr);
+            if (curKey >= lo && curKey <= hi && !result.some(r => isSameMonthStr(r.month_str, workingMonthStr))) {
+                result.push({ month_str: workingMonthStr, data: getLiveSnapshot() });
+            }
+            result.sort((a, b) => monthStrSortKey(a.month_str) - monthStrSortKey(b.month_str));
+            return result;
+        }
+        function _populateReportRangeSelectors() {
+            const months = _allMonthsChronological();
+            const selectStart = document.getElementById('reportStartMonth'); const selectEnd = document.getElementById('reportEndMonth');
+            selectStart.innerHTML = months.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+            selectEnd.innerHTML = selectStart.innerHTML;
+            if (months.length) { selectStart.value = months[0]; selectEnd.value = months[months.length - 1]; }
+        }
+
+        // ===================================================================
+        // ====== מרכז ייצוא ודוחות (מאוחד) — נקודת כניסה יחידה לכל הייצואים ======
+        // לפני התיקון: היו 3 מודלים נפרדים (reportsModal / receiptExportModal / כפתורי ה-stats-bar)
+        // עם 5 כפתורי ייצוא שונים מפוזרים במסך הדוחות. עכשיו הכל תחת מודל אחד עם 3 טאבים.
+        // ===================================================================
+        function openExportCenter(tab) {
+            const desc = document.getElementById('expMonthTabDesc');
+            if (desc) desc.textContent = `ייצוא/הדפסה מהירים של החודש הפעיל בלבד (${workingMonthStr}).`;
+            _populateReportRangeSelectors();
+            _populateDetailedExportSelectors();
+            document.getElementById('exportCenterModal').style.display = 'flex';
+            switchExportTab(tab || 'month');
+        }
+        function closeExportCenter() { document.getElementById('exportCenterModal').style.display = 'none'; }
+        function switchExportTab(tab) {
+            const sections = { month: 'expTabContentMonth', detailed: 'expTabContentDetailed', range: 'expTabContentRange' };
+            const buttons  = { month: 'expTabBtnMonth', detailed: 'expTabBtnDetailed', range: 'expTabBtnRange' };
+            Object.keys(sections).forEach(function(k) {
+                const sec = document.getElementById(sections[k]); if (sec) sec.style.display = (k === tab) ? 'flex' : 'none';
+                const btn = document.getElementById(buttons[k]);
+                if (btn) {
+                    const active = (k === tab);
+                    btn.style.background = active ? '#f3e8ff' : '';
+                    btn.style.borderColor = active ? '#8b5cf6' : '';
+                    btn.style.color = active ? '#6d28d9' : '';
+                }
+            });
+        }
+        // איפוס אם המשתמש הופך את הטווח (מחודש מאוחר מ"עד חודש") - לא חוסם, רק עוזר להבין את מה שנבחר בפועל
+        function _syncReportRangeSanity() { /* השוואת הטווח נעשית ממילא ב-_getReportRangeMonths (min/max), אין צורך לחסום כאן */ }
+
+        // ===== עיצוב גיליונות אקסל (עמודות ברוחב קריא, מיזוג כותרת, פורמט מספרים עם פסיקים) =====
+        // הערה: ספריית SheetJS הקהילתית (xlsx.full.min.js) לא תומכת בכתיבת עיצוב תווים (bold/צבע) -
+        // זה פיצ'ר של הגרסה בתשלום. מה שכן אפשר וניתן פה: רוחב עמודות, מיזוג כותרת, ופורמט מספרים.
+        function _applyCurrencyFormat(ws) {
+            if (!ws['!ref']) return;
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let R = range.s.r; R <= range.e.r; R++) {
+                for (let C = range.s.c; C <= range.e.c; C++) {
+                    const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+                    if (cell && cell.t === 'n') cell.z = '#,##0';
+                }
+            }
+        }
+        function _prettifyBudgetSheet(ws) {
+            ws['!cols'] = [{ wch: 30 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
+            ws['!merges'] = (ws['!merges'] || []).concat([{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }]);
+            _applyCurrencyFormat(ws);
+        }
 
         function buildExcelData(monthStr, snapshot) {
             let data = [[`דוח תקציב מפורט - ${monthStr}`], []]; 
@@ -4558,9 +5271,17 @@
         }
 
         function generateAdvancedExcel() {
+            // FIX: בעבר הפונקציה התעלמה לגמרי מה-select של "מחודש/עד חודש" וייצאה תמיד את כל
+            // ההיסטוריה. עכשיו מכבדת בפועל את הטווח שנבחר (ר' _getReportRangeMonths).
+            const months = _getReportRangeMonths();
+            if (!months.length) return alert("לא נמצאו חודשים בטווח שנבחר.");
             let wb = XLSX.utils.book_new();
-            allUserMonthsData.forEach(monthItem => { let ws = XLSX.utils.aoa_to_sheet(buildExcelData(monthItem.month_str, monthItem.data)); XLSX.utils.book_append_sheet(wb, ws, monthItem.month_str.substring(0, 30)); });
-            XLSX.writeFile(wb, `דוח_תקציב_מורחב_${tempUserSession.username}.xlsx`); closeReportsModal();
+            months.forEach(monthItem => {
+                let ws = XLSX.utils.aoa_to_sheet(buildExcelData(monthItem.month_str, monthItem.data));
+                _prettifyBudgetSheet(ws);
+                XLSX.utils.book_append_sheet(wb, ws, monthItem.month_str.substring(0, 30));
+            });
+            XLSX.writeFile(wb, `דוח_תקציב_מורחב_${tempUserSession.username}.xlsx`); closeExportCenter();
         }
 
         function generateAdvancedEmail() {
@@ -4568,8 +5289,11 @@
             const finalEmail = savedEmail ? (confirm(`שלח לאימייל: ${savedEmail}?`) ? savedEmail : prompt("הזן כתובת חדשה:")) : prompt("הזן כתובת המייל שלך:");
             if (!finalEmail || !finalEmail.includes('@')) return;
             localStorage.setItem('saved_email_' + tempUserSession.user_id, finalEmail); _supabase.from('users').update({ email: finalEmail }).eq('user_id', tempUserSession.user_id);
+            // FIX: מכבד את הטווח שנבחר, בדיוק כמו generateAdvancedExcel (בעבר גם כאן הטווח התעלם ותמיד יוצא הכל)
+            const months = _getReportRangeMonths();
+            if (!months.length) return alert("לא נמצאו חודשים בטווח שנבחר.");
             let emailBody = `היי!\nמצורף סיכום הנתונים הפיננסיים שלך מאפליקציה 'הכיס שלי':\n\n`;
-            allUserMonthsData.forEach(m => {
+            months.forEach(m => {
                 let iSum = 0; m.data.income.forEach(i=> iSum+=i.amount); let eSum = 0; m.data.fixed.forEach(e=> eSum+=e.actual); m.data.variable.forEach(e=> eSum+=e.actual);
                 emailBody += `--- חודש ${m.month_str} ---\nסה"כ הכנסות: ${iSum} ש"ח\nסה"כ הוצאות: ${eSum} ש"ח\nחיסכון נטו: ${iSum - eSum} ש"ח\n\n`;
             });
@@ -4749,6 +5473,7 @@
             closeHistoryModal();
             switchView('main');
             showPastMonthEditBanner(monthName);
+            refreshPersonalizedTicker(); // הסרגל האישי מתעדכן לתובנות של החודש שנפתח לעריכה
         }
 
         function returnToCurrentMonth() {
@@ -4757,7 +5482,7 @@
             _editingPastMonth = null; _returnToMonthStr = null;
             hidePastMonthEditBanner();
             document.getElementById('currentMonthTxt').innerText = workingMonthStr;
-            loadCurrentMonthData();
+            loadCurrentMonthData().then(() => refreshPersonalizedTicker()).catch(() => {});
         }
 
         function showPastMonthEditBanner(monthName) {
@@ -4808,41 +5533,43 @@
         }
 
         function exportCurrentMonthExcelLive() {
-            const snap = getLiveSnapshot(); let wb = XLSX.utils.book_new(); let ws = XLSX.utils.aoa_to_sheet(buildExcelData(workingMonthStr, snap)); XLSX.utils.book_append_sheet(wb, ws, "תקציב_נוכחי"); XLSX.writeFile(wb, `תקציב_${workingMonthStr.replace(/\s+/g, '_')}.xlsx`);
+            const snap = getLiveSnapshot(); let wb = XLSX.utils.book_new(); let ws = XLSX.utils.aoa_to_sheet(buildExcelData(workingMonthStr, snap)); _prettifyBudgetSheet(ws); XLSX.utils.book_append_sheet(wb, ws, "תקציב_נוכחי"); XLSX.writeFile(wb, `תקציב_${workingMonthStr.replace(/\s+/g, '_')}.xlsx`);
         }
 
         // =========================================================
         // ====== מודל ייצוא פירוטי הוצאות ======
         // =========================================================
-        function openReceiptExportModal() {
-            // מילוי רשימת חודשים
-            const months = (allUserMonthsData || []).map(function(m){ return m.month_str; });
-            if (!months.includes(workingMonthStr)) months.push(workingMonthStr);
-            months.sort();
+        // FIX: מילוי טאב "הוצאות מפורט" - עבר ל-openExportCenter/switchExportTab במרכז הייצוא המאוחד.
+        // נשמר כאן רק לוגיקת המילוי בפועל של ה-selects (קרואה גם מ-switchExportTab).
+        function _populateDetailedExportSelectors() {
+            // FIX: מיון כרונולוגי אמיתי (monthStrSortKey) במקום .sort() אלפביתי על שמות חודשים
+            // בעברית - מיון אלפביתי לא תואם לסדר הכרונולוגי בכלל (למשל "אוגוסט" < "ינואר" אלפביתית).
+            const months = _allMonthsChronological();
             const fromSel = document.getElementById('exportFromMonth');
             const toSel   = document.getElementById('exportToMonth');
             fromSel.innerHTML = months.map(function(m){ return '<option value="'+escapeHtml(m)+'">'+escapeHtml(m)+'</option>'; }).join('');
-            toSel.innerHTML   = months.map(function(m){ return '<option value="'+escapeHtml(m)+'">'+escapeHtml(m)+'</option>'; }).join('');
-            // ברירת מחדל: כל הטווח
+            toSel.innerHTML   = fromSel.innerHTML;
             if (months.length > 0) {
                 fromSel.value = months[0];
                 toSel.value   = months[months.length - 1];
             }
-            document.getElementById('receiptExportModal').style.display = 'flex';
             updateExportPreview();
         }
-        function closeReceiptExportModal() { document.getElementById('receiptExportModal').style.display = 'none'; }
 
         // ====== איסוף נתוני לוגים לפי פילטר ======
         function _collectFilteredLogs(fromMonth, toMonth, srcAi, srcImport, srcManual, srcIncome) {
-            // בניית רשימת חודשים רלוונטיים
-            const isBiz = !!(tempUserSession && tempUserSession._bizMode);
+            // FIX: השוואת מחרוזות (m.month_str >= fromMonth) לא נכונה למיון/סינון כרונולוגי של
+            // שמות חודשים בעברית - הוחלפה בהשוואה מספרית אמיתית דרך monthStrSortKey.
+            const fk = monthStrSortKey(fromMonth), tk = monthStrSortKey(toMonth);
+            const lo = Math.min(fk, tk), hi = Math.max(fk, tk);
             const historicMonths = (allUserMonthsData || []).filter(function(m){
-                return m.month_str >= fromMonth && m.month_str <= toMonth;
+                const k = monthStrSortKey(m.month_str);
+                return k >= lo && k <= hi;
             });
             const liveSnap = getLiveSnapshot();
             const allMonths = historicMonths.map(function(m){ return { label: m.month_str, data: m.data }; });
-            if (workingMonthStr >= fromMonth && workingMonthStr <= toMonth) {
+            const curKey = monthStrSortKey(workingMonthStr);
+            if (curKey >= lo && curKey <= hi && !allMonths.some(m => isSameMonthStr(m.label, workingMonthStr))) {
                 allMonths.push({ label: workingMonthStr, data: liveSnap });
             }
 
@@ -4953,6 +5680,8 @@
 
             const ws = XLSX.utils.aoa_to_sheet([...header, ...data]);
             ws['!cols'] = [{ wch:14 },{ wch:18 },{ wch:28 },{ wch:13 },{ wch:14 },{ wch:12 }];
+            ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:5} }, { s:{r:1,c:0}, e:{r:1,c:5} }];
+            _applyCurrencyFormat(ws);
 
             // ===== גיליון סיכום לפי קטגוריה =====
             const byCat = {};
@@ -4967,6 +5696,7 @@
 
             const ws2 = XLSX.utils.aoa_to_sheet(sumRows);
             ws2['!cols'] = [{ wch:28 },{ wch:14 }];
+            _applyCurrencyFormat(ws2);
 
             return { ws, ws2 };
         }
@@ -5022,7 +5752,7 @@
                     XLSX.utils.book_append_sheet(wb, ws2, 'סיכום קטגוריות');
                     XLSX.writeFile(wb, `הכנסות_סליקה_${modeLabel}_${userName}_${dateStr}.xlsx`);
                 }
-                closeReceiptExportModal();
+                closeExportCenter();
                 const count = [srcAi && bySource.ai.length, srcImport && bySource.import.length, srcManual && bySource.manual.length, srcIncome && bySource.income.length].filter(Boolean);
                 alert('✅ ' + count.length + ' קבצים יוצאו בהצלחה!\n' + all.length + ' רשומות בסה"כ.');
             } else {
@@ -5032,13 +5762,13 @@
                 XLSX.utils.book_append_sheet(wb, ws, 'פירוט הוצאות');
                 XLSX.utils.book_append_sheet(wb, ws2, 'סיכום קטגוריות');
                 XLSX.writeFile(wb, `הוצאות_${modeLabel}_${userName}_${dateStr}.xlsx`);
-                closeReceiptExportModal();
+                closeExportCenter();
                 alert('✅ קובץ יוצא בהצלחה! ' + all.length + ' רשומות.');
             }
         }
 
-        // (kept for backward compat — now calls the modal)
-        function exportAllReceiptsExcel() { openReceiptExportModal(); }
+        // (kept for backward compat — now opens the unified export center)
+        function exportAllReceiptsExcel() { openExportCenter('detailed'); }
 
         // --- תיבת פניות דו-כיוונית (לקוח <-> מנהל) ---
         function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
