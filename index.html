@@ -31,7 +31,9 @@
             --hairline: rgba(15,23,42,0.06);
             --success: #0ea66e; 
             --danger: #ef4444; 
-            --admin: #7c3aed; 
+            --admin: #7c3aed;
+            --comm: #2563eb;
+            --comm-hover: #1d4ed8;
             --pro: #c79a3a;
             --gold: #c79a3a;
             --gold-soft: #f6edd8;
@@ -74,7 +76,9 @@
 
         /* FIX: הוסר position:fixed מפה - עכשיו הבאנר הזה חי בתוך #topFixedBar (יחד עם הסרגל הרץ),
            שהוא זה שמקובע לראש המסך. כך שני הרכיבים נערמים זה מתחת לזה בלי לחפוף. */
-        #topFixedBar { position: fixed; top: 0; left: 0; right: 0; z-index: 10050; display: flex; flex-direction: column; }
+        /* FIX: z-index היה גבוה יותר מכל חלונות ה-modal (9500-10060) - הסרגל הרץ/הבאנר האדום
+           היה מכסה כפתורי סגירה של חלונות ומונע לחיצה עליהם. עכשיו נמוך מכל ה-modal-ים. */
+        #topFixedBar { position: fixed; top: 0; left: 0; right: 0; z-index: 950; display: flex; flex-direction: column; }
         #adminImpersonationBanner { display: none; background: #ea580c; color: white; text-align: center; padding: 12px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; }
         #adminImpersonationBanner:hover { background: #c2410c; }
 
@@ -103,7 +107,7 @@
         .sidebar-btn:hover { background: #f8fafc; color: var(--text-dark); }
         .sidebar-btn.active { background: var(--text-dark); color: white; }
         
-        .btn-pro-scan { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 1rem; box-shadow: 0 8px 16px rgba(16,185,129,0.25); transition: transform 0.2s; }
+        .btn-pro-scan { background: linear-gradient(135deg, var(--success), #086b52); color: white; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 1rem; box-shadow: 0 8px 16px rgba(16,185,129,0.25); transition: transform 0.2s; }
         .btn-pro-scan:active { transform: scale(0.97); }
 
         .month-history-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto; padding-right: 5px; }
@@ -145,7 +149,12 @@
         .checkbox-done { width: 22px; height: 22px; min-width: 22px; cursor: pointer; accent-color: var(--success); border-radius: 6px; }
         .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.2s; }
         .btn-delete:hover { background: #fca5a5; }
-        
+
+        /* משוב לחיצה אחיד: כל כפתור/תיבה לחיצה "שוקעת" קלות בלחיצה כדי שיהיה ברור שהיא הגיבה.
+           נבנה עם :where() (מפרט 0) כדי לא לדרוס טרנזישן/אפקט לחיצה ספציפי יותר שכבר מוגדר לכפתור מסוים. */
+        :where(button:not(:disabled), .history-item, [onclick]) { transition: transform 0.1s ease; }
+        :where(button:not(:disabled), .history-item, [onclick]):active { transform: scale(0.96); }
+
         .add-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; margin-top: 1rem; background: #f8fafc; padding: 1rem; border-radius: 16px; border: 1px dashed #cbd5e1; }
         .btn-add { background: var(--text-dark); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.95rem; white-space: nowrap; }
 
@@ -180,6 +189,20 @@
         .modal-overlay { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; padding: 1rem; }
         .modal-content { background: var(--surface); border-radius: 24px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 90vh; animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+        /* ====== מגירת ניהול עסקי (Business Drawer) ====== */
+        .biz-drawer-backdrop { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(8px); z-index:9500; }
+        .biz-drawer-backdrop.open { display:block; }
+        .biz-drawer { position:fixed; top:0; right:0; bottom:0; width:320px; max-width:85vw; background:var(--surface); z-index:9501;
+            box-shadow:-25px 0 50px -12px rgba(0,0,0,0.35); display:flex; flex-direction:column; padding:1.6rem 1.3rem; gap:0.9rem;
+            transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.16,1,0.3,1); overflow-y:auto; }
+        .biz-drawer.open { transform:translateX(0); }
+        .biz-drawer-header { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #c9a84c; padding-bottom:0.9rem; margin-bottom:0.4rem; }
+        .biz-drawer-header h3 { color:#b08535; font-size:1.15rem; margin:0; }
+        .biz-hamburger-btn { background:linear-gradient(135deg,#c9a84c,#b08535); color:#fff; border:none; width:42px; height:42px; border-radius:12px;
+            font-size:1.25rem; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 14px -4px rgba(176,133,53,0.5); flex-shrink:0; }
+        html[data-theme="dark"] .biz-drawer { border-left:1px solid var(--border); }
+        @media (max-width: 768px) { .biz-drawer { width:280px; } }
         .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .modal-header h3 { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); }
         .btn-reset-section {
@@ -208,10 +231,10 @@
         .modal-body { padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
         .modal-footer { padding: 1.2rem 2rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 1rem; background: #f8fafc; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; }
         
-        .ai-chat-btn { position: fixed; bottom: 30px; left: 30px; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 1.6rem; box-shadow: var(--shadow-float); cursor: pointer; z-index: 900; display: flex; align-items: center; justify-content: center; transition: transform 0.3s; }
+        .ai-chat-btn { position: fixed; bottom: 30px; left: 30px; background: linear-gradient(135deg, var(--admin), #5b21b6); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 1.6rem; box-shadow: var(--shadow-float); cursor: pointer; z-index: 900; display: flex; align-items: center; justify-content: center; transition: transform 0.3s; }
         .ai-chat-btn:active { transform: scale(0.9); }
         .ai-chat-window { display: none; position: fixed; bottom: 100px; left: 30px; width: 360px; height: 500px; background: var(--surface); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); z-index: 900; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.5); }
-        .ai-header { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+        .ai-header { background: linear-gradient(135deg, var(--admin), #5b21b6); color: white; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
         .ai-body { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; background: #f9fafb; }
         .ai-msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
         .ai-msg-bot { background: white; color: var(--text-dark); border: 1px solid var(--border); border-bottom-left-radius: 4px; align-self: flex-start; }
@@ -606,9 +629,9 @@
                     <p style="color:var(--text-light);">לקוחות רשומים: <strong id="adminUserCount">0</strong></p>
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <button onclick="openCreateManagerModal()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">➕ מנהל חדש</button>
-                    <button onclick="openAdminManagersChat()" style="background:linear-gradient(135deg,#0ea5e9,#0369a1);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(14,165,233,0.2);">💬 צ'אט עם המנהלים</button>
-                    <button onclick="openAdminInboxModal()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 תיבת פניות <span class="js-admin-inq-badge inq-badge"></span></button>
+                    <button onclick="openCreateManagerModal()" style="background:linear-gradient(135deg, var(--admin), #5b21b6);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">➕ מנהל חדש</button>
+                    <button onclick="openAdminManagersChat()" style="background:linear-gradient(135deg, var(--comm), var(--comm-hover));color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(14,165,233,0.2);">💬 צ'אט עם המנהלים</button>
+                    <button onclick="openAdminInboxModal()" style="background:linear-gradient(135deg, var(--comm), var(--comm-hover));color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 תיבת פניות <span class="js-admin-inq-badge inq-badge"></span></button>
                     <button onclick="openChangeAdminCredsModal()" class="btn-outline">🔑 שינוי פרטי כניסה</button>
                     <button onclick="handleLogout()" class="btn-outline">🚪 יציאה</button>
                 </div>
@@ -697,16 +720,16 @@
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <button id="managerBackToAdminBtn" onclick="loginAsAdmin()" style="display:none; background:#f1f5f9; color:var(--text-dark); border:1.5px solid var(--border); border-radius:12px; padding:0.8rem 1.5rem; font-weight:600; cursor:pointer;">← חזרה לפאנל הראשי</button>
-                    <button id="managerToBudgetBtn" onclick="managerSwitchToBudget()" style="display:none; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:12px; padding:0.8rem 1.5rem; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(16,185,129,0.2);">💼 לחשבון שלי</button>
-                    <button id="mgrInboxBtn" onclick="openManagerInboxModal()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 פניות הקבוצה <span class="js-mgr-inq-badge inq-badge"></span></button>
-                    <button id="mgrAdminsChatBtn" onclick="openManagerAdminsChat()" style="background:linear-gradient(135deg,#0ea5e9,#0369a1);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(14,165,233,0.2);">💬 צ'אט עם ההנהלה</button>
+                    <button id="managerToBudgetBtn" onclick="managerSwitchToBudget()" style="display:none; background:linear-gradient(135deg, var(--success), #086b52); color:white; border:none; border-radius:12px; padding:0.8rem 1.5rem; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(16,185,129,0.2);">💼 לחשבון שלי</button>
+                    <button id="mgrInboxBtn" onclick="openManagerInboxModal()" style="background:linear-gradient(135deg, var(--comm), var(--comm-hover));color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 פניות הקבוצה <span class="js-mgr-inq-badge inq-badge"></span></button>
+                    <button id="mgrAdminsChatBtn" onclick="openManagerAdminsChat()" style="background:linear-gradient(135deg, var(--comm), var(--comm-hover));color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(14,165,233,0.2);">💬 צ'אט עם ההנהלה</button>
                     <button onclick="handleLogout()" class="btn-outline">🚪 יציאה</button>
                 </div>
             </div>
 
             <div style="background:linear-gradient(135deg,#faf5ff,#eff6ff); border:1px solid #e9d5ff; border-radius:16px; padding:1.2rem 1.4rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                 <div style="display:flex; align-items:center; gap:14px; min-width:0;">
-                    <div id="mgrPanelAvatar" style="width:64px; height:64px; min-width:64px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:1.7rem; font-weight:700; color:#fff; background-size:cover; background-position:center; box-shadow:0 6px 16px -6px rgba(124,58,237,0.5);"></div>
+                    <div id="mgrPanelAvatar" style="width:64px; height:64px; min-width:64px; border-radius:50%; background:linear-gradient(135deg, var(--admin), #5b21b6); display:flex; align-items:center; justify-content:center; font-size:1.7rem; font-weight:700; color:#fff; background-size:cover; background-position:center; box-shadow:0 6px 16px -6px rgba(124,58,237,0.5);"></div>
                     <div style="min-width:0;">
                         <div style="font-size:0.85rem; color:var(--text-light);">הקבוצה שלך</div>
                         <div style="font-size:1.3rem; font-weight:700; color:var(--text-dark);" id="managerGroupName">—</div>
@@ -724,7 +747,7 @@
             </div>
 
             <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:1.2rem;">
-                <button id="mgrCommunityChatBtn" onclick="openGroupChatFromManager()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:white; border:none; border-radius:12px; padding:0.8rem 1.4rem; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">💬 פתח צ'אט קהילה</button>
+                <button id="mgrCommunityChatBtn" onclick="openGroupChatFromManager()" style="background:linear-gradient(135deg, var(--admin), #5b21b6); color:white; border:none; border-radius:12px; padding:0.8rem 1.4rem; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">💬 פתח צ'אט קהילה</button>
                 <label style="display:flex; align-items:center; gap:8px; background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:0.6rem 1rem; cursor:pointer; font-size:0.9rem; font-weight:600; color:var(--text-dark);">
                     <input type="checkbox" id="managerShareToggle" style="width:20px; height:20px; accent-color:var(--admin); cursor:pointer;" onchange="toggleShareData(this.checked)">
                     שתף את נתוני הקבוצה עם ההנהלה הבכירה
@@ -779,17 +802,9 @@
                 <button class="btn-pro-scan" onclick="askCameraPermission('expense')" title="⚠️ עובד בקבלות פשוטות וברורות. קבלות מורכבות - הזן ידנית">
                     <span style="font-size:1.2rem;">📷</span> סרוק קבלה (AI)
                 </button>
-                <!-- כפתור סליקה — גלוי רק במצב עסקי -->
-                <button id="btnBizSalik" class="btn-pro-scan" onclick="askCameraPermission('income')" style="display:none; background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 8px 16px rgba(245,158,11,0.25);">
-                    <span style="font-size:1.2rem;">💳</span> סרוק סליקה (הכנסה)
-                </button>
 
                 <button class="btn-report" onclick="openExportCenter()" style="margin-top: 0.5rem; background: #f8fafc; color: var(--text-dark); border: 1.5px solid var(--border); box-shadow: none;">
                     <span>📤</span> ייצוא ודוחות
-                </button>
-
-                <button onclick="openBankImportModal()" style="margin-top: 0.5rem; background: linear-gradient(135deg,#f59e0b,#d97706); color: white; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; box-shadow: 0 8px 16px rgba(245,158,11,0.25);">
-                    <span>📥</span> ייבוא דף בנק (אקסל/CSV)
                 </button>
 
                 <button id="trashBinBtn" onclick="openTrashModal()" class="btn-outline" style="margin-top: 0.5rem; width:100%; justify-content:center; position:relative;" title="שחזור פריטים שנמחקו">
@@ -800,7 +815,7 @@
                     <span>💬</span> הודעות ופניות <span class="js-user-inq-badge inq-badge"></span>
                 </button>
 
-                <button id="userCommunityChatBtn" onclick="openGroupChatFromUser()" style="display:none; margin-top: 0.5rem; background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; align-items: center; gap: 8px; justify-content: center; width: 100%;">
+                <button id="userCommunityChatBtn" onclick="openGroupChatFromUser()" style="display:none; margin-top: 0.5rem; background: linear-gradient(135deg, var(--admin), #5b21b6); color: #fff; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; align-items: center; gap: 8px; justify-content: center; width: 100%;">
                     <span>🏘️</span> צ'אט הקהילה <span class="js-chat-badge inq-badge"></span>
                 </button>
 
@@ -821,6 +836,7 @@
                              ניהול קהילה + מעבר אישי/עסקי בטופ-בר + עוד אחד בסיידבר/מובייל). לחיצה
                              יחידה: אם יש רק כובע אחר אחד - עוברים ישר; אם יש שניים - שואלים. ר' handleAccountSwitch. -->
                         <button class="btn-outline" id="switchAccountBtn" style="display:none; color:var(--admin); border-color:#e9d5ff;" onclick="handleAccountSwitch()">🔀 החלף חשבון</button>
+                        <button class="biz-hamburger-btn" id="btnBizDrawer" style="display:none;" onclick="openBizDrawer()" title="תפריט עסקי">☰</button>
                         <button class="btn-outline" onclick="openProfileUpdateModal()">✏️ פרופיל</button>
                         <button class="btn-outline" id="themeToggleBtn" onclick="toggleTheme()" title="מצב כהה/בהיר">🌙</button>
                         <button class="btn-outline" style="color:var(--danger); border-color:#fecaca;" onclick="handleLogout()">התנתק</button>
@@ -1140,7 +1156,7 @@
                     <div id="exportPreviewBox" style="background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:0.8rem 1rem; font-size:0.88rem; color:#166534; font-weight:600; text-align:center;">
                         בחר אפשרויות לצפייה בתצוגה מקדימה
                     </div>
-                    <button class="btn-primary" style="margin:0; background:linear-gradient(135deg,#10b981,#059669);" onclick="doExportReceipts()">🧾 ייצא לאקסל</button>
+                    <button class="btn-primary" style="margin:0; background:linear-gradient(135deg, var(--success), #086b52);" onclick="doExportReceipts()">🧾 ייצא לאקסל</button>
                 </div>
 
                 <!-- ===== טאב 3: דוח מלא לפי טווח חודשים (היה מודל reportsModal נפרד) ===== -->
@@ -1208,6 +1224,210 @@
         </div>
     </div>
 
+    <!-- ===== מגירת ניהול עסקי — כפתורי פעולה עסקיים מרוכזים ===== -->
+    <div class="biz-drawer-backdrop" id="bizDrawerBackdrop" onclick="closeBizDrawer()"></div>
+    <div class="biz-drawer" id="bizDrawer">
+        <div class="biz-drawer-header">
+            <h3>💼 ניהול עסקי</h3>
+            <button class="btn-close-modal" onclick="closeBizDrawer()">✕</button>
+        </div>
+        <button id="btnBizSalik" class="btn-pro-scan" onclick="askCameraPermission('income')" style="background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 8px 16px rgba(245,158,11,0.25);">
+            <span style="font-size:1.2rem;">💳</span> סרוק סליקה (הכנסה)
+        </button>
+        <button id="btnBizHub" onclick="openBizHubModal()" style="background:linear-gradient(135deg, var(--admin), #5b21b6); color:white; border:none; border-radius:14px; padding:1rem; font-weight:600; font-size:1rem; cursor:pointer; display:flex; align-items:center; gap:8px; justify-content:center; width:100%; box-shadow:0 8px 16px rgba(124,58,237,0.25);">
+            <span>🧾</span> לקוחות ומסמכים
+        </button>
+        <button onclick="openBankImportModal()" style="background: linear-gradient(135deg,#f59e0b,#d97706); color: white; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; box-shadow: 0 8px 16px rgba(245,158,11,0.25);">
+            <span>📥</span> ייבוא דף בנק (אקסל/CSV)
+        </button>
+    </div>
+
+    <!-- ===== מודל עסקי: לקוחות/ספקים + מסמכים (הצעות מחיר וקבלות) ===== -->
+    <div class="modal-overlay" id="bizHubModal" style="z-index:10002;">
+        <div class="modal-content" style="max-width: 760px;">
+            <div class="modal-header">
+                <h3 style="color:#6d28d9;">🧾 לקוחות ומסמכים</h3>
+                <button class="btn-close-modal" onclick="closeBizHubModal()">✕</button>
+            </div>
+            <div class="modal-body" style="gap:1.1rem;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button id="bizHubTabBtnClients"   class="btn-outline" style="flex:1; min-width:140px; justify-content:center; font-size:0.85rem;" onclick="switchBizHubTab('clients')">👥 לקוחות וספקים</button>
+                    <button id="bizHubTabBtnDocuments" class="btn-outline" style="flex:1; min-width:140px; justify-content:center; font-size:0.85rem;" onclick="switchBizHubTab('documents')">📄 הצעות מחיר וקבלות</button>
+                </div>
+
+                <!-- ===== טאב 1: לקוחות וספקים ===== -->
+                <div id="bizHubTabContentClients" style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                            <thead>
+                                <tr style="background:var(--surface-2); text-align:right;">
+                                    <th style="padding:6px 4px;">שם</th>
+                                    <th style="padding:6px 4px;">סוג</th>
+                                    <th style="padding:6px 4px;">טלפון</th>
+                                    <th style="padding:6px 4px;">אימייל</th>
+                                    <th style="padding:6px 4px;">כתובת</th>
+                                    <th style="padding:6px 4px;">ע.מ / ח.פ</th>
+                                    <th style="padding:6px 4px;">הערות</th>
+                                    <th style="padding:6px 4px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="bizClientsBody"></tbody>
+                        </table>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-outline" style="flex:1; justify-content:center;" onclick="addClientRow()">➕ הוסף לקוח/ספק</button>
+                        <button class="btn-primary" style="flex:1; margin:0;" onclick="saveClientsFromDOM()">💾 שמור</button>
+                    </div>
+                </div>
+
+                <!-- ===== טאב 2: מסמכים (הצעות מחיר / קבלות) ===== -->
+                <div id="bizHubTabContentDocuments" style="display:none; flex-direction:column; gap:12px;">
+
+                    <!-- תצוגת רשימה -->
+                    <div id="bizDocListView" style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-outline" style="flex:1; min-width:140px; justify-content:center; color:#0ea5e9; border-color:#bae6fd;" onclick="openDocumentBuilder('quote')">➕ הצעת מחיר חדשה</button>
+                            <button class="btn-outline" style="flex:1; min-width:140px; justify-content:center; color:#10b981; border-color:#a7f3d0;" onclick="openDocumentBuilder('receipt')">➕ קבלה חדשה</button>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button id="bizDocFilterAll"     class="btn-outline" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.4rem;" onclick="renderDocumentsList('all')">הכל</button>
+                            <button id="bizDocFilterQuote"   class="btn-outline" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.4rem;" onclick="renderDocumentsList('quote')">הצעות מחיר</button>
+                            <button id="bizDocFilterReceipt" class="btn-outline" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.4rem;" onclick="renderDocumentsList('receipt')">קבלות</button>
+                        </div>
+                        <div id="bizDocumentsListBody" style="max-height:340px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                            <p style="text-align:center; color:var(--text-light);">אין מסמכים עדיין.</p>
+                        </div>
+                    </div>
+
+                    <!-- תצוגת בונה מסמך -->
+                    <div id="bizDocBuilderView" style="display:none; flex-direction:column; gap:12px;">
+                        <h4 id="docBuilderTitle" style="margin:0; color:var(--text-dark);">הצעת מחיר חדשה</h4>
+
+                        <!-- שער בחירת אופן תמחור — מוצג רק ביצירת הצעת מחיר חדשה, לפני שאר הטופס -->
+                        <div id="docPricingModeGate" style="display:none; flex-direction:column; gap:10px;">
+                            <p style="color:var(--text-light); font-size:0.9rem; margin:0;">בחר את אופן התמחור להצעה:</p>
+                            <div style="display:flex; gap:10px;">
+                                <button type="button" class="account-type-btn" id="docModeItemizedBtn" onclick="selectPricingMode('itemized')">📋 פריטים מפורטים</button>
+                                <button type="button" class="account-type-btn" id="docModeLumpsumBtn" onclick="selectPricingMode('lumpsum')">💰 סכום כולל אחד</button>
+                            </div>
+                        </div>
+
+                        <div id="docBuilderRestOfForm" style="display:flex; flex-direction:column; gap:12px;">
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="input-group" style="margin:0;">
+                                <label>לקוח / ספק</label>
+                                <select id="docClientSelect" class="input-field" onchange="handleDocClientSelectChange()"></select>
+                            </div>
+                            <div class="input-group" style="margin:0;">
+                                <label>תאריך מסמך</label>
+                                <input type="date" id="docDate" class="input-field" onchange="handleDocDateChange()">
+                            </div>
+                        </div>
+
+                        <div id="docQuickAddClientBox" style="display:none; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:10px 12px; gap:8px; flex-wrap:wrap; align-items:center;">
+                            <input type="text" id="docQuickClientName" class="input-field" placeholder="שם לקוח/ספק חדש" style="flex:2; min-width:140px; margin:0;">
+                            <select id="docQuickClientType" class="input-field" style="flex:1; min-width:100px; margin:0;">
+                                <option value="customer">לקוח</option>
+                                <option value="supplier">ספק</option>
+                            </select>
+                            <button class="btn-outline" style="white-space:nowrap;" onclick="addClientQuick()">➕ הוסף ובחר</button>
+                        </div>
+
+                        <!-- שדות ייעודיים להצעת מחיר -->
+                        <div id="docQuoteOnlyFields" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="input-group" style="margin:0;">
+                                <label>בתוקף עד</label>
+                                <input type="date" id="docValidUntil" class="input-field" onchange="renderDocPreview()">
+                            </div>
+                            <div class="input-group" style="margin:0;">
+                                <label>סטטוס</label>
+                                <select id="docStatus" class="input-field" onchange="renderDocPreview()">
+                                    <option value="draft">טיוטה</option>
+                                    <option value="sent">נשלחה</option>
+                                    <option value="accepted">אושרה</option>
+                                    <option value="rejected">נדחתה</option>
+                                </select>
+                            </div>
+                            <div class="input-group" style="margin:0; grid-column:1 / -1;">
+                                <label>תנאי תשלום</label>
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                    <select id="docPaymentTermsMethod" class="input-field" style="flex:1; min-width:110px; margin:0;" onchange="handlePaymentTermsMethodChange()">
+                                        <option value="cash">מזומן</option>
+                                        <option value="card">אשראי</option>
+                                        <option value="transfer">העברה בנקאית</option>
+                                        <option value="check">שיק</option>
+                                        <option value="net">שוטף + X ימים</option>
+                                    </select>
+                                    <input type="number" id="docPaymentTermsNetDays" class="input-field" placeholder="מס' ימים" min="0" step="1" style="display:none; width:110px; margin:0;" oninput="renderDocPreview()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- שדות ייעודיים לקבלה -->
+                        <div id="docReceiptOnlyFields" style="display:none; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="input-group" style="margin:0;">
+                                <label>אמצעי תשלום</label>
+                                <select id="docPaymentMethod" class="input-field" onchange="renderDocPreview()">
+                                    <option value="cash">מזומן</option>
+                                    <option value="card">אשראי</option>
+                                    <option value="transfer">העברה בנקאית</option>
+                                    <option value="check">שיק</option>
+                                </select>
+                            </div>
+                            <div class="input-group" style="margin:0;">
+                                <label>תאריך פירעון בפועל (שוטף+)</label>
+                                <input type="date" id="docActualPaymentDate" class="input-field" onchange="renderDocPreview()">
+                            </div>
+                        </div>
+
+                        <div id="docItemizedFields" style="display:flex; flex-direction:column; gap:12px;">
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                                    <thead>
+                                        <tr style="background:var(--surface-2); text-align:right;">
+                                            <th style="padding:6px 4px;">תיאור</th>
+                                            <th style="padding:6px 4px; width:90px;">כמות</th>
+                                            <th style="padding:6px 4px; width:110px;">מחיר יח'</th>
+                                            <th style="padding:6px 4px; width:110px;">סה"כ</th>
+                                            <th style="padding:6px 4px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="docItemsBody"></tbody>
+                                </table>
+                            </div>
+                            <button class="btn-outline" style="justify-content:center;" onclick="addDocItemRow()">➕ הוסף שורה</button>
+                        </div>
+
+                        <div id="docLumpsumFields" style="display:none; flex-direction:column; gap:10px;">
+                            <div class="input-group" style="margin:0;"><label>תיאור</label><textarea id="docLumpsumDesc" class="input-field" rows="2" oninput="renderDocPreview()"></textarea></div>
+                            <div class="input-group" style="margin:0;"><label>סכום (₪)</label><input type="number" id="docLumpsumAmount" class="input-field" min="0" step="0.1" oninput="recalcDocTotals()"></div>
+                        </div>
+
+                        <div class="input-group" style="margin:0;"><label>הערות</label><textarea id="docNotes" class="input-field" rows="2" oninput="renderDocPreview()"></textarea></div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-2); border-radius:12px; padding:0.8rem 1.2rem; font-weight:700; font-size:1.1rem;">
+                            <span>סה"כ</span>
+                            <span id="docGrandTotal">₪0</span>
+                        </div>
+
+                        <div>
+                            <label style="font-size:0.85rem; color:var(--text-light); display:block; margin-bottom:6px;">👁️ תצוגה מקדימה</label>
+                            <div id="docPreviewPanel" style="border:1px solid var(--border); border-radius:14px; overflow:hidden; max-height:400px; overflow-y:auto;"></div>
+                        </div>
+
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-outline" style="flex:1; justify-content:center;" onclick="closeDocumentBuilder()">ביטול</button>
+                            <button class="btn-primary" style="flex:1; margin:0;" onclick="saveDocumentFromBuilder()">💾 שמור מסמך</button>
+                        </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="receiptScannerModal">
         <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header">
@@ -1239,7 +1459,7 @@
                         <img id="receiptPreviewImg" style="max-width:100%; max-height:250px; border-radius:8px; margin-bottom:15px; box-shadow:0 4px 6px rgba(0,0,0,0.3); filter: contrast(1.1) grayscale(0.2); display:block; margin-left:auto; margin-right:auto;" />
                         <div id="receiptPdfNote" style="display:none; padding:20px; background:#fff7ed; border-radius:10px; color:#9a3412; font-weight:600; margin-bottom:15px;"></div>
                         
-                        <button class="btn-primary" style="background:linear-gradient(135deg,#10b981,#059669); width:100%; border-radius:12px;" onclick="startLaserAndScan()" id="btnStartAi">✨ התחל סריקה</button>
+                        <button class="btn-primary" style="background:linear-gradient(135deg, var(--success), #086b52); width:100%; border-radius:12px;" onclick="startLaserAndScan()" id="btnStartAi">✨ התחל סריקה</button>
                         <div id="aiScanError" style="color:var(--danger); margin-top:10px; display:none; font-size:0.9rem; font-weight:600;"></div>
                     </div>
                 </div>
@@ -1312,7 +1532,7 @@
             </div>
             <div class="modal-footer" id="bankImportFooter" style="display:none;">
                 <button class="btn-outline" onclick="closeBankImportModal()">ביטול</button>
-                <button class="btn-primary" style="margin-top:0; width:auto; background:linear-gradient(135deg,#10b981,#059669);" onclick="applyBankImport()">✅ הוסף לתקציב</button>
+                <button class="btn-primary" style="margin-top:0; width:auto; background:linear-gradient(135deg, var(--success), #086b52);" onclick="applyBankImport()">✅ הוסף לתקציב</button>
             </div>
         </div>
     </div>
@@ -1365,7 +1585,7 @@
 
     <div class="modal-overlay" id="groupChatModal">
         <div class="modal-content" style="max-width: 560px; height:86vh; max-height:86vh;">
-            <div class="modal-header" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); align-items:center; gap:10px;">
+            <div class="modal-header" style="background:linear-gradient(135deg, var(--admin), #5b21b6); align-items:center; gap:10px;">
                 <div id="groupChatAvatar" style="width:46px; height:46px; min-width:46px; border-radius:50%; background:rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size:1.3rem; font-weight:700; color:#fff; background-size:cover; background-position:center;"></div>
                 <div style="flex:1; min-width:0;">
                     <h3 style="color:#fff; font-size:1.1rem; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="groupChatTitle"></h3>
@@ -1405,7 +1625,7 @@
         <div class="modal-content" style="max-width: 440px;">
             <div class="modal-header"><h3 style="color:var(--admin);">🏘️ פרופיל הקבוצה</h3><button class="btn-close-modal" onclick="closeGroupProfileModal()">✕</button></div>
             <div class="modal-body" style="align-items:center; text-align:center;">
-                <div id="profileAvatarPreview" style="width:110px; height:110px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:2.6rem; font-weight:700; color:#fff; background-size:cover; background-position:center; box-shadow:0 8px 20px -6px rgba(124,58,237,0.5);"></div>
+                <div id="profileAvatarPreview" style="width:110px; height:110px; border-radius:50%; background:linear-gradient(135deg, var(--admin), #5b21b6); display:flex; align-items:center; justify-content:center; font-size:2.6rem; font-weight:700; color:#fff; background-size:cover; background-position:center; box-shadow:0 8px 20px -6px rgba(124,58,237,0.5);"></div>
                 <input type="file" id="groupAvatarInput" accept="image/*" style="display:none;" onchange="processAvatarFile(this)">
                 <div style="display:flex; gap:8px;">
                     <button class="btn-outline" onclick="document.getElementById('groupAvatarInput').click()">📷 העלה תמונה</button>
@@ -1422,7 +1642,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-outline" onclick="closeGroupProfileModal()">ביטול</button>
-                <button class="btn-primary" style="margin:0; width:auto; padding:0.7rem 1.5rem; background:linear-gradient(135deg,#8b5cf6,#6d28d9);" onclick="saveGroupProfile()">שמור</button>
+                <button class="btn-primary" style="margin:0; width:auto; padding:0.7rem 1.5rem; background:linear-gradient(135deg, var(--admin), #5b21b6);" onclick="saveGroupProfile()">שמור</button>
             </div>
         </div>
     </div>
@@ -1454,7 +1674,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-outline" onclick="closeCreateManagerModal()">ביטול</button>
-                <button class="btn-primary" style="margin:0; background:linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow:none;" onclick="createManager()">צור מנהל</button>
+                <button class="btn-primary" style="margin:0; background:linear-gradient(135deg, var(--admin), #5b21b6); box-shadow:none;" onclick="createManager()">צור מנהל</button>
             </div>
         </div>
     </div>
@@ -1470,7 +1690,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-outline" onclick="closeChangeAdminCredsModal()">ביטול</button>
-                <button class="btn-primary" style="margin:0; background:linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow:none;" onclick="saveAdminCredentials()">שמור</button>
+                <button class="btn-primary" style="margin:0; background:linear-gradient(135deg, var(--admin), #5b21b6); box-shadow:none;" onclick="saveAdminCredentials()">שמור</button>
             </div>
         </div>
     </div>
@@ -1505,7 +1725,7 @@
             <div class="modal-header"><h3>💾 גיבוי ושחזור</h3><button class="btn-close-modal" onclick="closeBackupModal()">✕</button></div>
             <div class="modal-body" style="line-height:1.6;">
                 <p style="color:var(--text-light); font-size:0.92rem; margin-bottom:1rem;">גיבוי שומר את כל החודשים והיעדים שלך לקובץ. שחזור טוען אותם בחזרה.</p>
-                <button class="btn-primary" style="background:linear-gradient(135deg,#10b981,#059669);" onclick="doBackup()">⬇️ הורד קובץ גיבוי</button>
+                <button class="btn-primary" style="background:linear-gradient(135deg, var(--success), #086b52);" onclick="doBackup()">⬇️ הורד קובץ גיבוי</button>
                 <div style="margin:1.2rem 0; text-align:center; color:var(--text-light); font-size:0.85rem;">— או —</div>
                 <label class="btn-outline" style="display:block; text-align:center; cursor:pointer; padding:0.9rem; border-radius:12px;">⬆️ שחזר מקובץ גיבוי
                     <input type="file" id="restoreFileInput" accept="application/json,.json" style="display:none;" onchange="doRestore(event)">
@@ -1549,6 +1769,32 @@
                     </div>
                     <div id="bizPersonalSwitchBtn" style="display:none;">
                         <button class="btn-outline" style="width:100%; justify-content:center; color:var(--primary); border-color:var(--border); font-size:0.9rem;" onclick="switchPersonalMode()">🔄 עבור לחשבון האישי</button>
+                    </div>
+
+                    <!-- פרטי העסק — מוצג רק אם קיים חשבון עסקי; משמש לכותרת הצעות מחיר/קבלות -->
+                    <div id="bizProfileFields" style="display:none; margin-top:14px; padding-top:14px; border-top:1px dashed var(--border); flex-direction:column; gap:10px;">
+                        <label style="color:#c9a84c; font-size:0.85rem; font-weight:600;">🏢 פרטי העסק (לכותרת הצעות מחיר וקבלות)</label>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <img id="bizProfileLogoPreview" style="display:none; width:64px; height:64px; object-fit:contain; border-radius:10px; border:1px solid var(--border); background:#fff;">
+                            <div style="flex:1;">
+                                <input type="file" id="bizLogoFileInput" accept="image/*" style="display:none;" onchange="handleBizLogoFileSelect(event)">
+                                <button type="button" class="btn-outline" style="width:100%; justify-content:center; font-size:0.85rem;" onclick="document.getElementById('bizLogoFileInput').click()">🖼️ העלה לוגו</button>
+                            </div>
+                        </div>
+                        <input type="text" id="bizProfileName" class="input-field" placeholder="שם העסק">
+                        <input type="text" id="bizProfileTaxId" class="input-field" placeholder="ע.מ / ח.פ">
+                        <input type="tel" id="bizProfilePhone" class="input-field" placeholder="טלפון העסק">
+                        <input type="email" id="bizProfileEmail" class="input-field" placeholder="אימייל העסק">
+                        <input type="text" id="bizProfileAddress" class="input-field" placeholder="כתובת העסק">
+                        <label style="font-size:0.8rem; color:var(--text-light); margin-top:4px;">פרטי חשבון בנק (יופיעו בתחתית הצעות מחיר)</label>
+                        <input type="text" id="bizProfileBankName" class="input-field" placeholder="שם הבנק">
+                        <input type="text" id="bizProfileBankBranch" class="input-field" placeholder="מספר סניף">
+                        <input type="text" id="bizProfileBankAccount" class="input-field" placeholder="מספר חשבון">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <label style="font-size:0.85rem; color:var(--text-light); flex:1;">צבע מותג (לכותרת מסמכים)</label>
+                            <input type="color" id="bizProfileBrandColor" value="#6d28d9" style="width:48px; height:38px; border:1.5px solid var(--border); border-radius:10px; padding:2px; cursor:pointer;">
+                        </div>
+                        <button type="button" class="btn-outline" style="width:100%; justify-content:center; color:#059669; border-color:#a7f3d0;" onclick="saveBizProfileFromForm()">💾 שמור פרטי עסק</button>
                     </div>
                 </div>
             </div>
@@ -1729,6 +1975,8 @@
         }
 
         window.onload = function() {
+            const qsToken = new URLSearchParams(location.search).get('quote');
+            if (qsToken) { renderPublicQuoteView(qsToken); return; }
             applyStoredTheme();
             initEconTicker();
             _setupTopBarObserver();
@@ -1879,7 +2127,7 @@
             loginAsUser(userObj);
         }
         const HAT_INFO = {
-            manager:  { icon: '🛡️', label: 'ניהול הקהילה שלי',  sub: 'ניהול חברי הקבוצה', gradient: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' },
+            manager:  { icon: '🛡️', label: 'ניהול הקהילה שלי',  sub: 'ניהול חברי הקבוצה', gradient: 'linear-gradient(135deg, var(--admin), #5b21b6)' },
             personal: { icon: '👤', label: 'החשבון האישי שלי',  sub: 'ניהול תקציב חודשי', gradient: 'linear-gradient(135deg,#4f46e5,#4338ca)' },
             business: { icon: '💼', label: 'החשבון העסקי שלי',  sub: 'ניהול הוצאות עסק',  gradient: 'linear-gradient(135deg,#c9a84c,#b08535)' }
         };
@@ -2112,7 +2360,6 @@
         function renderAdminUsers(list) {
             const tbody = document.getElementById('adminUserTable'); if (!tbody) return;
             const groupNames = window._adminGroupNames || {};
-            const shareByCode = window._adminShareByCode || {};
             tbody.innerHTML = '';
             if (!list || !list.length) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-light); padding:1rem;">לא נמצאו משתמשים תואמים.</td></tr>';
@@ -2121,10 +2368,8 @@
             list.forEach(function(u){
                 const groupLabel = u.group_code ? (groupNames[u.group_code] || u.group_code) : '— ללא קבוצה —';
                 const mgrBadge = u.manager_code ? ' <span style="background:#f3e8ff; color:var(--admin); font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:6px;">מנהל</span>' : '';
-                const isPrivateMember = u.group_code && shareByCode[u.group_code] === false && !u.manager_code;
-                const actionCell = isPrivateMember
-                    ? '<span title="המנהל בחר לא לשתף נתונים" style="color:var(--text-light); font-size:0.85rem;">🔒 פרטי</span>'
-                    : '<button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick=\'impersonateUser('+JSON.stringify(u)+')\'>היכנס</button>';
+                // המנהל הבכיר רואה ונכנס לכולם, גם אם המנהל שלהם בחר "לא לשתף נתונים"
+                const actionCell = '<button class="btn-outline" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick=\'impersonateUser('+JSON.stringify(u)+')\'>היכנס</button>';
                 const tr = document.createElement('tr');
                 tr.innerHTML = '<td>'+escapeHtml(u.username)+mgrBadge+'</td><td>'+escapeHtml(u.user_id)+'</td><td>'+escapeHtml(u.phone || '-')+'</td><td>'+escapeHtml(u.email || '-')+'</td><td>'+escapeHtml(groupLabel)+'</td><td style="text-align:center;">'+actionCell+'</td>';
                 tbody.appendChild(tr);
@@ -2168,8 +2413,8 @@
             const toBudgetBtn = document.getElementById('managerToBudgetBtn');
             if (toBudgetBtn) toBudgetBtn.style.display = fromSuperAdmin ? 'none' : 'inline-flex';
 
-            // קבוצה פרטית שנצפית ע"י המנהל הבכיר: לחסום גישה לתיקים האישיים
-            const restricted = !!fromSuperAdmin && (managerObj.manager_share_data === false);
+            // המנהל הבכיר רואה את כל הקבוצות במלואן תמיד, גם אם מנהל הקבוצה בחר "לא לשתף נתונים"
+            const restricted = false;
             window._mgrRestricted = restricted;
             const addBox = document.getElementById('mgrAddMemberBox'); if (addBox) addBox.style.display = restricted ? 'none' : 'flex';
             const searchRow = document.getElementById('mgrMemberSearchRow'); if (searchRow) searchRow.style.display = restricted ? 'none' : 'flex';
@@ -2650,9 +2895,11 @@
             if (varTitle) { const varSpan = document.getElementById('variableExpensesTitleText'); if (varSpan) varSpan.innerText = 'הוצאות עסקיות לחודש זה'; else varTitle.innerText = 'הוצאות עסקיות לחודש זה'; }
             const lInc = document.getElementById('labelIncome'); if (lInc) lInc.innerText = 'הכנסות עסקיות';
             const lBal = document.getElementById('labelBalance'); if (lBal) lBal.innerText = 'רווח / הפסד';
-            // הצג כפתור סליקה (הכנסה) — רק במצב עסקי
-            const salik = document.getElementById('btnBizSalik'); if (salik) salik.style.display = 'flex';
+            // מובייל: כפתור סליקה נשאר בתפריט התחתון (mobileNav) ללא שינוי
             const mobSalik = document.getElementById('mobBtnSalik'); if (mobSalik) mobSalik.style.display = 'flex';
+            // הצג את כפתור ה-☰ שפותח את מגירת הניהול העסקי (סליקה/לקוחות-מסמכים/ייבוא בנק), וטען מראש נתונים עסקיים
+            const drawerBtn = document.getElementById('btnBizDrawer'); if (drawerBtn) drawerBtn.style.display = 'flex';
+            ensureBizDataLoaded();
         }
 
         function exitBizMode() {
@@ -2663,9 +2910,19 @@
             if (varTitle) { const varSpan2 = document.getElementById('variableExpensesTitleText'); if (varSpan2) varSpan2.innerText = 'הוצאות משתנות'; else varTitle.innerText = 'הוצאות משתנות'; }
             const lInc = document.getElementById('labelIncome'); if (lInc) lInc.innerText = 'הכנסות נטו';
             const lBal = document.getElementById('labelBalance'); if (lBal) lBal.innerText = 'חיסכון החודש';
-            // הסתר כפתור סליקה — לא רלוונטי במצב אישי
-            const salik = document.getElementById('btnBizSalik'); if (salik) salik.style.display = 'none';
             const mobSalik = document.getElementById('mobBtnSalik'); if (mobSalik) mobSalik.style.display = 'none';
+            // הסתר את כפתור מגירת הניהול העסקי, וסגור אותה אם הייתה פתוחה
+            const drawerBtn = document.getElementById('btnBizDrawer'); if (drawerBtn) drawerBtn.style.display = 'none';
+            closeBizDrawer();
+        }
+
+        function openBizDrawer() {
+            document.getElementById('bizDrawerBackdrop').classList.add('open');
+            document.getElementById('bizDrawer').classList.add('open');
+        }
+        function closeBizDrawer() {
+            document.getElementById('bizDrawerBackdrop').classList.remove('open');
+            document.getElementById('bizDrawer').classList.remove('open');
         }
 
         // FIX: כפתור מעבר חשבון יחיד (ליד הפרופיל) - מחליף את userSwitchToManager/quickSwitchMode
@@ -2774,7 +3031,67 @@
             if (openBtn) openBtn.style.display = hasBiz ? 'none' : 'block';
             if (switchBiz) switchBiz.style.display = (hasBiz && !isCurBiz) ? 'block' : 'none';
             if (switchPers) switchPers.style.display = isCurBiz ? 'block' : 'none';
+            const profileFields = document.getElementById('bizProfileFields');
+            if (profileFields) profileFields.style.display = hasBiz ? 'flex' : 'none';
+            if (hasBiz) populateBizProfileFields();
             document.getElementById('profileUpdateModal').style.display = 'flex';
+        }
+
+        async function populateBizProfileFields() {
+            const profile = await loadBizProfile();
+            document.getElementById('bizProfileName').value = profile.businessName || '';
+            document.getElementById('bizProfileTaxId').value = profile.taxId || '';
+            document.getElementById('bizProfilePhone').value = profile.phone || '';
+            document.getElementById('bizProfileEmail').value = profile.email || '';
+            document.getElementById('bizProfileAddress').value = profile.address || '';
+            document.getElementById('bizProfileBankName').value = profile.bankName || '';
+            document.getElementById('bizProfileBankBranch').value = profile.bankBranch || '';
+            document.getElementById('bizProfileBankAccount').value = profile.bankAccount || '';
+            document.getElementById('bizProfileBrandColor').value = profile.brandColor || '#6d28d9';
+            const preview = document.getElementById('bizProfileLogoPreview');
+            if (profile.logoBase64) { preview.src = profile.logoBase64; preview.style.display = 'block'; }
+            else { preview.style.display = 'none'; }
+        }
+
+        function handleBizLogoFileSelect(event) {
+            const file = event.target.files && event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const tmp = new Image();
+                tmp.onload = function() {
+                    let w = tmp.width, h = tmp.height; const maxDim = 300;
+                    if (Math.max(w, h) > maxDim) { const s = maxDim / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+                    const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(tmp, 0, 0, w, h);
+                    const compressed = canvas.toDataURL('image/png');
+                    const preview = document.getElementById('bizProfileLogoPreview');
+                    preview.src = compressed; preview.style.display = 'block';
+                    preview.setAttribute('data-pending-logo', compressed);
+                };
+                tmp.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function saveBizProfileFromForm() {
+            const preview = document.getElementById('bizProfileLogoPreview');
+            const pendingLogo = preview.getAttribute('data-pending-logo');
+            const profile = await loadBizProfile();
+            const updated = Object.assign({}, profile, {
+                businessName: document.getElementById('bizProfileName').value.trim(),
+                taxId: document.getElementById('bizProfileTaxId').value.trim(),
+                phone: document.getElementById('bizProfilePhone').value.trim(),
+                email: document.getElementById('bizProfileEmail').value.trim(),
+                address: document.getElementById('bizProfileAddress').value.trim(),
+                bankName: document.getElementById('bizProfileBankName').value.trim(),
+                bankBranch: document.getElementById('bizProfileBankBranch').value.trim(),
+                bankAccount: document.getElementById('bizProfileBankAccount').value.trim(),
+                brandColor: document.getElementById('bizProfileBrandColor').value || '#6d28d9',
+                logoBase64: pendingLogo || profile.logoBase64 || null
+            });
+            await saveBizProfile(updated);
+            preview.removeAttribute('data-pending-logo');
+            alert('✅ פרטי העסק נשמרו בהצלחה.');
         }
 
         function renderCurrentGroupBox() {
@@ -2877,8 +3194,13 @@
             const duration = Math.max(20, singleCopyWidth / speedPxPerSec);
             track.style.animationDuration = duration + 's';
         }
-        // תצוגה ראשונית (לפני התחברות / לפני שהתובנות האישיות מוכנות) - טיפים כלליים קבועים
-        function initEconTicker() { renderTickerItems(ECON_TICKER_TIPS); }
+        // תצוגה ראשונית (לפני התחברות / לפני שהתובנות האישיות מוכנות) - טיפים כלליים,
+        // מעורבבים בסדר אקראי בכל טעינה (בלי ערבוב, אותו סדר קבוע חזר בכל כניסה לאתר)
+        function initEconTicker() {
+            const tips = ECON_TICKER_TIPS.slice();
+            for (let i = tips.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = tips[i]; tips[i] = tips[j]; tips[j] = t; }
+            renderTickerItems(tips);
+        }
         // FIX: רשת ביטחון נוספת - בודקים מעת לעת שהסרגל באמת לא ריק בפועל ב-DOM (למשל אם קריסת
         // JS באמצע רינדור השאירה אותו חצי-מעודכן), ומתקנים באופן אקטיבי אם כן.
         function _ensureTickerNeverEmpty() {
@@ -3129,7 +3451,7 @@
                             <button class="btn-delete" onclick="deleteSavingsGoal(${i})">✕</button>
                         </div>
                     </div>
-                    <div style="background:var(--border); border-radius:10px; height:14px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:linear-gradient(90deg,#10b981,#059669); transition:width .4s;"></div></div>
+                    <div style="background:var(--border); border-radius:10px; height:14px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:linear-gradient(90deg, var(--success), #086b52); transition:width .4s;"></div></div>
                     <div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">₪${Number(g.saved).toLocaleString()} מתוך ₪${Number(g.target).toLocaleString()} (${pct}%)</div>
                     ${pct >= 100 ? '' : goalRecommendationHtml(g)}
                 </div>`;
@@ -3192,7 +3514,7 @@
                 </div>`;
 
             if (target > 0) {
-                html += `<div style="background:var(--border); border-radius:10px; height:14px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:linear-gradient(90deg,#10b981,#059669); transition:width .4s;"></div></div>
+                html += `<div style="background:var(--border); border-radius:10px; height:14px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:linear-gradient(90deg, var(--success), #086b52); transition:width .4s;"></div></div>
                     <div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">${pct}% מהיעד השנתי ${pct >= 100 ? '🏆' : ''}</div>`;
                 // המלצה: כמה צריך לחסוך בממוצע לחודש מכאן ועד סוף השנה כדי להגיע ליעד
                 const remainingAnnual = target - info.total;
@@ -3871,7 +4193,7 @@
             const btnEl   = document.getElementById('btnStartAi');
             if (titleEl) { titleEl.textContent = isIncome ? '💳 סריקת סליקה — הכנסה עסקית' : 'סריקת חשבונית חכמה'; titleEl.style.color = isIncome ? '#d97706' : '#10b981'; }
             if (descEl)  { descEl.textContent  = isIncome ? 'העלה צילום של אישור הסליקה — ה-AI יזהה את הסכום שהתקבל ויוסיף אוטומטית להכנסות.' : 'העלה צילום של החשבונית, וה-AI שלנו יחלץ את הסכום והחנות וישייך לקטגוריה אוטומטית.'; }
-            if (btnEl)   { btnEl.style.background = isIncome ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#10b981,#059669)'; }
+            if (btnEl)   { btnEl.style.background = isIncome ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg, var(--success), #086b52)'; }
             document.getElementById('receiptScannerModal').style.display = 'flex';
         }
         function closeReceiptScanner() { document.getElementById('receiptScannerModal').style.display = 'none'; document.getElementById('scannerLaser').style.display = 'none'; }
@@ -4795,6 +5117,725 @@
             try { localStorage.setItem('trash_' + tempUserSession.user_id, JSON.stringify(list.slice(-200))); } catch(e) {}
             try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__trash__', data: list.slice(-200) }); } catch(e) {}
         }
+
+        // ===================================================================
+        // ====== מודול עסקי: פרופיל / לקוחות-ספקים / מסמכים (הצעות מחיר וקבלות) ======
+        // אחסון בשורות __biz_profile__ / __biz_clients__ / __biz_documents__ - אותו
+        // דפוס בדיוק כמו __trash__ (ר' loadTrash/saveTrash למעלה). רלוונטי רק במצב עסקי.
+        // ===================================================================
+        let bizProfileCache = null;
+        let bizClientsCache = [];
+        let bizDocumentsCache = [];
+
+        function _emptyBizProfile() { return { businessName: '', taxId: '', phone: '', email: '', address: '', logoBase64: null, bankName: '', bankBranch: '', bankAccount: '', brandColor: '#6d28d9', updatedAt: '' }; }
+
+        async function loadBizProfile() {
+            if (!tempUserSession) return _emptyBizProfile();
+            if (bizProfileCache) return bizProfileCache;
+            try {
+                const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', '__biz_profile__');
+                bizProfileCache = (data && data.length > 0 && data[0].data) ? data[0].data : _emptyBizProfile();
+            } catch(e) { bizProfileCache = _emptyBizProfile(); }
+            return bizProfileCache;
+        }
+        async function saveBizProfile(profile) {
+            profile.updatedAt = new Date().toISOString();
+            bizProfileCache = profile;
+            if (!tempUserSession) return;
+            try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__biz_profile__', data: profile }); } catch(e) {}
+        }
+
+        async function loadBizClients() {
+            if (!tempUserSession) return [];
+            try {
+                const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', '__biz_clients__');
+                bizClientsCache = (data && data.length > 0 && Array.isArray(data[0].data)) ? data[0].data : [];
+            } catch(e) { bizClientsCache = bizClientsCache || []; }
+            return bizClientsCache;
+        }
+        async function saveBizClients(list) {
+            bizClientsCache = list;
+            if (!tempUserSession) return;
+            try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__biz_clients__', data: list }); } catch(e) {}
+        }
+
+        async function loadBizDocuments() {
+            if (!tempUserSession) return [];
+            try {
+                const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', '__biz_documents__');
+                bizDocumentsCache = (data && data.length > 0 && Array.isArray(data[0].data)) ? data[0].data : [];
+            } catch(e) { bizDocumentsCache = bizDocumentsCache || []; }
+            return bizDocumentsCache;
+        }
+        async function saveBizDocuments(list) {
+            bizDocumentsCache = list;
+            if (!tempUserSession) return;
+            try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__biz_documents__', data: list }); } catch(e) {}
+        }
+
+        async function ensureBizDataLoaded() {
+            await Promise.all([loadBizProfile(), loadBizClients(), loadBizDocuments()]);
+        }
+
+        // ===== מודל לקוחות ומסמכים: פתיחה/סגירה/מעבר בין טאבים =====
+        async function openBizHubModal() {
+            await ensureBizDataLoaded();
+            document.getElementById('bizHubModal').style.display = 'flex';
+            switchBizHubTab('clients');
+        }
+        function closeBizHubModal() { document.getElementById('bizHubModal').style.display = 'none'; }
+        function switchBizHubTab(tab) {
+            const sections = { clients: 'bizHubTabContentClients', documents: 'bizHubTabContentDocuments' };
+            const buttons  = { clients: 'bizHubTabBtnClients', documents: 'bizHubTabBtnDocuments' };
+            Object.keys(sections).forEach(function(k) {
+                const sec = document.getElementById(sections[k]); if (sec) sec.style.display = (k === tab) ? 'flex' : 'none';
+                const btn = document.getElementById(buttons[k]);
+                if (btn) {
+                    const active = (k === tab);
+                    btn.style.background = active ? '#f3e8ff' : '';
+                    btn.style.borderColor = active ? '#8b5cf6' : '';
+                    btn.style.color = active ? '#6d28d9' : '';
+                }
+            });
+            if (tab === 'clients') renderClientsTable();
+            if (tab === 'documents') { closeDocumentBuilder(); renderDocumentsList('all'); checkAllPendingSignatures().then(function(){ renderDocumentsList(window._docListFilter || 'all'); }); }
+        }
+
+        // ===== מאגר לקוחות/ספקים: CRUD בדפוס DOM-as-state (כמו שורות הוצאות) =====
+        function renderClientsTable() {
+            const tbody = document.getElementById('bizClientsBody');
+            tbody.innerHTML = '';
+            (bizClientsCache || []).forEach(function(c) { appendClientRowUI(tbody, c); });
+        }
+        function appendClientRowUI(tbody, clientObj) {
+            const c = clientObj || {};
+            const tr = document.createElement('tr');
+            tr.setAttribute('data-client-id', c.id || ('c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)));
+            tr.innerHTML =
+                '<td><input class="input-field client-name" style="margin:0; min-width:110px;" value="' + escapeHtml(c.name || '') + '"></td>' +
+                '<td><select class="input-field client-type" style="margin:0;"><option value="customer"' + (c.type !== 'supplier' ? ' selected' : '') + '>לקוח</option><option value="supplier"' + (c.type === 'supplier' ? ' selected' : '') + '>ספק</option></select></td>' +
+                '<td><input class="input-field client-phone" style="margin:0; min-width:100px;" value="' + escapeHtml(c.phone || '') + '"></td>' +
+                '<td><input class="input-field client-email" style="margin:0; min-width:120px;" value="' + escapeHtml(c.email || '') + '"></td>' +
+                '<td><input class="input-field client-address" style="margin:0; min-width:120px;" value="' + escapeHtml(c.address || '') + '"></td>' +
+                '<td><input class="input-field client-taxid" style="margin:0; min-width:90px;" value="' + escapeHtml(c.taxId || '') + '"></td>' +
+                '<td><input class="input-field client-notes" style="margin:0; min-width:110px;" value="' + escapeHtml(c.notes || '') + '"></td>' +
+                '<td><button class="btn-outline" style="color:var(--danger); border-color:#fecaca; padding:0.3rem 0.6rem;" onclick="deleteClientRow(this)">🗑️</button></td>';
+            tbody.appendChild(tr);
+        }
+        function addClientRow() {
+            appendClientRowUI(document.getElementById('bizClientsBody'), { createdAt: new Date().toISOString() });
+        }
+        function deleteClientRow(btn) { btn.closest('tr').remove(); }
+        function serializeClientsFromDOM() {
+            const rows = document.querySelectorAll('#bizClientsBody tr');
+            const list = [];
+            rows.forEach(function(tr) {
+                const name = tr.querySelector('.client-name').value.trim();
+                if (!name) return;
+                list.push({
+                    id: tr.getAttribute('data-client-id'),
+                    name: name,
+                    type: tr.querySelector('.client-type').value,
+                    phone: tr.querySelector('.client-phone').value.trim(),
+                    email: tr.querySelector('.client-email').value.trim(),
+                    address: tr.querySelector('.client-address').value.trim(),
+                    taxId: tr.querySelector('.client-taxid').value.trim(),
+                    notes: tr.querySelector('.client-notes').value.trim(),
+                    createdAt: new Date().toISOString()
+                });
+            });
+            return list;
+        }
+        async function saveClientsFromDOM() {
+            const list = serializeClientsFromDOM();
+            await saveBizClients(list);
+            renderClientsTable();
+            populateAllClientDropdowns();
+            alert('✅ רשימת הלקוחות/ספקים נשמרה.');
+        }
+        function populateClientDropdown(selectEl) {
+            if (!selectEl) return;
+            const current = selectEl.value;
+            selectEl.innerHTML = '<option value="">— בחר לקוח/ספק —</option>' +
+                (bizClientsCache || []).map(function(c) { return '<option value="' + c.id + '">' + escapeHtml(c.name) + (c.type === 'supplier' ? ' (ספק)' : '') + '</option>'; }).join('') +
+                '<option value="__new__">➕ לקוח/ספק חדש...</option>';
+            if (current && selectEl.querySelector('option[value="' + current + '"]')) selectEl.value = current;
+        }
+        function populateAllClientDropdowns() {
+            const sel = document.getElementById('docClientSelect');
+            if (sel) populateClientDropdown(sel);
+        }
+        async function addClientQuick() {
+            const name = document.getElementById('docQuickClientName').value.trim();
+            if (!name) return alert('הזן שם לקוח/ספק.');
+            const type = document.getElementById('docQuickClientType').value;
+            const newClient = { id: 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), name: name, type: type, phone: '', email: '', address: '', taxId: '', notes: '', createdAt: new Date().toISOString() };
+            bizClientsCache = (bizClientsCache || []).concat([newClient]);
+            await saveBizClients(bizClientsCache);
+            const sel = document.getElementById('docClientSelect');
+            populateClientDropdown(sel);
+            sel.value = newClient.id;
+            document.getElementById('docQuickAddClientBox').style.display = 'none';
+            document.getElementById('docQuickClientName').value = '';
+        }
+
+        // ===== בונה מסמך משותף (הצעת מחיר / קבלה) =====
+        function computeNextDocNumber(docType) {
+            const prefix = docType === 'quote' ? 'Q-' : 'R-';
+            const count = (bizDocumentsCache || []).filter(function(d) { return d.docType === docType; }).length;
+            return prefix + String(count + 1).padStart(4, '0');
+        }
+        function appendDocItemRowUI(tbody, item) {
+            const it = item || { description: '', qty: 1, unitPrice: 0 };
+            const tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td><input class="input-field doc-item-desc" style="margin:0; min-width:140px;" value="' + escapeHtml(it.description || '') + '"></td>' +
+                '<td><input type="number" class="input-field doc-item-qty" style="margin:0; min-width:74px; padding:0.6rem 0.5rem; text-align:center;" value="' + (it.qty != null ? it.qty : 1) + '" min="0" step="1" oninput="recalcDocTotals()"></td>' +
+                '<td><input type="number" class="input-field doc-item-price" style="margin:0; min-width:90px; padding:0.6rem 0.5rem;" value="' + (it.unitPrice != null ? it.unitPrice : 0) + '" min="0" step="0.1" oninput="recalcDocTotals()"></td>' +
+                '<td class="doc-item-linetotal" style="font-weight:600; padding:0 4px; white-space:nowrap;">₪0</td>' +
+                '<td><button class="btn-outline" style="color:var(--danger); border-color:#fecaca; padding:0.3rem 0.6rem;" onclick="deleteDocItemRow(this)">🗑️</button></td>';
+            tbody.appendChild(tr);
+        }
+        function addDocItemRow() { appendDocItemRowUI(document.getElementById('docItemsBody'), null); recalcDocTotals(); }
+        function deleteDocItemRow(btn) { btn.closest('tr').remove(); recalcDocTotals(); }
+        function recalcDocTotals() {
+            const mode = window._docBuilder && window._docBuilder.pricingMode;
+            let total = 0;
+            if (mode === 'lumpsum') {
+                total = Number((document.getElementById('docLumpsumAmount') || {}).value) || 0;
+            } else {
+                document.querySelectorAll('#docItemsBody tr').forEach(function(tr) {
+                    const qty = Number(tr.querySelector('.doc-item-qty').value) || 0;
+                    const price = Number(tr.querySelector('.doc-item-price').value) || 0;
+                    const lineTotal = qty * price;
+                    tr.querySelector('.doc-item-linetotal').innerText = '₪' + lineTotal.toLocaleString();
+                    total += lineTotal;
+                });
+            }
+            const totalEl = document.getElementById('docGrandTotal');
+            if (totalEl) totalEl.innerText = '₪' + total.toLocaleString();
+            renderDocPreview();
+            return total;
+        }
+        function selectPricingMode(mode) {
+            window._docBuilder.pricingMode = mode;
+            document.getElementById('docModeItemizedBtn').classList.toggle('selected', mode === 'itemized');
+            document.getElementById('docModeLumpsumBtn').classList.toggle('selected', mode === 'lumpsum');
+            document.getElementById('docPricingModeGate').style.display = 'none';
+            document.getElementById('docItemizedFields').style.display = mode === 'itemized' ? 'flex' : 'none';
+            document.getElementById('docLumpsumFields').style.display = mode === 'lumpsum' ? 'flex' : 'none';
+            document.getElementById('docBuilderRestOfForm').style.display = 'flex';
+            recalcDocTotals();
+        }
+
+        function handleDocClientSelectChange() {
+            const sel = document.getElementById('docClientSelect');
+            document.getElementById('docQuickAddClientBox').style.display = (sel.value === '__new__') ? 'flex' : 'none';
+            renderDocPreview();
+        }
+        function handleDocDateChange() {
+            const docType = window._docBuilder ? window._docBuilder.docType : null;
+            if (docType === 'receipt') {
+                const actualField = document.getElementById('docActualPaymentDate');
+                if (actualField && !actualField.value) actualField.value = document.getElementById('docDate').value;
+            }
+            renderDocPreview();
+        }
+        function handlePaymentTermsMethodChange() {
+            const isNet = document.getElementById('docPaymentTermsMethod').value === 'net';
+            document.getElementById('docPaymentTermsNetDays').style.display = isNet ? 'block' : 'none';
+            renderDocPreview();
+        }
+
+        // ===== בונה אובייקט "doc" זמני מתוך מצב הטופס הנוכחי, לתצוגה מקדימה חיה בלבד (לא נשמר) =====
+        function _buildDraftDocFromForm() {
+            const builder = window._docBuilder;
+            if (!builder) return null;
+            const docType = builder.docType;
+            const clientSel = document.getElementById('docClientSelect');
+            const client = (bizClientsCache || []).find(function(c) { return c.id === clientSel.value; });
+            const items = [];
+            document.querySelectorAll('#docItemsBody tr').forEach(function(tr) {
+                const description = tr.querySelector('.doc-item-desc').value.trim();
+                const qty = Number(tr.querySelector('.doc-item-qty').value) || 0;
+                const unitPrice = Number(tr.querySelector('.doc-item-price').value) || 0;
+                items.push({ description: description, qty: qty, unitPrice: unitPrice, lineTotal: qty * unitPrice });
+            });
+            const amount = items.reduce(function(s, it) { return s + it.lineTotal; }, 0);
+            const draft = {
+                docType: docType, number: (builder.existingDocId && (bizDocumentsCache || []).find(function(d){return d.id===builder.existingDocId;}) || {}).number || 'טיוטה',
+                clientNameSnapshot: client ? client.name : '', date: document.getElementById('docDate').value,
+                items: items, amount: amount, pricingMode: builder.pricingMode || 'itemized',
+                notes: document.getElementById('docNotes').value
+            };
+            if (docType === 'quote') {
+                draft.validUntil = document.getElementById('docValidUntil').value;
+                draft.status = document.getElementById('docStatus').value;
+                const ptMethodEl = document.getElementById('docPaymentTermsMethod');
+                if (ptMethodEl) draft.paymentTerms = { method: ptMethodEl.value, netDays: Number((document.getElementById('docPaymentTermsNetDays') || {}).value) || null };
+                if (draft.pricingMode === 'lumpsum') {
+                    draft.lumpsumDescription = (document.getElementById('docLumpsumDesc') || {}).value || '';
+                    draft.amount = Number((document.getElementById('docLumpsumAmount') || {}).value) || 0;
+                }
+            } else {
+                draft.paymentMethod = document.getElementById('docPaymentMethod').value;
+            }
+            return draft;
+        }
+        function renderDocPreview() {
+            const panel = document.getElementById('docPreviewPanel');
+            if (!panel) return;
+            const draft = _buildDraftDocFromForm();
+            if (!draft) { panel.innerHTML = ''; return; }
+            const profile = bizProfileCache || _emptyBizProfile();
+            panel.innerHTML = buildDocumentHtml(draft, profile);
+        }
+
+        function openDocumentBuilder(docType, existingDocId) {
+            const existing = existingDocId ? (bizDocumentsCache || []).find(function(d) { return d.id === existingDocId; }) : null;
+            const mode = existing ? (existing.pricingMode || 'itemized') : 'itemized';
+            window._docBuilder = { docType: docType, existingDocId: existingDocId || null, pricingMode: mode };
+
+            document.getElementById('docBuilderTitle').innerText = docType === 'quote'
+                ? (existing ? 'עריכת הצעת מחיר ' + existing.number : 'הצעת מחיר חדשה')
+                : (existing ? 'עריכת קבלה ' + existing.number : 'קבלה חדשה');
+
+            document.getElementById('docQuoteOnlyFields').style.display = docType === 'quote' ? 'grid' : 'none';
+            document.getElementById('docReceiptOnlyFields').style.display = docType === 'receipt' ? 'grid' : 'none';
+            document.getElementById('docQuickAddClientBox').style.display = 'none';
+
+            // שער בחירת אופן תמחור — רק בהצעת מחיר חדשה (לא בעריכה, לא בקבלות)
+            const showGate = (docType === 'quote' && !existing);
+            document.getElementById('docPricingModeGate').style.display = showGate ? 'flex' : 'none';
+            document.getElementById('docBuilderRestOfForm').style.display = showGate ? 'none' : 'flex';
+            document.getElementById('docModeItemizedBtn').classList.toggle('selected', mode === 'itemized');
+            document.getElementById('docModeLumpsumBtn').classList.toggle('selected', mode === 'lumpsum');
+            document.getElementById('docItemizedFields').style.display = (docType !== 'quote' || mode === 'itemized') ? 'flex' : 'none';
+            document.getElementById('docLumpsumFields').style.display = (docType === 'quote' && mode === 'lumpsum') ? 'flex' : 'none';
+            document.getElementById('docLumpsumDesc').value = (existing && mode === 'lumpsum') ? (existing.lumpsumDescription || '') : '';
+            document.getElementById('docLumpsumAmount').value = (existing && mode === 'lumpsum') ? (existing.amount || 0) : '';
+
+            populateClientDropdown(document.getElementById('docClientSelect'));
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const docDate = existing ? existing.date : todayStr;
+            document.getElementById('docClientSelect').value = existing ? (existing.clientId || '') : '';
+            document.getElementById('docDate').value = docDate;
+
+            if (docType === 'quote') {
+                const validDefault = (function() { const d = new Date(docDate + 'T00:00:00'); d.setDate(d.getDate() + 30); return d.toISOString().split('T')[0]; })();
+                document.getElementById('docValidUntil').value = existing ? (existing.validUntil || validDefault) : validDefault;
+                document.getElementById('docStatus').value = existing ? (existing.status || 'draft') : 'draft';
+                const pt = existing ? (existing.paymentTerms || { method: 'cash', netDays: null }) : { method: 'cash', netDays: null };
+                document.getElementById('docPaymentTermsMethod').value = pt.method;
+                document.getElementById('docPaymentTermsNetDays').value = pt.netDays || '';
+                document.getElementById('docPaymentTermsNetDays').style.display = pt.method === 'net' ? 'block' : 'none';
+            } else {
+                document.getElementById('docPaymentMethod').value = existing ? (existing.paymentMethod || 'cash') : 'cash';
+                document.getElementById('docActualPaymentDate').value = existing ? (existing.actualPaymentDate || docDate) : docDate;
+            }
+
+            document.getElementById('docNotes').value = existing ? (existing.notes || '') : '';
+
+            const itemsBody = document.getElementById('docItemsBody');
+            itemsBody.innerHTML = '';
+            const items = (existing && existing.items && existing.items.length) ? existing.items : [{ description: '', qty: 1, unitPrice: 0 }];
+            items.forEach(function(it) { appendDocItemRowUI(itemsBody, it); });
+            recalcDocTotals();
+            renderDocPreview();
+
+            document.getElementById('bizDocListView').style.display = 'none';
+            document.getElementById('bizDocBuilderView').style.display = 'flex';
+        }
+        function closeDocumentBuilder() {
+            const builderView = document.getElementById('bizDocBuilderView');
+            const listView = document.getElementById('bizDocListView');
+            if (builderView) builderView.style.display = 'none';
+            if (listView) listView.style.display = 'flex';
+            window._docBuilder = null;
+        }
+
+        async function saveDocumentFromBuilder() {
+            const builder = window._docBuilder;
+            if (!builder) return;
+            const docType = builder.docType;
+            const clientSel = document.getElementById('docClientSelect');
+            if (!clientSel.value || clientSel.value === '__new__') return alert('בחר לקוח/ספק (או הוסף חדש דרך "➕ לקוח/ספק חדש").');
+            const client = (bizClientsCache || []).find(function(c) { return c.id === clientSel.value; });
+            if (!client) return alert('הלקוח שנבחר לא נמצא — נסה שוב.');
+
+            const mode = (docType === 'quote') ? (builder.pricingMode || 'itemized') : 'itemized';
+            let items = [], amount = 0, lumpsumDescription;
+            if (mode === 'lumpsum') {
+                lumpsumDescription = document.getElementById('docLumpsumDesc').value.trim();
+                amount = Number(document.getElementById('docLumpsumAmount').value) || 0;
+                if (!amount) return alert('הזן סכום.');
+            } else {
+                document.querySelectorAll('#docItemsBody tr').forEach(function(tr) {
+                    const description = tr.querySelector('.doc-item-desc').value.trim();
+                    const qty = Number(tr.querySelector('.doc-item-qty').value) || 0;
+                    const unitPrice = Number(tr.querySelector('.doc-item-price').value) || 0;
+                    if (!description && !qty && !unitPrice) return;
+                    items.push({ description: description, qty: qty, unitPrice: unitPrice, lineTotal: qty * unitPrice });
+                });
+                if (!items.length) return alert('הוסף לפחות פריט אחד.');
+                amount = items.reduce(function(s, it) { return s + it.lineTotal; }, 0);
+            }
+
+            const date = document.getElementById('docDate').value;
+            if (!date) return alert('הזן תאריך מסמך.');
+
+            const existing = builder.existingDocId ? (bizDocumentsCache || []).find(function(d) { return d.id === builder.existingDocId; }) : null;
+            const now = new Date().toISOString();
+
+            const doc = existing ? Object.assign({}, existing) : {
+                id: 'd_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+                docType: docType,
+                number: computeNextDocNumber(docType),
+                createdAt: now
+            };
+            doc.clientId = client.id;
+            doc.clientNameSnapshot = client.name;
+            doc.date = date;
+            doc.pricingMode = mode;
+            doc.items = mode === 'lumpsum' ? [] : items;
+            doc.amount = amount;
+            if (mode === 'lumpsum') doc.lumpsumDescription = lumpsumDescription; else delete doc.lumpsumDescription;
+            doc.notes = document.getElementById('docNotes').value.trim();
+            doc.updatedAt = now;
+
+            if (docType === 'quote') {
+                doc.validUntil = document.getElementById('docValidUntil').value;
+                doc.status = document.getElementById('docStatus').value;
+                doc.paymentTerms = {
+                    method: document.getElementById('docPaymentTermsMethod').value,
+                    netDays: document.getElementById('docPaymentTermsMethod').value === 'net' ? (Number(document.getElementById('docPaymentTermsNetDays').value) || 0) : null
+                };
+            } else {
+                doc.paymentMethod = document.getElementById('docPaymentMethod').value;
+                doc.actualPaymentDate = document.getElementById('docActualPaymentDate').value || date;
+                if (doc.incomeLinked === undefined) doc.incomeLinked = false;
+                if (doc.incomeMonthStr === undefined) doc.incomeMonthStr = null;
+            }
+
+            if (existing) {
+                bizDocumentsCache = (bizDocumentsCache || []).map(function(d) { return d.id === doc.id ? doc : d; });
+            } else {
+                bizDocumentsCache = (bizDocumentsCache || []).concat([doc]);
+            }
+            await saveBizDocuments(bizDocumentsCache);
+            closeDocumentBuilder();
+            renderDocumentsList('all');
+            alert('✅ המסמך נשמר (' + doc.number + ').');
+        }
+
+        // ===== רשימת מסמכים + PDF =====
+        function renderDocumentsList(filterType) {
+            window._docListFilter = filterType || window._docListFilter || 'all';
+            const filter = window._docListFilter;
+            const filterBtns = { all: 'bizDocFilterAll', quote: 'bizDocFilterQuote', receipt: 'bizDocFilterReceipt' };
+            Object.keys(filterBtns).forEach(function(k) {
+                const btn = document.getElementById(filterBtns[k]);
+                if (btn) {
+                    const active = (k === filter);
+                    btn.style.background = active ? '#f3e8ff' : '';
+                    btn.style.borderColor = active ? '#8b5cf6' : '';
+                    btn.style.color = active ? '#6d28d9' : '';
+                }
+            });
+            const container = document.getElementById('bizDocumentsListBody');
+            let list = (bizDocumentsCache || []).slice();
+            if (filter !== 'all') list = list.filter(function(d) { return d.docType === filter; });
+            list.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+            if (!list.length) { container.innerHTML = '<p style="text-align:center; color:var(--text-light);">אין מסמכים עדיין.</p>'; return; }
+
+            const statusLabels = { draft: 'טיוטה', sent: 'נשלחה', accepted: 'אושרה', rejected: 'נדחתה' };
+            const statusColors = { draft: '#94a3b8', sent: '#0ea5e9', accepted: '#10b981', rejected: '#ef4444' };
+            const paymentLabels = { cash: 'מזומן', card: 'אשראי', transfer: 'העברה', check: 'שיק' };
+
+            container.innerHTML = list.map(function(d) {
+                const isQuote = d.docType === 'quote';
+                const typeIcon = isQuote ? '📄' : '🧾';
+                const typeLabel = isQuote ? 'הצעת מחיר' : 'קבלה';
+                let badge = '';
+                if (!isQuote) {
+                    badge = d.incomeLinked
+                        ? '<span style="background:#dcfce7; color:#166534; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap;">✅ נוסף כהכנסה (' + escapeHtml(d.incomeMonthStr || '') + ')</span>'
+                        : '<span style="background:#fef3c7; color:#92400e; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap;">טרם נוסף כהכנסה</span>';
+                } else if (d.shareToken) {
+                    badge = d.status === 'accepted'
+                        ? '<span style="background:#dcfce7; color:#166534; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap;">✍️ נחתם' + (d.signerName ? ' ע"י ' + escapeHtml(d.signerName) : '') + '</span>'
+                        : '<span style="background:#e0f2fe; color:#0369a1; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap;">🔗 שותף לחתימה</span>';
+                }
+                let actions = '<button class="btn-outline" style="padding:0.3rem 0.6rem;" title="ערוך" onclick="openDocumentBuilder(\'' + d.docType + '\', \'' + d.id + '\')">✏️</button>' +
+                    '<button class="btn-outline" style="padding:0.3rem 0.6rem;" title="PDF" onclick="generateDocumentPDF(\'' + d.id + '\')">🖨️</button>';
+                if (!isQuote && !d.incomeLinked) {
+                    actions += '<button class="btn-outline" style="padding:0.3rem 0.6rem; color:#059669; border-color:#a7f3d0;" title="הוסף כהכנסה" onclick="linkReceiptToIncome(\'' + d.id + '\')">💰</button>';
+                }
+                if (isQuote) {
+                    actions += '<button class="btn-outline" style="padding:0.3rem 0.6rem; color:#0ea5e9; border-color:#bae6fd;" title="שתף לחתימה" onclick="shareQuoteForSigning(\'' + d.id + '\')">🔗</button>';
+                    if (d.shareToken && d.status !== 'accepted') {
+                        actions += '<button class="btn-outline" style="padding:0.3rem 0.6rem; color:#059669; border-color:#a7f3d0;" title="בדוק סטטוס חתימה" onclick="checkQuoteSignatureStatus(\'' + d.id + '\')">🔄</button>';
+                    }
+                }
+                actions += '<button class="btn-outline" style="padding:0.3rem 0.6rem; color:var(--danger); border-color:#fecaca;" title="מחק" onclick="deleteDocumentEntry(\'' + d.id + '\')">🗑️</button>';
+
+                let statusControl = '';
+                if (isQuote) {
+                    statusControl = '<select class="input-field" style="margin:0; font-size:0.78rem; padding:2px 6px; width:auto;" onchange="setDocumentStatus(\'' + d.id + '\', this.value)">' +
+                        Object.keys(statusLabels).map(function(s) { return '<option value="' + s + '"' + (s === d.status ? ' selected' : '') + '>' + statusLabels[s] + '</option>'; }).join('') +
+                        '</select>';
+                }
+
+                return '<div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 14px; display:flex; flex-direction:column; gap:6px;">' +
+                    '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">' +
+                        '<div><strong>' + typeIcon + ' ' + escapeHtml(d.number || '') + '</strong> · ' + escapeHtml(d.clientNameSnapshot || '') + '</div>' +
+                        '<div style="font-weight:700; color:var(--primary);">₪' + Number(d.amount || 0).toLocaleString() + '</div>' +
+                    '</div>' +
+                    '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; font-size:0.8rem; color:var(--text-light);">' +
+                        '<span>' + typeLabel + ' · ' + escapeHtml(d.date || '') + (isQuote && d.validUntil ? ' · בתוקף עד ' + escapeHtml(d.validUntil) : '') + (!isQuote && d.paymentMethod ? ' · ' + escapeHtml(paymentLabels[d.paymentMethod] || d.paymentMethod) : '') + '</span>' +
+                        '<span style="display:flex; align-items:center; gap:6px;">' + badge + statusControl + '</span>' +
+                    '</div>' +
+                    '<div style="display:flex; gap:6px; justify-content:flex-end;">' + actions + '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        async function deleteDocumentEntry(docId) {
+            if (!confirm('למחוק מסמך זה?')) return;
+            bizDocumentsCache = (bizDocumentsCache || []).filter(function(d) { return d.id !== docId; });
+            await saveBizDocuments(bizDocumentsCache);
+            renderDocumentsList(window._docListFilter || 'all');
+        }
+
+        async function setDocumentStatus(docId, status) {
+            const doc = (bizDocumentsCache || []).find(function(d) { return d.id === docId; });
+            if (!doc) return;
+            doc.status = status;
+            doc.updatedAt = new Date().toISOString();
+            await saveBizDocuments(bizDocumentsCache);
+            renderDocumentsList(window._docListFilter || 'all');
+        }
+
+        // ===== חתימת לקוח מרחוק — קישור ציבורי (טבלת quote_shares, ר' תוכנית שלב 2 לSQL הנדרש) =====
+        function generateShareToken() {
+            const bytes = new Uint8Array(24);
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+        }
+
+        async function shareQuoteForSigning(docId) {
+            const doc = (bizDocumentsCache || []).find(function(d) { return d.id === docId; });
+            if (!doc || doc.docType !== 'quote') return;
+            const profile = bizProfileCache || _emptyBizProfile();
+            const token = generateShareToken();
+            const snapshot = {
+                docType: 'quote', number: doc.number, date: doc.date, validUntil: doc.validUntil,
+                clientNameSnapshot: doc.clientNameSnapshot, pricingMode: doc.pricingMode || 'itemized',
+                items: doc.items || [], lumpsumDescription: doc.lumpsumDescription || '', amount: doc.amount,
+                notes: doc.notes || '', paymentTerms: doc.paymentTerms || null,
+                profile: {
+                    businessName: profile.businessName, taxId: profile.taxId, phone: profile.phone, email: profile.email,
+                    address: profile.address, logoBase64: profile.logoBase64, brandColor: profile.brandColor,
+                    bankName: profile.bankName, bankBranch: profile.bankBranch, bankAccount: profile.bankAccount
+                }
+            };
+            // בכוונה לא כולל: bizClientsCache, מסמכים אחרים, owner_user_id לא נחשף בתמונת המצב עצמה
+            const { error } = await _supabase.from('quote_shares').insert({
+                token: token, owner_user_id: tempUserSession.user_id, doc_snapshot: snapshot, status: 'pending'
+            });
+            if (error) return alert('שגיאה ביצירת קישור שיתוף (ודא שהרצת את ה-SQL ליצירת טבלת quote_shares ב-Supabase): ' + (error.message || ''));
+            doc.shareToken = token;
+            doc.updatedAt = new Date().toISOString();
+            await saveBizDocuments(bizDocumentsCache);
+            renderDocumentsList(window._docListFilter || 'all');
+            const link = location.origin + location.pathname + '?quote=' + token;
+            if (navigator.clipboard) { try { await navigator.clipboard.writeText(link); } catch(e) {} }
+            prompt('קישור לחתימה (הועתק ללוח אם ניתן):', link);
+        }
+
+        async function checkQuoteSignatureStatus(docId, silent) {
+            const doc = (bizDocumentsCache || []).find(function(d) { return d.id === docId; });
+            if (!doc || !doc.shareToken) return;
+            const { data, error } = await _supabase.from('quote_shares').select('status,signer_name,signed_at').eq('token', doc.shareToken).limit(1);
+            if (error || !data || !data.length || data[0].status !== 'signed') { if (!silent) alert('טרם נחתם.'); return; }
+            doc.status = 'accepted';
+            doc.signerName = data[0].signer_name;
+            doc.signedAt = data[0].signed_at;
+            doc.updatedAt = new Date().toISOString();
+            await saveBizDocuments(bizDocumentsCache);
+            renderDocumentsList(window._docListFilter || 'all');
+            if (!silent) alert('✅ ההצעה נחתמה על ידי ' + data[0].signer_name + '.');
+        }
+
+        async function checkAllPendingSignatures() {
+            const pending = (bizDocumentsCache || []).filter(function(d) { return d.docType === 'quote' && d.shareToken && d.status !== 'accepted'; });
+            for (const d of pending) { try { await checkQuoteSignatureStatus(d.id, true); } catch(e) {} }
+        }
+
+        // ===== דף ציבורי לצפייה בהצעת מחיר וחתימה עליה (נגיש ללא התחברות דרך ?quote=<token>) =====
+        async function renderPublicQuoteView(token) {
+            document.body.innerHTML = '<div id="publicQuoteRoot" style="max-width:700px; margin:0 auto; padding:20px; direction:rtl; font-family:\'Rubik\',sans-serif;"><p style="text-align:center; color:#64748b;">טוען הצעת מחיר...</p></div>';
+            const root = document.getElementById('publicQuoteRoot');
+            const { data, error } = await _supabase.from('quote_shares').select('*').eq('token', token).limit(1);
+            if (error || !data || !data.length) { root.innerHTML = '<p style="text-align:center; color:#ef4444;">הקישור אינו תקין או שפג תוקפו.</p>'; return; }
+            const share = data[0];
+            const snap = share.doc_snapshot;
+            const fakeDoc = Object.assign({}, snap, { docType: 'quote' });
+            let html = buildDocumentHtml(fakeDoc, snap.profile || {});
+            if (share.status === 'signed') {
+                html += '<div style="padding:20px 30px; background:#dcfce7; color:#166534; border-radius:0 0 14px 14px; text-align:center; font-weight:600;">✅ ההצעה נחתמה על ידי ' + escapeHtml(share.signer_name || '') + ' בתאריך ' + new Date(share.signed_at).toLocaleDateString('he-IL') + '</div>';
+                root.innerHTML = html;
+                return;
+            }
+            html += '<div style="padding:24px 30px; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 14px 14px;">';
+            html += '<h3 style="margin-top:0;">אישור וחתימה על ההצעה</h3>';
+            html += '<div class="input-group" style="margin-bottom:12px;"><label>שם מלא</label><input type="text" id="pubSignerName" class="input-field"></div>';
+            html += '<label style="font-size:0.9rem; color:#475569;">חתימה:</label>';
+            html += '<canvas id="pubSigCanvas" width="600" height="180" style="border:1px solid #cbd5e1; border-radius:10px; width:100%; touch-action:none; background:#fff; display:block;"></canvas>';
+            html += '<button type="button" class="btn-outline" style="margin-top:6px;" onclick="clearSignaturePad()">נקה חתימה</button>';
+            html += '<div style="margin-top:14px;"><label style="display:flex; align-items:center; gap:8px; font-size:0.9rem;"><input type="checkbox" id="pubAgreeCheck"> אני מאשר/ת את תנאי ההצעה</label></div>';
+            html += '<button type="button" class="btn-primary" style="margin-top:14px;" onclick="submitPublicSignature(\'' + token + '\')">✅ שלח חתימה</button>';
+            html += '</div>';
+            root.innerHTML = html;
+            initSignaturePad();
+        }
+
+        function initSignaturePad() {
+            const canvas = document.getElementById('pubSigCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+            let drawing = false, last = null;
+            function pos(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) }; }
+            canvas.addEventListener('pointerdown', function(e) { drawing = true; last = pos(e); });
+            canvas.addEventListener('pointermove', function(e) { if (!drawing) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last = p; });
+            window.addEventListener('pointerup', function() { drawing = false; });
+        }
+        function clearSignaturePad() { const c = document.getElementById('pubSigCanvas'); c.getContext('2d').clearRect(0, 0, c.width, c.height); }
+        function isCanvasBlank(canvas) { const blank = document.createElement('canvas'); blank.width = canvas.width; blank.height = canvas.height; return canvas.toDataURL() === blank.toDataURL(); }
+
+        async function submitPublicSignature(token) {
+            const name = document.getElementById('pubSignerName').value.trim();
+            if (!name) return alert('הזן שם מלא.');
+            if (!document.getElementById('pubAgreeCheck').checked) return alert('יש לאשר את תנאי ההצעה.');
+            const canvas = document.getElementById('pubSigCanvas');
+            if (isCanvasBlank(canvas)) return alert('נא לחתום בתיבת החתימה.');
+            const sigBase64 = canvas.toDataURL('image/png', 0.8);
+            const { error } = await _supabase.from('quote_shares').update({
+                status: 'signed', signer_name: name, signature_base64: sigBase64, signed_at: new Date().toISOString()
+            }).eq('token', token);
+            if (error) return alert('שגיאה בשליחת החתימה: ' + (error.message || ''));
+            renderPublicQuoteView(token);
+        }
+
+        // ===== תווית תנאי תשלום (הצעות מחיר בלבד) =====
+        function paymentTermsLabel(pt) {
+            if (!pt || !pt.method) return '';
+            const labels = { cash: 'מזומן', card: 'אשראי', transfer: 'העברה בנקאית', check: 'שיק' };
+            if (pt.method === 'net') return 'תנאי תשלום: שוטף + ' + Number(pt.netDays || 0) + ' ימים';
+            return 'תנאי תשלום: ' + (labels[pt.method] || pt.method);
+        }
+
+        // ===== בונה HTML ממותג משותף — משמש גם ל-PDF וגם לתצוגה מקדימה חיה וגם לדף השיתוף הציבורי =====
+        function buildDocumentHtml(doc, profile) {
+            profile = profile || _emptyBizProfile();
+            const isQuote = doc.docType === 'quote';
+            const brand = profile.brandColor || '#6d28d9';
+            const title = isQuote ? 'הצעת מחיר' : 'קבלה';
+            const paymentLabels = { cash: 'מזומן', card: 'אשראי', transfer: 'העברה בנקאית', check: 'שיק' };
+
+            let html = '<div style="font-family:\'Rubik\', sans-serif; direction:rtl; background:#fff;">';
+
+            html += '<div style="background:' + brand + '; color:#fff; padding:24px 30px; border-radius:14px 14px 0 0; display:flex; justify-content:space-between; align-items:flex-start;">';
+            html += '<div>';
+            if (profile.logoBase64) html += '<img src="' + profile.logoBase64 + '" style="max-width:80px; max-height:80px; object-fit:contain; background:#fff; border-radius:8px; padding:4px; margin-bottom:8px;">';
+            html += '<h2 style="margin:0; font-size:1.4rem;">' + escapeHtml(profile.businessName || '') + '</h2>';
+            if (profile.taxId) html += '<div style="font-size:13px; opacity:0.9;">ע.מ / ח.פ: ' + escapeHtml(profile.taxId) + '</div>';
+            html += '</div>';
+            html += '<div style="text-align:left;"><h1 style="margin:0; font-size:26px;">' + title + '</h1><div style="font-size:14px; opacity:0.9;">מס\' ' + escapeHtml(doc.number || '') + '</div><div style="font-size:14px; opacity:0.9;">תאריך: ' + escapeHtml(doc.date || '') + '</div>';
+            if (isQuote && doc.validUntil) html += '<div style="font-size:14px; opacity:0.9;">בתוקף עד: ' + escapeHtml(doc.validUntil) + '</div>';
+            html += '</div></div>';
+
+            html += '<div style="background:#f8fafc; padding:10px 30px; font-size:12.5px; color:#475569; border-bottom:1px solid #e2e8f0;">';
+            const contactParts = [profile.address, profile.phone, profile.email].filter(Boolean).map(escapeHtml);
+            html += contactParts.join(' &nbsp;·&nbsp; ');
+            html += '</div>';
+
+            html += '<div style="padding:24px 30px; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 14px 14px;">';
+            html += '<div style="margin-bottom:16px;"><strong>לכבוד:</strong> ' + escapeHtml(doc.clientNameSnapshot || '') + '</div>';
+
+            if (doc.pricingMode === 'lumpsum') {
+                html += '<div style="border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:20px;">';
+                html += '<div style="color:#475569; margin-bottom:6px; white-space:pre-wrap;">' + escapeHtml(doc.lumpsumDescription || '') + '</div>';
+                html += '<div style="font-size:20px; font-weight:700; color:' + brand + ';">₪' + Number(doc.amount || 0).toLocaleString() + '</div>';
+                html += '</div>';
+            } else {
+                html += '<table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:14px;" border="1" cellpadding="10">';
+                html += '<tr style="background:#f1f5f9;"><th>תיאור</th><th>כמות</th><th>מחיר יח\'</th><th>סה"כ</th></tr>';
+                (doc.items || []).forEach(function(it) {
+                    html += '<tr><td>' + escapeHtml(it.description || '') + '</td><td>' + Number(it.qty || 0).toLocaleString() + '</td><td>₪' + Number(it.unitPrice || 0).toLocaleString() + '</td><td>₪' + Number(it.lineTotal || 0).toLocaleString() + '</td></tr>';
+                });
+                html += '</table>';
+                html += '<div style="text-align:left; font-size:20px; font-weight:700; color:' + brand + '; margin-bottom:20px;">סה"כ: ₪' + Number(doc.amount || 0).toLocaleString() + '</div>';
+            }
+
+            if (!isQuote && doc.paymentMethod) {
+                html += '<div style="font-size:14px; color:#334155; margin-bottom:10px;">אמצעי תשלום: ' + escapeHtml(paymentLabels[doc.paymentMethod] || '') + '</div>';
+            }
+            if (isQuote && doc.paymentTerms) {
+                html += '<div style="font-size:14px; color:#334155; margin-bottom:10px;">' + escapeHtml(paymentTermsLabel(doc.paymentTerms)) + '</div>';
+            }
+            if (doc.notes) html += '<div style="font-size:13px; color:#64748b; margin-top:16px; white-space:pre-wrap;">' + escapeHtml(doc.notes) + '</div>';
+
+            if (profile.bankName || profile.bankAccount) {
+                html += '<div style="margin-top:24px; padding-top:14px; border-top:1px dashed #cbd5e1; font-size:12.5px; color:#64748b;">';
+                html += '<strong>פרטי חשבון בנק:</strong> ';
+                html += [profile.bankName, profile.bankBranch ? 'סניף ' + profile.bankBranch : '', profile.bankAccount ? 'חשבון ' + profile.bankAccount : ''].filter(Boolean).map(escapeHtml).join(' · ');
+                html += '</div>';
+            }
+            html += '</div></div>';
+            return html;
+        }
+
+        function generateDocumentPDF(docId) {
+            const doc = (bizDocumentsCache || []).find(function(d) { return d.id === docId; });
+            if (!doc) return;
+            const profile = bizProfileCache || _emptyBizProfile();
+            const el = document.createElement('div');
+            el.style.padding = '0'; el.style.direction = 'rtl';
+            el.innerHTML = buildDocumentHtml(doc, profile);
+            html2pdf().from(el).set({
+                margin: 10, filename: (doc.docType === 'quote' ? 'הצעת-מחיר' : 'קבלה') + '-' + (doc.number || '') + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            }).save();
+        }
+
+        // ===== קישור קבלה להכנסה בפועל (תומך "שוטף+X" — התשלום בפועל לא בהכרח בתאריך המסמך) =====
+        async function linkReceiptToIncome(docId) {
+            const doc = (bizDocumentsCache || []).find(function(d) { return d.id === docId; });
+            if (!doc || doc.docType !== 'receipt') return;
+            if (doc.incomeLinked) { alert('הקבלה כבר נוספה כהכנסה.'); return; }
+            const payDate = doc.actualPaymentDate || doc.date;
+            const targetMonthStr = monthStrFromDateStr(payDate);
+            if (!targetMonthStr) { alert('תאריך פירעון לא תקין.'); return; }
+            if (!confirm('להוסיף ₪' + Number(doc.amount || 0).toLocaleString() + ' כהכנסה לחודש "' + targetMonthStr + '"?')) return;
+            await addEntryToOtherMonth(targetMonthStr, {
+                type: 'income',
+                name: 'קבלה ' + doc.number + ' - ' + doc.clientNameSnapshot,
+                amount: doc.amount,
+                source: 'biz_receipt',
+                date: payDate
+            });
+            doc.incomeLinked = true;
+            doc.incomeMonthStr = targetMonthStr;
+            doc.updatedAt = new Date().toISOString();
+            await saveBizDocuments(bizDocumentsCache);
+            renderDocumentsList(window._docListFilter || 'all');
+            alert('✅ נוסף כהכנסה לחודש "' + targetMonthStr + '".');
+        }
+
         async function pushToTrash(item) {
             const list = await loadTrash();
             item.id = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -5150,7 +6191,7 @@
             // user_id כמו חודשי התקציב האמיתיים) - חייבות להיות מוחרגות פה בדיוק כמו __settings__,
             // אחרת הן "יופיעו" ברשימת החודשים כאילו הן חודש תקציב אמיתי (ואף יישלחו לייצוא/דוחות).
             const months = (data || []).filter(d => {
-                if (['__settings__', '__biz_settings__', '__upload_history__', '__trash__'].indexOf(d.month_str) > -1) return false;
+                if (['__settings__', '__biz_settings__', '__upload_history__', '__trash__', '__biz_profile__', '__biz_clients__', '__biz_documents__'].indexOf(d.month_str) > -1) return false;
                 const normStr = d.month_str.replace(/,/g, '').replace(/\s+/g, ' ').trim();
                 const isBizMonth = normStr.startsWith('עסקי - ');
                 return isBiz ? isBizMonth : !isBizMonth;
@@ -5771,7 +6812,7 @@
         function exportAllReceiptsExcel() { openExportCenter('detailed'); }
 
         // --- תיבת פניות דו-כיוונית (לקוח <-> מנהל) ---
-        function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
         function normalizeThread(row){
             let thread = [];
