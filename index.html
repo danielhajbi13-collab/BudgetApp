@@ -1923,7 +1923,28 @@
         const { createClient } = supabase;
         const supabaseUrl = 'https://lktciczanxnrdydwybez.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrdGNpY3phbnhucmR5ZHd5YmV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDcxOTAsImV4cCI6MjA5NTk4MzE5MH0.UsN-VonFmMmmrS8WZqyAizAIVv43TOg9Wlh-t1CSTIA';
-        const _supabase = createClient(supabaseUrl, supabaseKey);
+        // אבטחה: ההתחברות נבדקת בשרת (app_login), והשרת מחזיר אסימון סשן אקראי. האסימון נשלח
+        // בכותרת x-app-token בכל בקשה, וכללי ה-RLS במסד מחליטים לפיו אילו שורות מותר לראות ולשנות.
+        // בלי אסימון תקף המפתח הציבורי שבדף הזה לא נותן גישה לשום נתון.
+        const APP_TOKEN_KEY = 'budget_app_token';
+        function getAppToken() { try { return localStorage.getItem(APP_TOKEN_KEY) || ''; } catch(_e) { return ''; } }
+        function setAppToken(token) { try { if (token) localStorage.setItem(APP_TOKEN_KEY, token); else localStorage.removeItem(APP_TOKEN_KEY); } catch(_e){} }
+        const _supabase = createClient(supabaseUrl, supabaseKey, { global: { fetch: function(input, init) {
+            init = init || {};
+            const headers = new Headers(init.headers || {});
+            const token = getAppToken(); if (token) headers.set('x-app-token', token);
+            return fetch(input, Object.assign({}, init, { headers: headers }));
+        } } });
+        // קריאה לפונקציית שרת. מחזיר תמיד אובייקט: התשובה עצמה, או { error: '...' } בכשל.
+        async function appRpc(name, args) {
+            try {
+                const { data, error } = await _supabase.rpc(name, args || {});
+                if (error) return { error: 'server', message: error.message || '' };
+                return data || {};
+            } catch(e) { return { error: 'network', message: (e && e.message) || '' }; }
+        }
+        // לעולם לא שומרים קוד סודי בדפדפן.
+        function stripPin(userObj) { const u = Object.assign({}, userObj); delete u.pin; return u; }
 
         const defaultIncomes = [{ name: "משכורת בסיס", amount: 0 }];
         const defaultFixed = [
@@ -1974,18 +1995,34 @@
             else { window.addEventListener('resize', apply); }
         }
 
+        // שחזור סשן שמור אחרי רענון: מוודאים מול השרת שהאסימון עדיין תקף לפני שמציגים נתונים.
+        async function restoreSavedSession() {
+            const savedSession = localStorage.getItem('budget_active_session');
+            if (!savedSession) return;
+            let saved; try { saved = JSON.parse(savedSession); } catch(_e) { saved = null; }
+            if (!saved || !saved.user_id) { localStorage.removeItem('budget_active_session'); return; }
+            const impersonating = localStorage.getItem('admin_impersonating') === 'true' || !!localStorage.getItem('manager_return');
+            let who = getAppToken() ? await appRpc('app_whoami') : { kind: null };
+            if (who.error) { tempUserSession = stripPin(saved); if (impersonating) isImpersonating = true; loginAsUser(tempUserSession); return; } // תקלת רשת - ממשיכים כרגיל
+            // מעבר חד-פעמי: סשן שנשמר לפני השדרוג עוד מכיל את הקוד הסודי - מחליפים אותו באסימון.
+            if (!who.kind && saved.pin && !impersonating) {
+                const res = await appRpc('app_login', { p_id: saved.user_id, p_pin: saved.pin });
+                if (res.kind === 'user') { setAppToken(res.token); who = res; }
+            }
+            if (!who.kind) { setAppToken(''); localStorage.removeItem('budget_active_session'); localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return'); return; }
+            if (impersonating) { isImpersonating = true; tempUserSession = stripPin(saved); }
+            else if (who.kind === 'user' && who.user && who.user.user_id === saved.user_id) { tempUserSession = Object.assign({}, who.user, { _bizMode: !!saved._bizMode }); }
+            else { localStorage.removeItem('budget_active_session'); return; }
+            loginAsUser(tempUserSession);
+        }
+
         window.onload = function() {
             const qsToken = new URLSearchParams(location.search).get('quote');
             if (qsToken) { renderPublicQuoteView(qsToken); return; }
             applyStoredTheme();
             initEconTicker();
             _setupTopBarObserver();
-            const savedSession = localStorage.getItem('budget_active_session');
-            if (savedSession) { 
-                tempUserSession = JSON.parse(savedSession); 
-                if(localStorage.getItem('admin_impersonating') === 'true' || localStorage.getItem('manager_return')) isImpersonating = true;
-                loginAsUser(tempUserSession); 
-            }
+            restoreSavedSession();
             
             function handleFileInput(e) {
                 if(e.target.files && e.target.files[0]) {
@@ -2100,11 +2137,14 @@
         async function processLoginDetails() {
             const id = document.getElementById('loginUserId').value.trim(); const pin = document.getElementById('loginPin').value.trim();
             if (!id || !pin) return alert("הזן תעודת זהות וקוד סודי.");
-            const adminCreds = await getAdminCredentials();
-            if (id === adminCreds.id && pin === adminCreds.pin) { loginAsAdmin(); return; }
-            const { data, error } = await _supabase.from('users').select('*').eq('user_id', id);
-            if (error || !data || data.length === 0) return alert("שגיאה: חשבון לא קיים.");
-            if (data[0].pin !== pin) return alert("קוד סודי שגוי.");
+            const res = await appRpc('app_login', { p_id: id, p_pin: pin });
+            if (res.error === 'no_user') return alert("שגיאה: חשבון לא קיים.");
+            if (res.error === 'bad_pin') return alert("קוד סודי שגוי.");
+            if (res.error === 'too_many') return alert("יותר מדי ניסיונות כושלים. נסה שוב בעוד רבע שעה.");
+            if (res.error || !res.token) return alert("שגיאה בהתחברות. בדוק את החיבור לאינטרנט ונסה שוב.");
+            setAppToken(res.token);
+            if (res.kind === 'admin') { loginAsAdmin(); return; }
+            const data = [res.user];
             isImpersonating = false; localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return');
             // FIX: איחוד שני מסכי הבחירה הנפרדים (מנהל/לקוח, ואז אישי/עסקי) למסך אחד שמציג
             // בבת אחת את כל ה"כובעים" הרלוונטיים - כדי שמישהו שהוא גם מנהל קהילה וגם בעל חשבון
@@ -2158,10 +2198,9 @@
         // מציאת הקבוצה לפי קוד = החשבון שמנהל אותה (manager_code)
         async function findGroupByCode(code) {
             if (!code) return null;
-            const { data } = await _supabase.from('users').select('user_id,username,manager_code,manager_group_name').eq('manager_code', code);
-            if (!data || !data[0]) return null;
-            const m = data[0];
-            return { user_id: m.user_id, username: m.username, group_code: m.manager_code, group_name: m.manager_group_name };
+            const g = await appRpc('app_group_by_code', { p_code: code });
+            if (!g || g.error || !g.group_code) return null;
+            return { username: g.username, group_code: g.group_code, group_name: g.group_name };
         }
 
         function openCreateManagerModal() {
@@ -2574,24 +2613,25 @@
             if (!code) return;
             const id = (document.getElementById('mgrAddMemberId').value || '').trim();
             if (!id) return alert("הזן תעודת זהות.");
-            const { data } = await _supabase.from('users').select('*').eq('user_id', id);
-            if (!data || !data.length) return alert("לא נמצא לקוח עם תעודת זהות זו. הוא צריך להיות רשום במערכת.");
-            const u = data[0];
-            if (u.user_id === currentManagerSession.user_id) return alert("אינך יכול להוסיף את עצמך כחבר.");
-            if (u.group_code === code) return alert("הלקוח כבר חבר בקבוצה שלך.");
-            if (u.group_code) { if (!confirm("הלקוח כבר חבר בקבוצה אחרת. להעביר אותו לקבוצה שלך?")) return; }
-            const { error } = await _supabase.from('users').update({ group_code: code, group_name: currentManagerSession.manager_group_name || '' }).eq('user_id', id);
-            if (error) return alert("שגיאה בהוספה: " + (error.message || ''));
+            let res = await appRpc('app_manager_add_member', { p_code: code, p_member: id, p_force: false });
+            if (res.status === 'other_group') {
+                if (!confirm("הלקוח כבר חבר בקבוצה אחרת. להעביר אותו לקבוצה שלך?")) return;
+                res = await appRpc('app_manager_add_member', { p_code: code, p_member: id, p_force: true });
+            }
+            if (res.status === 'not_found') return alert("לא נמצא לקוח עם תעודת זהות זו. הוא צריך להיות רשום במערכת.");
+            if (res.status === 'self') return alert("אינך יכול להוסיף את עצמך כחבר.");
+            if (res.status === 'already') return alert("הלקוח כבר חבר בקבוצה שלך.");
+            if (res.status !== 'ok') return alert("שגיאה בהוספה: " + (res.message || res.status || res.error || ''));
             document.getElementById('mgrAddMemberId').value = '';
-            alert("הלקוח '" + u.username + "' נוסף לקבוצה! ✅");
+            alert("הלקוח '" + res.username + "' נוסף לקבוצה! ✅");
             loginAsManager(currentManagerSession, document.getElementById('managerBackToAdminBtn').style.display !== 'none');
         }
 
         // המנהל מסיר חבר מהקבוצה
         async function managerRemoveMember(id) {
             if (!confirm("להסיר את החבר מהקבוצה? הוא יישאר לקוח רגיל עם החשבון שלו.")) return;
-            const { error } = await _supabase.from('users').update({ group_code: null, group_name: null }).eq('user_id', id);
-            if (error) return alert("שגיאה בהסרה: " + (error.message || ''));
+            const res = await appRpc('app_manager_remove_member', { p_code: currentManagerSession.manager_code, p_member: id });
+            if (res.status !== 'ok') return alert("שגיאה בהסרה: " + (res.message || res.status || res.error || ''));
             loginAsManager(currentManagerSession, document.getElementById('managerBackToAdminBtn').style.display !== 'none');
         }
 
@@ -2613,8 +2653,8 @@
         // פרטי קבוצה (שם/תמונה/תיאור) לפי קוד
         async function getGroupProfile(code) {
             try {
-                const { data } = await _supabase.from('users').select('manager_group_name,manager_group_avatar,manager_group_desc').eq('manager_code', code);
-                if (data && data[0]) return { name: data[0].manager_group_name || '', avatar: data[0].manager_group_avatar || '', desc: data[0].manager_group_desc || '' };
+                const g = await appRpc('app_group_by_code', { p_code: code });
+                if (g && g.group_code) return { name: g.group_name || '', avatar: g.avatar || '', desc: g.desc || '' };
             } catch(e){}
             return { name:'', avatar:'', desc:'' };
         }
@@ -2767,12 +2807,18 @@
             if (!isValidIsraeliID(id)) return alert("תעודת הזהות אינה חוקית. אנא תקן.");
             if (pin.length !== 4) return alert("קוד סודי חייב להיות 4 ספרות.");
 
-            // בדיקת קיום חשבון
-            const { data: existing } = await _supabase.from('users').select('*').eq('user_id', id);
+            // חשבון קיים שפותח חשבון עסקי מזדהה עם הקוד הסודי הקיים שלו; כל השאר נבדק בשרת בהרשמה.
+            let existing = null;
+            if (accountType === 'business') {
+                const res = await appRpc('app_login', { p_id: id, p_pin: pin });
+                if (res.error === 'bad_pin') return alert("הקוד הסודי שגוי — הזן את הקוד הסודי הקיים שלך.");
+                if (res.error === 'too_many') return alert("יותר מדי ניסיונות כושלים. נסה שוב בעוד רבע שעה.");
+                if (res.kind === 'admin' || (res.error && res.error !== 'no_user')) return alert("שגיאה בהתחברות. בדוק את החיבור לאינטרנט ונסה שוב.");
+                if (res.kind === 'user') { setAppToken(res.token); existing = [res.user]; }
+            }
 
             // ====== פתיחת חשבון עסקי על חשבון קיים ======
             if (existing && existing.length > 0 && accountType === 'business') {
-                if (existing[0].pin !== pin) return alert("הקוד הסודי שגוי — הזן את הקוד הסודי הקיים שלך.");
                 // בדיקה אם כבר יש חשבון עסקי
                 const { data: bizChk } = await _supabase.from('month_data')
                     .select('user_id').eq('user_id', id).eq('month_str', '__biz_settings__');
@@ -2795,7 +2841,6 @@
             }
 
             // ====== חשבון חדש לגמרי ======
-            if (existing && existing.length > 0) return alert("כבר קיים חשבון עם תעודת זהות זו.\nלפתיחת חשבון עסקי — בחר 'עסקי' ונסה שוב.");
             if (!name || !phone) return alert("מלא שם וטלפון ליצירת חשבון חדש.");
             let formattedPhone = phone.startsWith('0') ? '+972' + phone.substring(1) : phone;
             let groupName = '';
@@ -2804,9 +2849,12 @@
                 if (!grp) return alert("קוד הקבוצה אינו קיים. בדוק מול המנהל שלך, או השאר ריק אם אינך משתייך לקבוצה.");
                 groupName = grp.group_name || '';
             }
-            const newUser = { user_id: id, username: name, email: email, phone: formattedPhone, pin: pin, is_pro: true, role: 'user', group_code: groupCode || null, group_name: groupName || null };
-            const { error } = await _supabase.from('users').insert([newUser]);
-            if (error) return alert("שגיאה ביצירת חשבון בענן: " + (error.message || ''));
+            const reg = await appRpc('app_register', { p: { user_id: id, username: name, email: email, phone: formattedPhone, pin: pin, group_code: groupCode || null } });
+            if (reg.error === 'exists') return alert("כבר קיים חשבון עם תעודת זהות זו.\nלפתיחת חשבון עסקי — בחר 'עסקי' ונסה שוב.");
+            if (reg.error === 'bad_group') return alert("קוד הקבוצה אינו קיים. בדוק מול המנהל שלך, או השאר ריק אם אינך משתייך לקבוצה.");
+            if (reg.error || !reg.token) return alert("שגיאה ביצירת חשבון בענן: " + (reg.message || reg.error || ''));
+            setAppToken(reg.token);
+            const newUser = reg.user;
             if (accountType === 'business') {
                 await _supabase.from('month_data').upsert({
                     user_id: id,
@@ -2824,18 +2872,21 @@
         async function processRecovery() {
             const id = document.getElementById('recoveryId').value.trim(); const phone = document.getElementById('recoveryPhoneEmail').value.trim();
             if (!id || !phone) return;
-            const { data } = await _supabase.from('users').select('*').eq('user_id', id);
-            if (!data || data.length === 0) return alert("לא נמצא חשבון.");
-            let dbPhone = data[0].phone || ""; let inputFormatPhone = phone.startsWith('0') ? '+972' + phone.substring(1) : phone;
-            if (inputFormatPhone !== dbPhone && phone !== dbPhone) return alert("הפרטים אינם תואמים לטלפון השמור במערכת.");
-            tempRecoveryData = data[0]; document.getElementById('recoveryUserInfo').innerText = "שלום " + data[0].username + ", אמת קוד חדש."; switchAuthMode('recoveryReset');
+            const res = await appRpc('app_recover_check', { p_id: id, p_phone: phone });
+            if (res.error === 'no_user') return alert("לא נמצא חשבון.");
+            if (res.error === 'mismatch') return alert("הפרטים אינם תואמים לטלפון השמור במערכת.");
+            if (res.error === 'too_many') return alert("יותר מדי ניסיונות כושלים. נסה שוב בעוד רבע שעה.");
+            if (res.error || !res.ok) return alert("שגיאה. בדוק את החיבור לאינטרנט ונסה שוב.");
+            tempRecoveryData = { user_id: id, phone: phone }; document.getElementById('recoveryUserInfo').innerText = "שלום " + res.username + ", אמת קוד חדש."; switchAuthMode('recoveryReset');
         }
 
         async function completeRecovery() {
             const newPin = document.getElementById('newRecoveryPin').value.trim();
             if (newPin.length !== 4) return alert("4 ספרות בבקשה.");
-            await _supabase.from('users').update({ pin: newPin }).eq('user_id', tempRecoveryData.user_id);
-            tempRecoveryData.pin = newPin; alert("הקוד אופס!"); isImpersonating = false; localStorage.removeItem('admin_impersonating'); loginAsUser(tempRecoveryData); tempRecoveryData = null;
+            const res = await appRpc('app_recover_reset', { p_id: tempRecoveryData.user_id, p_phone: tempRecoveryData.phone, p_new_pin: newPin });
+            if (res.error || !res.token) return alert("האיפוס נכשל. נסה שוב.");
+            setAppToken(res.token);
+            alert("הקוד אופס!"); isImpersonating = false; localStorage.removeItem('admin_impersonating'); loginAsUser(res.user); tempRecoveryData = null;
         }
 
         function loginAsUser(userObj, bizMode) {
@@ -2845,7 +2896,7 @@
             // isBiz: אם bizMode הועבר מפורשות (true/false) — השתמש בו.
             // אחרת (reload מ-session) — השתמש ב-_bizMode השמור ב-session.
             const isBiz = (typeof bizMode === 'boolean') ? bizMode : !!(userObj._bizMode);
-            userObj = Object.assign({}, userObj, { _bizMode: isBiz });
+            userObj = Object.assign(stripPin(userObj), { _bizMode: isBiz });
             localStorage.setItem('budget_active_session', JSON.stringify(userObj)); tempUserSession = userObj;
             document.getElementById('authBox').style.display = 'none'; document.getElementById('adminPanel').style.display = 'none'; document.getElementById('managerPanel').style.display = 'none'; document.getElementById('dashboardScreen').style.display = 'block'; document.body.classList.add('dashboard-active');
             
@@ -2982,7 +3033,7 @@
             if (modal) modal.style.display = 'none';
         }
 
-        function handleLogout() { tempUserSession = null; localStorage.removeItem('budget_active_session'); localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return'); location.reload(); }
+        async function handleLogout() { if (getAppToken()) { await appRpc('app_logout'); setAppToken(''); } tempUserSession = null; localStorage.removeItem('budget_active_session'); localStorage.removeItem('admin_impersonating'); localStorage.removeItem('manager_return'); location.reload(); }
 
         // ====== פתיחת חשבון עסקי ומעבר בין מצבים ======
         async function openBizAccount() {
@@ -3634,7 +3685,7 @@
             let payload = { username: newName, email: newEmail, phone: newPhone };
             if (newPin) { if (newPin.length !== 4) return alert("קוד חייב להיות 4 ספרות."); payload.pin = newPin; }
             await _supabase.from('users').update(payload).eq('user_id', tempUserSession.user_id);
-            tempUserSession = { ...tempUserSession, ...payload }; localStorage.setItem('budget_active_session', JSON.stringify(tempUserSession));
+            tempUserSession = stripPin({ ...tempUserSession, ...payload }); localStorage.setItem('budget_active_session', JSON.stringify(tempUserSession));
             document.getElementById('displayUser').innerText = newName; document.getElementById('displayPhone').innerText = newPhone;
             alert("הפרטים עודכנו!"); closeProfileUpdateModal();
         }
