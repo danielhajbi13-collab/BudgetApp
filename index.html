@@ -733,6 +733,45 @@
             .dash-title { font-size: 1.25rem; }
             .mobile-bottom-nav { background: var(--surface); }
         }
+
+        /* ===================== הגדרות + זיכרון הוצאות קבועות ===================== */
+        .set-modal { max-width: 520px; }
+        .set-tabs { flex: none; display: flex; gap: 4px; padding: 0.6rem 1.2rem 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
+        .set-tab { flex: none; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-light); font-weight: 600; font-size: 0.9rem; padding: 0.6rem 0.8rem; cursor: pointer; white-space: nowrap; }
+        .set-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .set-body { gap: 0.9rem; }
+        .set-pane > * + * { margin-top: 0.8rem; }
+        .set-profile { display: flex; align-items: center; gap: 14px; }
+        .set-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; flex: none; }
+        .set-pname { font-size: 1.15rem; font-weight: 700; color: var(--text-dark); }
+        .set-mode { font-size: 0.85rem; color: var(--text-light); }
+        .set-rows { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .set-row { display: flex; justify-content: space-between; gap: 10px; padding: 0.7rem 0.9rem; font-size: 0.92rem; }
+        .set-row + .set-row { border-top: 1px solid var(--border); }
+        .set-row span { color: var(--text-light); } .set-row strong { color: var(--text-dark); font-weight: 600; word-break: break-all; }
+        .set-wide { width: 100%; justify-content: center; }
+        .set-danger { color: var(--danger) !important; border-color: rgba(201,56,56,0.35) !important; }
+        .set-lead { color: var(--text-light); font-size: 0.88rem; line-height: 1.55; }
+        .set-memsum { font-weight: 700; color: var(--text-dark); }
+        .set-switch { display: flex; align-items: center; gap: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 0.9rem; cursor: pointer; font-weight: 600; color: var(--text-dark); }
+        .set-switch input { width: 20px; height: 20px; accent-color: var(--primary); }
+        .set-empty { color: var(--text-light); font-size: 0.88rem; background: var(--surface-2); border: 1px dashed var(--border); border-radius: 12px; padding: 0.9rem; line-height: 1.55; }
+        .mem-row { display: grid; grid-template-columns: 1fr 96px 32px; gap: 8px; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--hairline); }
+        .mem-row strong { display: block; color: var(--text-dark); font-size: 0.95rem; }
+        .mem-row span { font-size: 0.75rem; color: var(--text-light); }
+        .mem-amt { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.5rem; background: var(--surface-2); color: var(--text-dark); font-weight: 600; }
+        .mem-add { display: grid; grid-template-columns: 1fr 96px auto; gap: 8px; }
+        .rec-box { background: var(--primary-light); border: 1px solid rgba(31,86,196,0.25); border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 12px; }
+        .rec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; color: var(--text-dark); }
+        .rec-head span { font-size: 0.8rem; color: var(--text-light); }
+        .rec-note, .rec-empty { font-size: 0.84rem; color: var(--text-light); margin: 6px 0 8px; line-height: 1.5; }
+        .rec-list { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow-y: auto; }
+        .rec-item { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; background: var(--surface); border-radius: 10px; padding: 0.55rem 0.7rem; cursor: pointer; font-size: 0.9rem; color: var(--text-dark); }
+        .rec-item input { width: 18px; height: 18px; accent-color: var(--primary); }
+        .rec-meta { font-size: 0.75rem; color: var(--text-light); }
+        .rec-save { margin-top: 10px; }
+        .rec-done { font-weight: 600; color: var(--text-dark); }
+        @media (max-width: 480px) { .mem-add { grid-template-columns: 1fr 1fr; } .mem-add .btn-add { grid-column: span 2; } }
     </style>
 </head>
 <body>
@@ -1024,9 +1063,7 @@
                              יחידה: אם יש רק כובע אחר אחד - עוברים ישר; אם יש שניים - שואלים. ר' handleAccountSwitch. -->
                         <button class="btn-outline" id="switchAccountBtn" style="display:none; color:var(--admin); border-color:#e9d5ff;" onclick="handleAccountSwitch()">🔀 החלף חשבון</button>
                         <button class="biz-hamburger-btn" id="btnBizDrawer" style="display:none;" onclick="openBizDrawer()" title="תפריט עסקי">☰</button>
-                        <button class="btn-outline" onclick="openProfileUpdateModal()">✏️ פרופיל</button>
-                        <button class="btn-outline" id="themeToggleBtn" onclick="toggleTheme()" title="מצב כהה/בהיר">🌙</button>
-                        <button class="btn-outline" style="color:var(--danger); border-color:#fecaca;" onclick="handleLogout()">התנתק</button>
+                        <button class="btn-outline" onclick="openSettingsModal()" title="פרופיל, זיכרון, מראה והתנתקות">⚙️ הגדרות</button>
                     </div>
                 </div>
 
@@ -1294,7 +1331,7 @@
         <button class="mobile-nav-btn" onclick="openMobileMonthsModal()"><span>📅</span>חודשים</button>
         <button class="mobile-nav-btn" onclick="openUserInboxModal()" style="position:relative;"><span>💬</span>פניות<span class="js-user-inq-badge inq-badge" style="position:absolute; top:-2px; left:8px;"></span></button>
         <button class="mobile-nav-btn" id="mobBtnAbout" onclick="switchView('about')"><span>ℹ️</span>מידע</button>
-        <button class="mobile-nav-btn" onclick="openProfileUpdateModal()"><span>⚙️</span>הגדרות</button>
+        <button class="mobile-nav-btn" onclick="openSettingsModal()"><span>⚙️</span>הגדרות</button>
     </div>
 
     <div class="modal-overlay" id="addExpenseLogModal">
@@ -1725,7 +1762,7 @@
                 <div id="bankDupWarning" style="display:none; background:#fef3c7; border:1px solid #f59e0b; border-radius:10px; padding:0.7rem 1rem; margin-bottom:12px; font-size:0.85rem; color:#92400e; font-weight:600;"></div>
                 <div id="bankStepUpload">
                     <p style="color:var(--text-light); font-size:0.95rem; margin-bottom:14px; line-height:1.6;">
-                        העלה קובץ סיכום חודשי מהבנק או מחברת האשראי (תומך בפורמטים csv, xls, xlsx). המערכת תסנן <strong>הוצאות והכנסות</strong> ותסווג אותן.
+                        העלה קובץ אחד או כמה קבצים מהבנק או מחברת האשראי (csv, xls, xlsx, pdf). המערכת תסנן <strong>הוצאות והכנסות</strong> ותסווג אותן.
                     </p>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; padding:12px; background:var(--surface-2,#f8fafc); border-radius:12px; border:1px solid var(--border);">
                         <div>
@@ -1749,13 +1786,15 @@
                             </select>
                         </div>
                     </div>
-                    <input type="file" id="bankFileInput" accept=".xlsx,.xls,.csv,.pdf" style="display:none;">
-                    <button class="btn-primary" style="margin-top:0; background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="document.getElementById('bankFileInput').click()">📂 בחר קובץ ייבוא</button>
+                    <input type="file" id="bankFileInput" accept=".xlsx,.xls,.csv,.pdf" multiple style="display:none;">
+                    <button class="btn-primary" style="margin-top:0; background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="document.getElementById('bankFileInput').click()">📂 בחר קובץ אחד או כמה קבצים</button>
+                    <p style="color:var(--text-light); font-size:0.82rem; margin-top:8px; line-height:1.5;">💡 טיפ: העלה כמה חודשים בבת אחת (למשל 3 דפי אשראי) — המערכת תזהה הוצאות קבועות שחוזרות כל חודש ותציע לזכור אותן.</p>
                     <div id="bankImportStatus" style="margin-top:16px; font-weight:600; color:var(--primary); display:none;"></div>
                     <div id="bankImportError" style="margin-top:16px; color:var(--danger); font-weight:600; display:none;"></div>
                 </div>
 
                 <div id="bankStepReview" style="display:none;">
+                    <div id="bankRecurringBox" style="display:none;"></div>
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
                         <p style="color:var(--text-light); font-size:0.9rem; margin:0;">נמצאו <strong id="bankTxCount" style="color:var(--text-dark);">0</strong> הוצאות (<strong id="bankTxTotal" style="color:#dc2626;">₪0</strong>)<span id="bankIncomeNote"></span>. סקור ולחץ אישור.</p>
                         <button class="btn-outline" style="font-size:0.85rem; padding:0.4rem 0.8rem;" onclick="resetBankImport()">↺ קובץ אחר</button>
@@ -1975,6 +2014,57 @@
                     <input type="file" id="restoreFileInput" accept="application/json,.json" style="display:none;" onchange="doRestore(event)">
                 </label>
                 <p id="backupStatus" style="margin-top:1rem; font-size:0.88rem; text-align:center;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== הגדרות: פרופיל · זיכרון · מראה · נתונים ====== -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content set-modal">
+            <div class="modal-header"><h3>⚙️ הגדרות</h3><button class="btn-close-modal" onclick="closeSettingsModal()">✕</button></div>
+            <div class="set-tabs" role="tablist">
+                <button class="set-tab active" data-tab="profile" onclick="switchSettingsTab('profile')">👤 פרופיל</button>
+                <button class="set-tab" data-tab="memory" onclick="switchSettingsTab('memory')">🧠 זיכרון</button>
+                <button class="set-tab" data-tab="look" onclick="switchSettingsTab('look')">🎨 מראה</button>
+                <button class="set-tab" data-tab="data" onclick="switchSettingsTab('data')">🗂️ נתונים</button>
+            </div>
+            <div class="modal-body set-body">
+                <div class="set-pane" data-pane="profile">
+                    <div class="set-profile">
+                        <div class="set-avatar" id="setAvatar">?</div>
+                        <div><div class="set-pname" id="setName">—</div><div class="set-mode" id="setMode">—</div></div>
+                    </div>
+                    <div class="set-rows">
+                        <div class="set-row"><span>תעודת זהות</span><strong id="setId">—</strong></div>
+                        <div class="set-row"><span>טלפון</span><strong id="setPhone">—</strong></div>
+                        <div class="set-row"><span>אימייל</span><strong id="setEmail">—</strong></div>
+                    </div>
+                    <button class="btn-outline set-wide" onclick="settingsOpenProfileEdit()">✏️ עריכת פרטים, קוד סודי וקבוצה</button>
+                    <button class="btn-outline set-wide set-danger" onclick="handleLogout()">🚪 התנתק מהחשבון</button>
+                </div>
+                <div class="set-pane" data-pane="memory" style="display:none;">
+                    <p class="set-lead">הוצאות קבועות שהמערכת זוכרת. בכל חודש חדש הן נוספות לבד להוצאות הקבועות, עם הסכום כיעד.</p>
+                    <div class="set-memsum" id="setMemorySummary"></div>
+                    <label class="set-switch"><input type="checkbox" id="setRecurringAuto" onchange="setRecurringAuto(this.checked)"><span>הוסף אוטומטית לכל חודש חדש</span></label>
+                    <div id="setMemoryList"></div>
+                    <div class="mem-add">
+                        <input type="text" id="memNewName" class="table-input" placeholder="שם ההוצאה (למשל: ביטוח רכב)">
+                        <input type="number" id="memNewAmount" class="table-input" placeholder="₪ לחודש">
+                        <button class="btn-add" onclick="addMemoryManual()">הוסף</button>
+                    </div>
+                    <button class="btn-outline set-wide" onclick="applyRecurringToCurrentMonth()">➕ הוסף את כולן לחודש הנוכחי</button>
+                    <button class="btn-outline set-wide" onclick="settingsGo(openBankImportModal)">📥 זהה הוצאות קבועות מדפי בנק</button>
+                </div>
+                <div class="set-pane" data-pane="look" style="display:none;">
+                    <label class="set-switch"><input type="checkbox" id="setThemeToggle" onchange="settingsToggleTheme()"><span>🌙 מצב לילה</span></label>
+                    <p class="set-lead">הבחירה נשמרת במכשיר הזה.</p>
+                </div>
+                <div class="set-pane" data-pane="data" style="display:none;">
+                    <button class="btn-outline set-wide" onclick="settingsGo(openExportCenter)">📤 ייצוא ודוחות (PDF / אקסל)</button>
+                    <button class="btn-outline set-wide" onclick="settingsGo(openBankImportModal)">📥 ייבוא דפי בנק ואשראי</button>
+                    <button class="btn-outline set-wide" onclick="settingsGo(openBankHistoryFromSettings)">📋 היסטוריית העלאות</button>
+                    <button class="btn-outline set-wide" onclick="settingsGo(openTrashModal)">🗑️ סל מיחזור</button>
+                </div>
             </div>
         </div>
     </div>
@@ -3685,17 +3775,21 @@
         // ===== הגדרות משתמש + יעדי חיסכון (נשמר בשורת __settings__, ללא שינוי במסד) =====
         let userSettings = { savings_goals: [], annual_goal: { year: String(new Date().getFullYear()), target: 0 } };
         async function loadUserSettings() {
+            if (userSettings) userSettings._loaded = false;
             try {
                 const { data } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', '__settings__');
                 userSettings = (data && data.length && data[0].data) ? data[0].data : { savings_goals: [] };
                 if (!Array.isArray(userSettings.savings_goals)) userSettings.savings_goals = [];
                 if (!userSettings.annual_goal || typeof userSettings.annual_goal !== 'object') userSettings.annual_goal = { year: String(new Date().getFullYear()), target: 0 };
             } catch(e) { userSettings = { savings_goals: [], annual_goal: { year: String(new Date().getFullYear()), target: 0 } }; }
+            userSettings._loaded = true;
+            _maybeApplyRecurringToFreshMonth();
             renderSavingsGoals();
             renderAnnualSavings();
         }
         async function saveUserSettings() {
-            try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__settings__', data: userSettings }); } catch(e) {}
+            const data = Object.assign({}, userSettings); delete data._loaded;
+            try { await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: '__settings__', data: data }); } catch(e) {}
         }
         // FIX: קצב חיסכון ממוצע לחודש, מבוסס על כל החודשים שהסתיימו בפועל (הכנסות פחות הוצאות,
         // כולל חודשים שליליים - לא "מרוקן" אותם ל-0 כמו computeAnnualSavings, כי המלצה כנה על קצב
@@ -4096,9 +4190,11 @@
                 const varDefaults = isBiz ? defaultBusinessVariable : defaultVariable;
                 varDefaults.forEach(v => appendExpenseRowUI(varb, v.name, v.target, v.actual, 'variable', []));
                 _cloudLoadConfirmed = true;
+                _freshMonthPending = workingMonthStr; // חודש חדש: יקבל את ההוצאות הקבועות מהזיכרון
             }
             const ind2 = document.getElementById('saveStatusIndicator'); if (ind2 && ind2.innerText.indexOf('טוען מהענן') !== -1) ind2.style.display = 'none';
             calculateAll(false);
+            _maybeApplyRecurringToFreshMonth();
         }
 
         // רשימת שמות כל קטגוריות ההוצאה (קבועות + משתנות) — לשימוש בתפריט ההעברה
@@ -4822,121 +4918,125 @@
         }
 
 
+        // FIX: ייבוא כמה קבצים בבת אחת (למשל 3 דפי אשראי של 3 חודשים) — כל קובץ נקרא בנפרד, התנועות
+        // מאוחדות לסקירה אחת, ומזה גם מזוהות הוצאות קבועות שחוזרות כל חודש (ר' detectRecurringExpenses).
         async function handleBankFileSelected(e) {
-            const file = e.target.files && e.target.files[0]; if (!file) return;
+            const files = Array.from((e.target && e.target.files) || []); if (!files.length) return;
             document.getElementById('bankImportError').style.display = 'none';
-            // הסתרת אזהרת כפל קודמת
             const dupWarn = document.getElementById('bankDupWarning');
             if (dupWarn) dupWarn.style.display = 'none';
-
-            // בדיקת כפילות לפני עיבוד
-            const fp = await computeFileFingerprint(file);
-            window._pendingBankFingerprint = fp;
-            window._pendingBankFileName = file.name || 'קובץ בנק';
-            const dup = await findDuplicateInHistory(fp, 'bank');
-            if (dup) {
-                const d = new Date(dup.uploadedAt).toLocaleDateString('he-IL');
-                const info = dup.result ? ' (' + (dup.result.txCount || '?') + ' תנועות, ' + (dup.result.month ? escapeHtml(dup.result.month) : '') + ')' : '';
-                if (dupWarn) {
-                    dupWarn.innerHTML = '⚠️ <strong>קובץ זהה כבר יובא ב-' + d + info + '</strong><br>ייבוא שוב עלול ליצור רשומות כפולות. ניתן לבטל ולבחור קובץ אחר.';
-                    dupWarn.style.display = 'block';
-                }
-                // נאפשר המשך — המשתמש ראה את האזהרה
-            }
-
-            bankStatus("קורא את הקובץ...");
             _importFileType = (document.getElementById('bankFileType') && document.getElementById('bankFileType').value) || 'auto';
             _importCardSource = (document.getElementById('bankCardSource') && document.getElementById('bankCardSource').value) || '';
-            try {
-                // FIX: PDF bank statement support
-                if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
-                    bankStatus("מנתח קובץ PDF בנקאי...");
-                    const pdfTxs = await parsePDFBankStatement(file);
-                    if (!pdfTxs || pdfTxs.length === 0) { bankError("לא נמצאו תנועות ב-PDF. ודא שהקובץ הוא דף חשבון טקסטואלי (לא סרוק)."); return; }
-                    await categorizeTransactions(pdfTxs);
-                    await markDuplicates(pdfTxs);
-                    parsedBankTransactions = pdfTxs;
-                    bankStatus("PDF נקרא בהצלחה — נמצאו " + pdfTxs.length + " תנועות.");
-                    renderBankReview();
-                    return;
+
+            window._pendingBankFiles = [];
+            const dupNotes = [], failed = [];
+            let all = [], needsCategorize = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const label = files.length > 1 ? ` (${i + 1}/${files.length}: ${file.name})` : '';
+                const fp = await computeFileFingerprint(file);
+                const dup = await findDuplicateInHistory(fp, 'bank');
+                if (dup) dupNotes.push('⚠️ <strong>' + escapeHtml(file.name) + '</strong> כבר יובא ב-' + new Date(dup.uploadedAt).toLocaleDateString('he-IL'));
+                bankStatus('קורא את הקובץ' + label + '...');
+                try {
+                    const res = await parseOneBankFile(file);
+                    res.txs.forEach(t => { t._file = file.name; });
+                    window._pendingBankFiles.push({ name: file.name || 'קובץ בנק', fingerprint: fp });
+                    all = all.concat(res.txs);
+                    if (!res.categorized) needsCategorize = needsCategorize.concat(res.txs);
+                } catch (err) { console.error(err); failed.push(escapeHtml(file.name) + ': ' + escapeHtml(err.message || 'שגיאה בקריאה')); }
+            }
+            // תאימות לאחור: קובץ יחיד ממשיך לעבוד בדיוק כמו קודם מול היסטוריית ההעלאות
+            window._pendingBankFingerprint = window._pendingBankFiles.length === 1 ? window._pendingBankFiles[0].fingerprint : null;
+            window._pendingBankFileName = window._pendingBankFiles.length === 1 ? window._pendingBankFiles[0].name : null;
+            if (dupWarn && dupNotes.length) { dupWarn.innerHTML = dupNotes.join('<br>') + '<br>ייבוא שוב עלול ליצור רשומות כפולות.'; dupWarn.style.display = 'block'; }
+            if (!all.length) { bankError(failed.length ? failed.join(' | ') : 'לא זוהו תנועות בקבצים.'); return; }
+            if (needsCategorize.length) { bankStatus(`זוהו ${all.length} תנועות. מנתח ומסווג...`); await categorizeTransactions(needsCategorize); }
+            await markDuplicates(all);
+            all.sort((x, y) => String(x.date).localeCompare(String(y.date)));
+            parsedBankTransactions = all;
+            if (failed.length) bankError('חלק מהקבצים לא נקראו: ' + failed.join(' | '));
+            renderBankReview();
+            renderRecurringSuggestions(all);
+        }
+
+        // קורא קובץ אחד (PDF / CSV / XLS / XLSX / HTML-שמתחזה-לאקסל) ומחזיר את התנועות שבו
+        async function parseOneBankFile(file) {
+            // FIX: PDF bank statement support
+            if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+                bankStatus("מנתח קובץ PDF בנקאי...");
+                const pdfTxs = await parsePDFBankStatement(file);
+                if (!pdfTxs || pdfTxs.length === 0) throw new Error("לא נמצאו תנועות ב-PDF. ודא שהקובץ הוא דף חשבון טקסטואלי (לא סרוק).");
+                return { txs: pdfTxs, categorized: false };
+            }
+            let allRows = [];
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                const buf = await file.arrayBuffer();
+                const bytes = new Uint8Array(buf);
+                let text;
+                if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) { text = new TextDecoder('utf-16le').decode(buf); } 
+                else if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) { text = new TextDecoder('utf-16be').decode(buf); } 
+                else {
+                    text = new TextDecoder('utf-8').decode(buf);
+                    if (text.indexOf('\uFFFD') !== -1) { try { text = new TextDecoder('windows-1255').decode(buf); } catch(_e) {} }
                 }
-                let allRows = [];
-                if (file.name.toLowerCase().endsWith('.csv')) {
-                    const buf = await file.arrayBuffer();
-                    const bytes = new Uint8Array(buf);
-                    let text;
-                    if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) { text = new TextDecoder('utf-16le').decode(buf); } 
-                    else if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) { text = new TextDecoder('utf-16be').decode(buf); } 
-                    else {
-                        text = new TextDecoder('utf-8').decode(buf);
-                        if (text.indexOf('\uFFFD') !== -1) { try { text = new TextDecoder('windows-1255').decode(buf); } catch(_e) {} }
-                    }
-                    text = text.replace(/^\uFEFF/, '');
-                    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
-                    const separator = (lines[0] && lines[0].indexOf('\t') !== -1) ? '\t' : ',';
-                    allRows = lines.map(l => l.split(separator).map(cell => cell.replace(/^"|"$/g, '').trim()));
+                text = text.replace(/^\uFEFF/, '');
+                const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+                const separator = (lines[0] && lines[0].indexOf('\t') !== -1) ? '\t' : ',';
+                allRows = lines.map(l => l.split(separator).map(cell => cell.replace(/^"|"$/g, '').trim()));
+            } else {
+                const buf = await file.arrayBuffer();
+                // זיהוי קבצי "אקסל" שהם בעצם טבלת HTML (נפוץ מאוד אצל בנקים ישראליים: לאומי, פועלים, דיסקונט וכו')
+                let sniff = "";
+                try { sniff = new TextDecoder('utf-8').decode(buf.slice(0, 4096)).toLowerCase(); } catch (_e) {}
+                const looksHtml = sniff.indexOf('<table') !== -1 || sniff.indexOf('<html') !== -1 || sniff.indexOf('<!doctype html') !== -1;
+                if (looksHtml) {
+                    // קריאת כל הטקסט (תמיכה ב-UTF-8 וב-windows-1255)
+                    let html = new TextDecoder('utf-8').decode(buf);
+                    if (html.indexOf('\uFFFD') !== -1) { try { html = new TextDecoder('windows-1255').decode(buf); } catch (_e) {} }
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    doc.querySelectorAll('table tr').forEach(tr => {
+                        const cells = Array.from(tr.children)
+                            .filter(c => /^(td|th)$/i.test(c.tagName))
+                            .map(c => (c.textContent || '').replace(/\s+/g, ' ').trim());
+                        if (cells.length) allRows.push(cells);
+                    });
                 } else {
-                    const buf = await file.arrayBuffer();
-                    // זיהוי קבצי "אקסל" שהם בעצם טבלת HTML (נפוץ מאוד אצל בנקים ישראליים: לאומי, פועלים, דיסקונט וכו')
-                    let sniff = "";
-                    try { sniff = new TextDecoder('utf-8').decode(buf.slice(0, 4096)).toLowerCase(); } catch (_e) {}
-                    const looksHtml = sniff.indexOf('<table') !== -1 || sniff.indexOf('<html') !== -1 || sniff.indexOf('<!doctype html') !== -1;
-                    if (looksHtml) {
-                        // קריאת כל הטקסט (תמיכה ב-UTF-8 וב-windows-1255)
-                        let html = new TextDecoder('utf-8').decode(buf);
-                        if (html.indexOf('\uFFFD') !== -1) { try { html = new TextDecoder('windows-1255').decode(buf); } catch (_e) {} }
-                        const doc = new DOMParser().parseFromString(html, 'text/html');
-                        doc.querySelectorAll('table tr').forEach(tr => {
-                            const cells = Array.from(tr.children)
-                                .filter(c => /^(td|th)$/i.test(c.tagName))
-                                .map(c => (c.textContent || '').replace(/\s+/g, ' ').trim());
-                            if (cells.length) allRows.push(cells);
-                        });
-                    } else {
-                        const wb = XLSX.read(buf, { type: 'array', cellDates: true });
-                        wb.SheetNames.forEach(sn => { const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: "" }); allRows = allRows.concat(rows); });
+                    const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+                    wb.SheetNames.forEach(sn => { const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: "" }); allRows = allRows.concat(rows); });
+                }
+            }
+
+            // ====== זיהוי חכם: האם זה קובץ תקציב שיוצא מהאפליקציה עצמה? ======
+            const budgetTxs = parseBudgetExportFormat(allRows);
+            if (budgetTxs.length > 0) {
+                // קובץ תקציב שלנו — לא צריך סיווג AI
+                budgetTxs.forEach(t => { t.include = true; t.duplicate = false; });
+                return { txs: budgetTxs, categorized: true };
+            }
+
+            const txs = extractTransactions(allRows);
+            if (txs.length === 0) throw new Error("לא זוהו תנועות חוקיות בקובץ. אנא ודא שהקובץ תקין.");
+
+            // ====== תיקון: סיווג חיוב/זכות לפי הגדרת המשתמש ======
+            if (_importFileType === 'charges') {
+                // המשתמש הגדיר מפורשות: כל הסכומים הם חיובים (לדוגמה: חשבון חיובי אשראי)
+                txs.forEach(t => { t.type = 'expense'; });
+            } else if (_importFileType === 'auto') {
+                // זיהוי אוטומטי: אם אין סכומים שליליים כלל, זה כנראה דף חיובי אשראי
+                const hasAnyNegative = txs.some(t => t._wasNegative);
+                if (!hasAnyNegative) {
+                    // בדיקה נוספת: האם כותרות הקובץ מזכירות אשראי/חיוב?
+                    const titleText = allRows.slice(0, 6).flat().join(' ').toLowerCase();
+                    const ccHints = ['חשבון חיובים','חיובי כרטיס','כרטיס אשראי','ויזה','visa','ישראכרט','isracard','מאסטרקארד','mastercard','כאל','cal','מקס','max','אמקס','amex','חיוב חודשי','פירוט עסקאות'];
+                    const looksLikeCC = ccHints.some(k => titleText.includes(k));
+                    if (looksLikeCC) {
+                        txs.forEach(t => { if (t.type === 'income') t.type = 'expense'; });
                     }
                 }
+            }
 
-                // ====== זיהוי חכם: האם זה קובץ תקציב שיוצא מהאפליקציה עצמה? ======
-                const budgetTxs = parseBudgetExportFormat(allRows);
-                if (budgetTxs.length > 0) {
-                    // קובץ תקציב שלנו — לא צריך סיווג AI
-                    budgetTxs.forEach(t => { t.include = true; t.duplicate = false; });
-                    await markDuplicates(budgetTxs);
-                    parsedBankTransactions = budgetTxs;
-                    bankStatus('זוהה קובץ תקציב מיוצא — נטענו ' + budgetTxs.length + ' תנועות.');
-                    renderBankReview();
-                    return;
-                }
-
-                const txs = extractTransactions(allRows);
-                if (txs.length === 0) { bankError("לא זוהו תנועות חוקיות בקובץ. אנא ודא שהקובץ תקין."); return; }
-
-                // ====== תיקון: סיווג חיוב/זכות לפי הגדרת המשתמש ======
-                if (_importFileType === 'charges') {
-                    // המשתמש הגדיר מפורשות: כל הסכומים הם חיובים (לדוגמה: חשבון חיובי אשראי)
-                    txs.forEach(t => { t.type = 'expense'; });
-                } else if (_importFileType === 'auto') {
-                    // זיהוי אוטומטי: אם אין סכומים שליליים כלל, זה כנראה דף חיובי אשראי
-                    const hasAnyNegative = txs.some(t => t._wasNegative);
-                    if (!hasAnyNegative) {
-                        // בדיקה נוספת: האם כותרות הקובץ מזכירות אשראי/חיוב?
-                        const titleText = allRows.slice(0, 6).flat().join(' ').toLowerCase();
-                        const ccHints = ['חשבון חיובים','חיובי כרטיס','כרטיס אשראי','ויזה','visa','ישראכרט','isracard','מאסטרקארד','mastercard','כאל','cal','מקס','max','אמקס','amex','חיוב חודשי','פירוט עסקאות'];
-                        const looksLikeCC = ccHints.some(k => titleText.includes(k));
-                        if (looksLikeCC) {
-                            txs.forEach(t => { if (t.type === 'income') t.type = 'expense'; });
-                        }
-                    }
-                }
-
-                bankStatus(`זוהו ${txs.length} תנועות. מנתח ומסווג את הנתונים...`);
-                await categorizeTransactions(txs);
-                await markDuplicates(txs);
-                parsedBankTransactions = txs;
-                renderBankReview();
-            } catch (err) { console.error(err); bankError("שגיאה בקריאת הקובץ: " + (err.message || "")); }
+            return { txs: txs, categorized: false };
         }
 
         // ======================================================
@@ -5029,7 +5129,7 @@
             const matchIdx = (cells, kws, exclude = []) => cells.findIndex((c, idx) => !exclude.includes(idx) && has(c, kws));
 
             let headerRowIdx = -1, dCol = -1, nCol = -1, aCol = -1, debCol = -1, credCol = -1;
-            let isZchutHova = false, dualMode = false;
+            let isZchutHova = false, dualMode = false, amtFromDebit = false;
 
             const scan = Math.min(rows.length, 40);
             for (let i = 0; i < scan; i++) {
@@ -5038,7 +5138,11 @@
                 // זיהוי שתי עמודות נפרדות: "חובה" ללא "זכות" מול "זכות" ללא "חובה"
                 const dbi = cells.findIndex(c => has(c, debitKw) && !String(c).includes("זכות") && !String(c).includes("יתרה"));
                 const cri = cells.findIndex((c, idx) => idx !== dbi && has(c, creditKw) && !String(c).includes("חובה") && !String(c).includes("יתרה"));
-                const ai = matchIdx(cells, amtKw, [di, dbi, cri]);
+                let ai = matchIdx(cells, amtKw, [di, dbi, cri]);
+                // FIX: קבצי אשראי עם עמודה אחת "סכום חיוב" / "חובה" (בלי עמודת זכות) — העמודה זוהתה כעמודת
+                // חובה של דף בנק, ואז לא נשארה עמודת סכום והקובץ כולו נדחה ("לא זוהו תנועות").
+                let aiFromDebit = false;
+                if (ai === -1 && cri === -1 && dbi > -1) { ai = dbi; aiFromDebit = true; }
                 const ni = matchIdx(cells, descKw, [di, ai, dbi, cri]);
 
                 const haveDual = dbi > -1 && cri > -1;
@@ -5046,7 +5150,7 @@
                 if (score >= 2 && (haveDual || ai > -1)) {
                     headerRowIdx = i; dCol = di; nCol = ni;
                     if (haveDual) { dualMode = true; debCol = dbi; credCol = cri; }
-                    else { aCol = ai; if (String(cells[ai]).includes("זכות") && String(cells[ai]).includes("חובה")) isZchutHova = true; }
+                    else { aCol = ai; amtFromDebit = aiFromDebit; if (String(cells[ai]).includes("זכות") && String(cells[ai]).includes("חובה")) isZchutHova = true; }
                     break;
                 }
             }
@@ -5086,7 +5190,7 @@
                         type = wasNegative ? 'expense' : 'income';
                         const headerCell = String(rows[headerRowIdx][aCol] || "").toLowerCase();
                         // זיהוי משופר של עמודת "חיוב בלבד": כמו "סכום חיוב", "חיובים", "לחיוב", "תשלומים" וכו'
-                        const isChargeOnlyHeader = !isZchutHova && (
+                        const isChargeOnlyHeader = !isZchutHova && (amtFromDebit ||
                             (headerCell.includes('חיוב') && !headerCell.includes('זכות')) ||
                             headerCell.includes('תשלום') ||
                             headerCell.includes('לחיוב') ||
@@ -6427,6 +6531,20 @@
 
             // שמירה בהיסטוריה — תמיד לפי מה שבאמת נכתב בהצלחה (importedTransactions), לא לפי כל מה
             // שנבחר. כך ההיסטוריה לעולם לא "נעלמת" גם כשהייתה תקלה חלקית.
+            const _histFiles = (window._pendingBankFiles && window._pendingBankFiles.length > 1) ? window._pendingBankFiles : [];
+            for (const f of _histFiles) {
+                const mine = importedTransactions.filter(t => t._file === f.name);
+                try {
+                    await addToUploadHistory('bank', f.name, f.fingerprint, {
+                        txCount: mine.length,
+                        total: Math.round(mine.filter(t => t.type !== 'income').reduce((a, t) => a + (t.amount || 0), 0)),
+                        month: workingMonthStr,
+                        failedMonths: failedMonths,
+                        transactions: mine.map(t => ({ date: t.date || '', store: t.store || '', amount: t.amount || 0, type: t.type || 'expense', category: t.category || '' }))
+                    });
+                } catch (e) { console.error('שמירת היסטוריית הייבוא נכשלה:', e); }
+            }
+            window._pendingBankFiles = null;
             if (window._pendingBankFingerprint) {
                 try {
                     await addToUploadHistory('bank', window._pendingBankFileName || 'קובץ בנק', window._pendingBankFingerprint, {
@@ -6615,6 +6733,158 @@
             window.location.href = `mailto:${finalEmail}?subject=דוח תקציב פיננסי - הכיס שלי&body=${encodeURIComponent(emailBody)}`;
         }
 
+        // ===================== זיכרון הוצאות קבועות =====================
+        // מכמה דפי בנק/אשראי (כמה חודשים) מזהים הוצאות שחוזרות כל חודש בסכום דומה — שכר דירה,
+        // ביטוח, מנוי, הוראת קבע. המשתמש מאשר מה לזכור; זה נשמר בשורת __settings__ בענן, ובכל
+        // חודש חדש הסעיפים האלה נוספים אוטומטית להוצאות הקבועות (אפשר לכבות בהגדרות).
+        let _recurringSuggestions = [];
+        let _freshMonthPending = null;
+
+        function _recurringMemKey() { return (tempUserSession && tempUserSession._bizMode) ? 'recurring_biz' : 'recurring'; }
+        function getRecurringMemory() { const l = userSettings && userSettings[_recurringMemKey()]; return Array.isArray(l) ? l : []; }
+        function setRecurringMemory(list) { userSettings[_recurringMemKey()] = list; return saveUserSettings(); }
+        function isRecurringAutoOn() { return !(userSettings && userSettings.recurring_auto === false); }
+
+        // שם "יציב" לבית עסק: בלי מספרי אסמכתא/תאריכים/סימונים, כדי ש"הוראת קבע חברת חשמל 4471" ו"... 5520" יתאחדו
+        function _recurringKey(store) {
+            return normStoreSig(store).replace(/\d[\d\/.\-:]*/g, ' ').replace(/[^֐-׿a-z ]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 40);
+        }
+        function _cleanRecurringName(store) {
+            return String(store || '').replace(/\[[^\]]*\]/g, '').replace(/[🤖🔎⚠️✔️]/g, '').replace(/\s\d{3,}(?=\s|$)/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+        }
+
+        function detectRecurringExpenses(txs) {
+            const exp = (txs || []).filter(t => t.type !== 'income' && t.date && (Number(t.amount) || 0) > 0);
+            const allMonths = new Set(exp.map(t => String(t.date).slice(0, 7)));
+            if (allMonths.size < 2) return { months: allMonths.size, items: [] };
+            const groups = {};
+            exp.forEach(t => {
+                const k = _recurringKey(t.store); if (!k || k.length < 2) return;
+                const g = groups[k] || (groups[k] = { key: k, name: _cleanRecurringName(t.store), category: t.category || '', byMonth: {}, count: 0 });
+                const m = String(t.date).slice(0, 7); g.byMonth[m] = (g.byMonth[m] || 0) + Number(t.amount); g.count++;
+            });
+            const strongHint = /הוראת קבע|הו"ק|חיוב חודשי|מנוי|ביטוח|שכר דירה|משכנתא|ארנונה|ועד בית|חשמל|מים|גז|סלולר|אינטרנט|טלוויזיה|נטפליקס|ספוטיפיי|קופת חולים|הלוואה|חוג|גן /;
+            const items = [];
+            Object.values(groups).forEach(g => {
+                const months = Object.keys(g.byMonth); if (months.length < 2) return;
+                const vals = months.map(m => g.byMonth[m]);
+                const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+                const steady = Math.max(...vals) / Math.max(1, Math.min(...vals)) <= 1.25;
+                const fewPerMonth = g.count / months.length <= 2; // סופר שבועי = הרבה חיובים בחודש, לא "קבוע"
+                const hinted = strongHint.test(g.name);
+                const coverage = months.length / allMonths.size;
+                if ((steady && fewPerMonth && coverage >= 0.66) || (hinted && coverage >= 0.5)) {
+                    const veryStable = Math.max(...vals) / Math.max(1, Math.min(...vals)) <= 1.05;
+                    items.push({ key: g.key, name: g.name, amount: Math.round(avg), months: months.length, of: allMonths.size, category: g.category, sure: hinted || veryStable });
+                }
+            });
+            items.sort((a, b) => b.amount - a.amount);
+            return { months: allMonths.size, items };
+        }
+
+        function renderRecurringSuggestions(txs) {
+            const box = document.getElementById('bankRecurringBox'); if (!box) return;
+            const res = detectRecurringExpenses(txs);
+            const known = new Set(getRecurringMemory().map(r => r.key));
+            _recurringSuggestions = res.items.filter(i => !known.has(i.key));
+            if (res.months < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+            if (!_recurringSuggestions.length) {
+                box.innerHTML = `<div class="rec-box"><div class="rec-head"><strong>🧠 זיהוי הוצאות קבועות</strong><span>${res.months} חודשים נבדקו</span></div><p class="rec-empty">${res.items.length ? 'כל ההוצאות הקבועות שזוהו כבר שמורות בזיכרון.' : 'לא נמצאו הוצאות שחוזרות כל חודש בסכום דומה.'}</p></div>`;
+                box.style.display = 'block'; return;
+            }
+            box.innerHTML = `<div class="rec-box"><div class="rec-head"><strong>🧠 זוהו ${_recurringSuggestions.length} הוצאות קבועות</strong><span>מתוך ${res.months} חודשים</span></div>
+                <p class="rec-note">אלה הוצאות שחוזרות כל חודש בסכום דומה. סמן מה לזכור — הן יתווספו אוטומטית להוצאות הקבועות בכל חודש חדש.</p>
+                <div class="rec-list">${_recurringSuggestions.map((r, i) => `<label class="rec-item"><input type="checkbox" class="rec-chk" data-i="${i}" ${r.sure ? 'checked' : ''}><span class="rec-name">${escapeHtml(r.name)}</span><span class="rec-meta">${r.months}/${r.of} חודשים</span><strong>₪${fmtNum(r.amount)}</strong></label>`).join('')}</div>
+                <button class="btn-primary rec-save" onclick="saveRecurringFromImport()">💾 שמור בזיכרון</button></div>`;
+            box.style.display = 'block';
+        }
+
+        async function saveRecurringFromImport() {
+            const picked = Array.from(document.querySelectorAll('#bankRecurringBox .rec-chk')).filter(c => c.checked).map(c => _recurringSuggestions[Number(c.dataset.i)]).filter(Boolean);
+            if (!picked.length) return alert('לא סומנה אף הוצאה.');
+            const mem = getRecurringMemory().slice();
+            picked.forEach(p => mem.push({ key: p.key, name: p.name, amount: p.amount, category: p.category || '', savedAt: new Date().toISOString().slice(0, 10) }));
+            await setRecurringMemory(mem);
+            const box = document.getElementById('bankRecurringBox');
+            if (box) box.innerHTML = `<div class="rec-box rec-done">✅ נשמרו ${picked.length} הוצאות קבועות בזיכרון. אפשר לראות ולערוך אותן ב⚙️ הגדרות ← זיכרון.</div>`;
+            if (confirm(`נשמרו ${picked.length} הוצאות קבועות.\nלהוסיף אותן כבר עכשיו גם לחודש הנוכחי (${workingMonthStr})?`)) applyRecurringToCurrentMonth();
+        }
+
+        // מוסיף לחודש הפעיל כל הוצאה קבועה מהזיכרון שעדיין אין לה סעיף באותו שם
+        function applyRecurringToCurrentMonth(silent) {
+            const mem = getRecurringMemory(); if (!mem.length) { if (!silent) alert('הזיכרון ריק — עדיין לא נשמרו הוצאות קבועות.'); return 0; }
+            const isBiz = !!(tempUserSession && tempUserSession._bizMode);
+            const body = document.getElementById(isBiz ? 'variableBody' : 'fixedBody');
+            const existing = new Set(getExpenseRowNames().map(n => _recurringKey(n)));
+            // סעיף קיים שהשם שלו מוכל בשם מהזיכרון ("חשמל" מול "חברת חשמל") — ממלאים לו יעד במקום לשכפל
+            const similarRow = key => Array.from(document.querySelectorAll('#fixedBody tr, #variableBody tr')).find(tr => {
+                const k = _recurringKey(tr.querySelector('.name-input').value); return k.length >= 3 && (key.includes(k) || k.includes(key));
+            });
+            let added = 0;
+            mem.forEach(r => {
+                if (existing.has(r.key) || existing.has(_recurringKey(r.name))) return;
+                const tr = similarRow(r.key);
+                if (tr) { const tv = tr.querySelector('.target-val'); if (tv && !(Number(tv.value) > 0)) { tv.value = r.amount; added++; } existing.add(r.key); return; }
+                appendExpenseRowUI(body, r.name, r.amount, '', isBiz ? 'variable' : 'fixed', []);
+                existing.add(r.key); added++;
+            });
+            if (added) calculateAll(true);
+            if (!silent) alert(added ? `נוספו ${added} הוצאות קבועות ל${workingMonthStr}.` : 'כל ההוצאות הקבועות כבר קיימות בחודש הזה.');
+            return added;
+        }
+
+        // חודש חדש לגמרי נוצר בטעינה — כשגם ההגדרות (הזיכרון) נטענו, מוסיפים אליו את הקבועות
+        function _maybeApplyRecurringToFreshMonth() {
+            if (!_freshMonthPending || _freshMonthPending !== workingMonthStr || !userSettings || !userSettings._loaded || !_cloudLoadConfirmed) return;
+            _freshMonthPending = null;
+            if (isRecurringAutoOn() && getRecurringMemory().length) applyRecurringToCurrentMonth(true);
+        }
+
+        // ===================== מסך הגדרות =====================
+        function openSettingsModal(tab) {
+            const u = tempUserSession || {};
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v || '—'; };
+            set('setName', u.username); set('setId', u.user_id); set('setPhone', u.phone); set('setEmail', u.email);
+            set('setMode', u._bizMode ? '💼 חשבון עסקי' : '👤 חשבון אישי');
+            const av = document.getElementById('setAvatar'); if (av) av.innerText = String(u.username || '?').trim().charAt(0);
+            _refreshSettingsTheme(); renderMemorySettings();
+            const auto = document.getElementById('setRecurringAuto'); if (auto) auto.checked = isRecurringAutoOn();
+            document.getElementById('settingsModal').style.display = 'flex';
+            switchSettingsTab(tab || 'profile');
+        }
+        function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
+        function switchSettingsTab(tab) {
+            document.querySelectorAll('.set-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+            document.querySelectorAll('.set-pane').forEach(p => p.style.display = (p.dataset.pane === tab) ? 'block' : 'none');
+        }
+        function _refreshSettingsTheme() {
+            const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const t = document.getElementById('setThemeToggle'); if (t) t.checked = dark;
+        }
+        function settingsToggleTheme() { toggleTheme(); _refreshSettingsTheme(); }
+        function settingsOpenProfileEdit() { closeSettingsModal(); openProfileUpdateModal(); }
+        function settingsGo(fn) { closeSettingsModal(); fn(); }
+        function openBankHistoryFromSettings() { openUploadHistoryModal('bank'); }
+        async function setRecurringAuto(on) { userSettings.recurring_auto = !!on; await saveUserSettings(); }
+
+        function renderMemorySettings() {
+            const el = document.getElementById('setMemoryList'); if (!el) return;
+            const mem = getRecurringMemory();
+            const total = mem.reduce((a, r) => a + (Number(r.amount) || 0), 0);
+            const sum = document.getElementById('setMemorySummary');
+            if (sum) sum.innerText = mem.length ? `${mem.length} הוצאות קבועות · ₪${fmtNum(total)} בחודש` : 'הזיכרון ריק';
+            if (!mem.length) { el.innerHTML = '<p class="set-empty">עדיין לא נשמרו הוצאות קבועות. העלה 2 דפי בנק/אשראי או יותר ב"ייבוא דף בנק" — המערכת תזהה אותן ותציע לשמור.</p>'; return; }
+            el.innerHTML = mem.map((r, i) => `<div class="mem-row"><div><strong>${escapeHtml(r.name)}</strong><span>נשמר ${escapeHtml(r.savedAt || '')}</span></div><input type="number" class="mem-amt" value="${Number(r.amount) || 0}" onchange="updateMemoryAmount(${i}, this.value)" aria-label="סכום חודשי"><button class="btn-delete" title="מחק מהזיכרון" onclick="deleteMemoryItem(${i})">✕</button></div>`).join('');
+        }
+        async function updateMemoryAmount(i, v) { const mem = getRecurringMemory().slice(); if (!mem[i]) return; mem[i] = Object.assign({}, mem[i], { amount: Math.max(0, Math.round(Number(v) || 0)) }); await setRecurringMemory(mem); renderMemorySettings(); }
+        async function deleteMemoryItem(i) { const mem = getRecurringMemory().slice(); const r = mem[i]; if (!r || !confirm(`למחוק את "${r.name}" מהזיכרון?\n(הסעיפים שכבר קיימים בחודשים לא יימחקו)`)) return; mem.splice(i, 1); await setRecurringMemory(mem); renderMemorySettings(); }
+        async function addMemoryManual() {
+            const n = (document.getElementById('memNewName').value || '').trim(); const a = Math.round(Number(document.getElementById('memNewAmount').value) || 0);
+            if (!n || a <= 0) return alert('הזן שם וסכום חודשי.');
+            const mem = getRecurringMemory().slice(); mem.push({ key: _recurringKey(n) || n, name: n, amount: a, category: '', savedAt: new Date().toISOString().slice(0, 10) });
+            await setRecurringMemory(mem); document.getElementById('memNewName').value = ''; document.getElementById('memNewAmount').value = ''; renderMemorySettings();
+        }
+
         // ===================== דשבורד ניתוח פיננסי =====================
         // כל הגרפים קוראים צבעים מ-CSS (--viz-*) כך שמצב לילה מקבל גוונים משלו, ונבנים מחדש
         // מנתונים "חיים" של החודש הפעיל + החודשים השמורים, בסדר כרונולוגי.
@@ -6753,7 +7023,12 @@
                 _kpiTile('הוצאות', _shekel(C.expenses), `קבועות ${_shekel(C.fixed)} · משתנות ${_shekel(C.variable)}`, P ? pct(C.expenses, P.expenses) : null, false, t.expense) +
                 _kpiTile('חיסכון', _shekel(C.savings), '', P ? pct(C.savings, P.savings) : null, true, t.savings) +
                 _kpiTile('שיעור חיסכון', Math.round(rate(C)) + '%', 'יעד מומלץ: 20% ומעלה', P ? (rate(C) - rate(P)) : null, true, t.savings) +
-                `<div class="kpi"><div class="kpi-label"><i style="background:${t.target}"></i>ניצול תקציב</div><div class="kpi-value">${used === null ? '—' : used + '%'}</div><div class="kpi-sub">${_shekel(C.expenses)} מתוך ${_shekel(C.target)}</div><div class="kpi-meter"><span style="width:${Math.min(used || 0, 100)}%; background:${(used || 0) > 100 ? t.over : t.actual}"></span></div></div>`;
+                (() => {
+                    // FIX: "ניצול תקציב" לא היה מובן — עכשיו כתוב במילים פשוטות כמה תכננת, כמה הוצאת וכמה נשאר/חרגת
+                    if (used === null) return `<div class="kpi" title="סכום היעדים שהגדרת לכל הסעיפים, מול מה שהוצאת בפועל"><div class="kpi-label"><i style="background:${t.target}"></i>הוצאת מתוך התקציב</div><div class="kpi-value">—</div><div class="kpi-sub">עוד לא הגדרת יעד לאף סעיף</div></div>`;
+                    const left = round1(C.target - C.expenses), over = left < 0;
+                    return `<div class="kpi" title="סכום היעדים שהגדרת לכל הסעיפים, מול מה שהוצאת בפועל"><div class="kpi-label"><i style="background:${t.target}"></i>הוצאת מתוך התקציב</div><div class="kpi-value">${used}%</div><div class="kpi-sub">תכננת ${_shekel(C.target)} · הוצאת ${_shekel(C.expenses)}</div><div class="kpi-meter"><span style="width:${Math.min(used, 100)}%; background:${over ? t.over : t.actual}"></span></div><span class="kpi-delta ${over ? 'bad' : 'good'}">${over ? `▲ חרגת ב-${_shekel(-left)}` : `● נשארו ${_shekel(left)}`}</span></div>`;
+                })();
 
             // ---- מגמה חודשית ----
             const T = months.map(m => _monthTotals(m.data));
