@@ -11,7 +11,7 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -546,6 +546,193 @@
         .account-type-btn { flex:1; padding:0.95rem 0.6rem; border:2px solid var(--border); background:transparent; color:var(--text-light); border-radius:14px; cursor:pointer; font-weight:600; font-size:0.88rem; line-height:1.5; transition:all 0.2s; text-align:center; font-family:inherit; }
         .account-type-btn.selected { border-color:var(--primary); background:var(--primary-light); color:var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
         .account-type-btn:hover:not(.selected) { border-color:var(--text-light); background:var(--surface-2,#f8fafc); }
+
+        /* =====================================================================
+           ערכת צבעים מקצועית (2026-10) — כחול-נייבי פיננסי, משטחים שקטים,
+           צבעי נתונים מאומתים לעיוורון צבעים (ר' --viz-*). דורס את הטוקנים למעלה.
+           ===================================================================== */
+        :root {
+            --bg: #f3f5f9;
+            --bg-gradient: #f3f5f9;
+            --surface: #ffffff;
+            --surface-2: #f6f8fb;
+            --primary: #1f56c4;
+            --primary-hover: #1a479f;
+            --primary-light: #eaf0fb;
+            --text-dark: #111a2e;
+            --text-light: #5d6779;
+            --border: #e3e7ef;
+            --hairline: #e6e9f0;
+            --success: #12805c;
+            --danger: #c93838;
+            --admin: #5b4bc4;
+            --comm: #1f56c4;
+            --comm-hover: #1a479f;
+            --gold: #a47d2c;
+            --gold-soft: #f7f1e3;
+            --navy: #0e1b36;
+            --navy-2: #16264a;
+            --radius: 16px;
+            --shadow: 0 1px 2px rgba(17,26,46,0.05), 0 4px 16px -8px rgba(17,26,46,0.10);
+            --shadow-lg: 0 2px 4px rgba(17,26,46,0.05), 0 16px 32px -12px rgba(17,26,46,0.16);
+            --shadow-float: 0 12px 28px -10px rgba(31,86,196,0.35);
+            /* צבעי נתונים — מצב יום */
+            --viz-income: #1baf7a;
+            --viz-expense: #eb6834;
+            --viz-savings: #2a78d6;
+            --viz-actual: #2a78d6;
+            --viz-target: #c9ced8;
+            --viz-over: #e34948;
+            --viz-fixed: #6250d6;
+            --viz-variable: #eda100;
+            --viz-grid: #edf0f5;
+            --viz-axis: #d5dae3;
+            --status-good: #12805c;
+            --status-bad: #c93838;
+        }
+        html[data-theme="dark"] {
+            --bg: #0a1020;
+            --bg-gradient: #0a1020;
+            --surface: #121a2c;
+            --surface-2: #0e1525;
+            --primary: #4c7ff0;
+            --primary-hover: #3b6ddc;
+            --primary-light: #18233d;
+            --text-dark: #e9edf5;
+            --text-light: #97a2b6;
+            --border: #243049;
+            --hairline: #1e2840;
+            --success: #34c08f;
+            --danger: #ef6b6b;
+            --navy: #070d1a;
+            --navy-2: #121d36;
+            --viz-income: #199e70;
+            --viz-expense: #d95926;
+            --viz-savings: #3987e5;
+            --viz-actual: #3987e5;
+            --viz-target: #3a4660;
+            --viz-over: #e66767;
+            --viz-fixed: #9085e9;
+            --viz-variable: #c98500;
+            --viz-grid: #1c263b;
+            --viz-axis: #2a3650;
+            --status-good: #34c08f;
+            --status-bad: #ef6b6b;
+        }
+
+        body { background: var(--bg); }
+        .btn-primary { background: var(--primary); box-shadow: 0 6px 14px -6px rgba(31,86,196,0.45); border-radius: 12px; }
+        .btn-primary:hover { background: var(--primary-hover); filter: none; box-shadow: 0 8px 18px -8px rgba(31,86,196,0.5); }
+        .auth-wrapper h1 { background: none; -webkit-text-fill-color: currentColor; color: var(--text-dark); }
+        .input-field:focus, .table-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(31,86,196,0.14); }
+        .actual-val { color: var(--primary); }
+
+        /* --- סרגל צד כהה (נייבי) --- */
+        .sidebar { background: var(--navy); color: #c9d3e6; border: none !important; box-shadow: 0 10px 30px -14px rgba(14,27,54,0.55); border-radius: 18px; }
+        .sidebar h4 { color: #8d9bb7; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.6px; margin-top: 0.4rem; }
+        .date-widget { background: var(--navy-2); border-right: 3px solid #4c7ff0; border-radius: 12px; }
+        .date-widget .widget-label { color: #8fb0f7; }
+        .date-widget .widget-date { color: #fff; }
+        .sidebar-btn { color: #b6c2da; border-radius: 10px; padding: 0.8rem 0.9rem; font-weight: 500; }
+        .sidebar-btn:hover { background: rgba(255,255,255,0.06) !important; color: #fff; }
+        .sidebar-btn.active, body.biz-mode .sidebar-btn.active { background: rgba(76,127,240,0.18) !important; color: #fff !important; box-shadow: inset -3px 0 0 #4c7ff0; }
+        .sidebar .btn-pro-scan { background: var(--primary); box-shadow: none; border-radius: 12px; font-weight: 600; }
+        .sidebar .btn-pro-scan:hover { background: var(--primary-hover); }
+        .sidebar .sidebar-tool { width: 100%; justify-content: center; margin-top: 0; background: transparent !important; color: #d5ddec !important; border: 1px solid rgba(255,255,255,0.14) !important; border-radius: 12px; padding: 0.75rem; font-size: 0.92rem; }
+        .sidebar .sidebar-tool:hover { background: rgba(255,255,255,0.06) !important; transform: none; }
+        .sidebar .history-item { background: rgba(255,255,255,0.04) !important; color: #d5ddec; border-color: transparent; }
+        .sidebar .history-item:hover { background: rgba(255,255,255,0.08) !important; box-shadow: none; }
+        .sidebar .history-item { padding: 0.7rem 0.8rem; gap: 6px; }
+        .sidebar .history-item > span { font-size: 0.9rem; }
+        .sidebar .history-item > div { flex-wrap: nowrap !important; }
+        .sidebar .history-item .btn-link { background: rgba(255,255,255,0.08); border: none; border-radius: 6px; cursor: pointer; }
+        .sidebar .month-history-list li:not(.history-item) { color: #8d9bb7 !important; }
+        body.biz-mode .sidebar { border-top: 3px solid #c9a84c !important; }
+
+        /* --- כרטיסים ומשטחים --- */
+        .top-bar, .table-section, .summary-card, .chart-container { border-radius: var(--radius); }
+        .summary-card, .table-section { transition: box-shadow .2s ease; }
+        .summary-card:hover, .table-section:hover { transform: none; box-shadow: var(--shadow-lg); }
+        .summary-card { padding: 1.4rem 1.5rem; }
+        .summary-card::before { width: auto !important; height: 3px; left: 0; right: 0; top: 0; border-radius: 0; opacity: 1; }
+        .card-income::before { background: var(--viz-income); } .card-expense::before { background: var(--viz-expense); } .card-balance::before { background: var(--viz-savings); }
+        .summary-card span { font-size: 0.9rem; }
+        .summary-card strong { font-size: 2rem; font-variant-numeric: tabular-nums; }
+        .current-month-badge { background: var(--primary-light); color: var(--primary); border: 1px solid transparent; }
+        html[data-theme="dark"] .current-month-badge { color: #9db9f7 !important; }
+        .btn-add { background: var(--primary); }
+        .btn-add:hover { background: var(--primary-hover); }
+        .btn-plus { background: var(--success); }
+        th { font-size: 0.82rem; letter-spacing: 0.2px; }
+        .stats-export-bar .btn-outline { color: var(--text-dark); }
+
+        /* ===================== דשבורד ===================== */
+        .dash { margin-bottom: 1.5rem; }
+        .dash-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem; }
+        .dash-title { font-size: 1.5rem; font-weight: 700; color: var(--text-dark); }
+        .dash-sub { color: var(--text-light); font-size: 0.88rem; margin-top: 2px; }
+        .dash-range { display: inline-flex; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+        .dash-range-btn { background: transparent; border: none; color: var(--text-light); font-weight: 600; font-size: 0.85rem; padding: 0.4rem 0.85rem; border-radius: 8px; cursor: pointer; }
+        .dash-range-btn.active { background: var(--primary); color: #fff; }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.9rem; margin-bottom: 1rem; }
+        .kpi { background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .kpi-label { display: flex; align-items: center; gap: 7px; color: var(--text-light); font-size: 0.84rem; font-weight: 500; }
+        .kpi-label i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex: none; }
+        .kpi-value { font-size: 1.55rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kpi-sub { font-size: 0.76rem; color: var(--text-light); }
+        .kpi-delta { font-size: 0.76rem; font-weight: 600; margin-top: 2px; }
+        .kpi-delta.good { color: var(--status-good); } .kpi-delta.bad { color: var(--status-bad); } .kpi-delta.neutral { color: var(--text-light); font-weight: 500; }
+        .kpi-meter { height: 6px; background: var(--viz-grid); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+        .kpi-meter span { display: block; height: 100%; border-radius: 4px; }
+
+        .dash-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
+        .dash-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.1rem 1.2rem 1rem; min-width: 0; }
+        .dash-span-2 { grid-column: span 2; }
+        .dash-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+        .dash-card-head h4 { font-size: 1rem; font-weight: 600; color: var(--text-dark); }
+        .dash-card-note { font-size: 0.78rem; color: var(--text-light); }
+        .dash-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-light); margin-bottom: 0.4rem; }
+        .dash-legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .dash-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+        .dash-legend i.line { height: 3px; width: 14px; border-radius: 2px; }
+        .dash-chart { position: relative; width: 100%; }
+        .dash-chart.h-300 { height: 300px; } .dash-chart.h-220 { height: 220px; }
+        .dash-select { border: 1px solid var(--border); background: var(--surface-2); color: var(--text-dark); border-radius: 8px; padding: 0.3rem 0.6rem; font-size: 0.8rem; font-family: inherit; cursor: pointer; }
+        .dash-donut-wrap { position: relative; }
+        .dash-donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+        .dash-donut-center strong { font-size: 1.25rem; color: var(--text-dark); font-variant-numeric: tabular-nums; }
+        .dash-donut-center span { font-size: 0.75rem; color: var(--text-light); }
+        .dash-split-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 0.8rem; }
+        .dash-split-legend div { display: grid; grid-template-columns: 1fr auto 3rem; align-items: center; gap: 8px; font-size: 0.86rem; color: var(--text-dark); }
+        .dash-split-legend span { display: inline-flex; align-items: center; gap: 7px; color: var(--text-light); }
+        .dash-split-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+        .dash-split-legend em { font-style: normal; color: var(--text-light); text-align: left; font-size: 0.8rem; }
+        .dash-empty { color: var(--text-light); font-size: 0.85rem; text-align: center; }
+
+        .dash-table { width: 100%; min-width: 520px; border-collapse: collapse; }
+        .dash-table th { background: var(--surface-2); color: var(--text-light); border-bottom: 1px solid var(--border); padding: 0.7rem 0.6rem; }
+        .dash-table td { padding: 0.7rem 0.6rem; border-bottom: 1px solid var(--hairline); font-variant-numeric: tabular-nums; color: var(--text-dark); }
+        .dash-table .val-good { color: var(--status-good); font-weight: 600; } .dash-table .val-bad { color: var(--status-bad); font-weight: 600; }
+        .dash-insights { background: var(--primary-light); border-right: 3px solid var(--primary); padding: 0.9rem 1.1rem; margin-top: 1rem; border-radius: 10px; color: var(--text-dark); }
+        .dash-insights ul { margin: 0.4rem 1.1rem 0 0; display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+
+        @media (max-width: 1200px) {
+            .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .dash-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .dash-span-2 { grid-column: span 2; }
+        }
+        @media (max-width: 768px) {
+            .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+            .kpi { padding: 0.85rem; } .kpi-value { font-size: 1.25rem; }
+            .kpi:last-child { grid-column: span 2; }
+            .dash-grid { grid-template-columns: 1fr; gap: 0.7rem; }
+            .dash-span-2 { grid-column: auto; }
+            .dash-card { padding: 0.9rem; }
+            .dash-chart.h-300 { height: 250px; }
+            .dash-title { font-size: 1.25rem; }
+            .mobile-bottom-nav { background: var(--surface); }
+        }
     </style>
 </head>
 <body>
@@ -795,7 +982,7 @@
                 
                 <div class="sidebar-menu">
                     <button class="sidebar-btn active" id="btnViewMain" onclick="switchView('main')"><span>📝</span> ניהול תקציב</button>
-                    <button class="sidebar-btn" id="btnViewStats" onclick="switchView('stats')"><span>📊</span> דוחות וגרפים</button>
+                    <button class="sidebar-btn" id="btnViewStats" onclick="switchView('stats')"><span>📊</span> דשבורד וניתוח</button>
                     <button class="sidebar-btn" id="btnViewAbout" onclick="switchView('about')"><span>ℹ️</span> איך זה עובד?</button>
                 </div>
 
@@ -803,15 +990,15 @@
                     <span style="font-size:1.2rem;">📷</span> סרוק קבלה (AI)
                 </button>
 
-                <button class="btn-report" onclick="openExportCenter()" style="margin-top: 0.5rem; background: #f8fafc; color: var(--text-dark); border: 1.5px solid var(--border); box-shadow: none;">
+                <button class="btn-outline sidebar-tool" onclick="openExportCenter()">
                     <span>📤</span> ייצוא ודוחות
                 </button>
 
-                <button id="trashBinBtn" onclick="openTrashModal()" class="btn-outline" style="margin-top: 0.5rem; width:100%; justify-content:center; position:relative;" title="שחזור פריטים שנמחקו">
+                <button id="trashBinBtn" onclick="openTrashModal()" class="btn-outline sidebar-tool" style="position:relative;" title="שחזור פריטים שנמחקו">
                     <span>🗑️</span> סל מיחזור <span class="trash-count" style="background:#dc2626; color:#fff; border-radius:10px; padding:0 6px; font-size:0.72rem; font-weight:700; margin-right:4px;"></span>
                 </button>
 
-                <button onclick="openUserInboxModal()" style="margin-top: 0.5rem; background: linear-gradient(135deg,#eff6ff,#dbeafe); color: #2563eb; border: none; border-radius: 14px; padding: 1rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%;">
+                <button onclick="openUserInboxModal()" class="btn-outline sidebar-tool">
                     <span>💬</span> הודעות ופניות <span class="js-user-inq-badge inq-badge"></span>
                 </button>
 
@@ -859,7 +1046,7 @@
                             <strong>📝 הכנסות, הוצאות קבועות ומשתנות:</strong> הזינו הכנסות, קבעו יעדים לכל סעיף, ועקבו בזמן אמת כמה נשאר. הפלוס הירוק (+) פותח תיעוד הוצאה מפורטת עם תאריך וחנות.
                         </li>
                         <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid var(--success);">
-                            <strong>🎯 יעדי חיסכון וחיסכון שנתי:</strong> הגדירו יעדים אישיים ויעד שנתי מצטבר. המערכת צוברת את החיסכון של כל חודש שמסתיים.
+                            <strong>🎯 יעדי חיסכון וחיסכון שנתי:</strong> הגדירו יעדים אישיים ועקבו אחרי החיסכון השנתי המצטבר. המערכת צוברת את החיסכון של כל חודש שמסתיים.
                         </li>
                         <li style="background: var(--surface-2); padding: 1rem 1.2rem; border-radius: 14px; border-right: 4px solid #0ea5e9;">
                             <strong>📊 סטטיסטיקות, גרפים וייצוא:</strong> גרפי הכנסות מול הוצאות, מעקב יומי, ייצוא ל-PDF / Excel, הדפסת דוח, ודוח חודשים נרחב.
@@ -935,6 +1122,81 @@
                 </div>
 
                 <div id="statisticsSection" style="display:none;">
+                    <!-- ====== דשבורד ניתוח פיננסי ====== -->
+                    <section id="analyticsDashboard" class="dash">
+                        <div class="dash-head">
+                            <div>
+                                <h3 class="dash-title">דשבורד פיננסי</h3>
+                                <p class="dash-sub">ניתוח <span id="dashMonthLabel"></span> מול החודשים הקודמים · מתעדכן בזמן אמת</p>
+                            </div>
+                            <div class="dash-range" role="group" aria-label="טווח חודשים">
+                                <button class="dash-range-btn" data-range="3" onclick="setDashRange(3)">3 ח׳</button>
+                                <button class="dash-range-btn active" data-range="6" onclick="setDashRange(6)">6 ח׳</button>
+                                <button class="dash-range-btn" data-range="12" onclick="setDashRange(12)">12 ח׳</button>
+                            </div>
+                        </div>
+
+                        <div class="kpi-grid" id="dashKpis"></div>
+
+                        <div class="dash-grid">
+                            <div class="dash-card dash-span-2">
+                                <div class="dash-card-head"><h4>מגמה חודשית</h4><span class="dash-card-note">הכנסות, הוצאות וחיסכון</span></div>
+                                <div class="dash-legend">
+                                    <span><i style="background:var(--viz-income)"></i>הכנסות</span>
+                                    <span><i style="background:var(--viz-expense)"></i>הוצאות</span>
+                                    <span><i class="line" style="background:var(--viz-savings)"></i>חיסכון</span>
+                                </div>
+                                <div class="dash-chart h-300"><canvas id="dashTrendChart" aria-label="מגמת הכנסות, הוצאות וחיסכון לפי חודש" role="img"></canvas></div>
+                            </div>
+
+                            <div class="dash-card">
+                                <div class="dash-card-head"><h4>לאן הולך הכסף</h4><span class="dash-card-note">החודש, לפי סעיף</span></div>
+                                <div class="dash-chart h-300"><canvas id="dashCategoryChart" aria-label="הוצאות לפי סעיף" role="img"></canvas></div>
+                            </div>
+
+                            <div class="dash-card">
+                                <div class="dash-card-head"><h4>מבנה ההוצאות</h4><span class="dash-card-note">קבועות מול משתנות</span></div>
+                                <div class="dash-donut-wrap">
+                                    <div class="dash-chart h-220"><canvas id="dashSplitChart" aria-label="הוצאות קבועות מול משתנות" role="img"></canvas></div>
+                                    <div class="dash-donut-center"><strong id="dashSplitTotal">₪0</strong><span>סה״כ הוצאות</span></div>
+                                </div>
+                                <div class="dash-split-legend" id="dashSplitLegend"></div>
+                            </div>
+
+                            <div class="dash-card dash-span-2">
+                                <div class="dash-card-head"><h4>תקציב מול ביצוע</h4><span class="dash-card-note">יעד לעומת הוצאה בפועל, לפי סעיף</span></div>
+                                <div class="dash-legend">
+                                    <span><i style="background:var(--viz-target)"></i>יעד</span>
+                                    <span><i style="background:var(--viz-actual)"></i>בפועל</span>
+                                    <span><i style="background:var(--viz-over)"></i>חריגה מהיעד</span>
+                                </div>
+                                <div class="dash-chart" id="dashBudgetWrap"><canvas id="dashBudgetChart" aria-label="תקציב מול ביצוע" role="img"></canvas></div>
+                            </div>
+
+                            <div class="dash-card">
+                                <div class="dash-card-head"><h4>שיעור חיסכון</h4><span class="dash-card-note">% מההכנסה שנשאר</span></div>
+                                <div class="dash-chart h-220"><canvas id="dashRateChart" aria-label="שיעור חיסכון לפי חודש" role="img"></canvas></div>
+                            </div>
+
+                            <div class="dash-card">
+                                <div class="dash-card-head">
+                                    <h4>הוצאות יומיות</h4>
+                                    <select id="chartDateFilter" onchange="renderStatisticsChart()" class="dash-select" aria-label="טווח ימים">
+                                        <option value="7">7 ימים</option><option value="14" selected>14 ימים</option><option value="30">30 ימים</option>
+                                    </select>
+                                </div>
+                                <div class="dash-chart h-220"><canvas id="expensesChart" aria-label="הוצאות לפי יום" role="img"></canvas></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="stats-export-bar">
+                        <button class="btn-outline" onclick="openInsightsModal()">🧠 תובנות חכמות (AI)</button>
+                        <button class="btn-outline" onclick="openBankImportModal()">📥 ייבוא דף בנק</button>
+                        <button class="btn-outline" onclick="openExportCenter()">📤 ייצוא ודוחות</button>
+                        <button class="btn-outline" style="display:none;" onclick="openBackupModal()">💾 גיבוי / שחזור</button>
+                    </div>
+
                     <div style="background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:1.5rem; border:1px solid var(--border); margin-bottom:1.5rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:8px;">
                             <h3 style="font-size:1.3rem; margin:0;">🎯 יעדי חיסכון</h3>
@@ -949,7 +1211,6 @@
                     <div style="background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:1.5rem; border:1px solid var(--border); margin-bottom:1.5rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap; gap:8px;">
                             <h3 style="font-size:1.3rem; margin:0;">📅 חיסכון שנתי מצטבר</h3>
-                            <button class="btn-outline" style="font-size:0.85rem; padding:0.4rem 0.9rem;" onclick="openAnnualGoalModal()">🎯 קבע יעד שנתי</button>
                         </div>
                         <p style="color:var(--text-light); font-size:0.82rem; margin-bottom:1rem;">צובר את החיסכון הסופי (הכנסות פחות הוצאות) של כל חודש שהסתיים. החודש הנוכחי מצטרף רק בסיומו.</p>
                         <div id="annualSavingsBox"><p style="color:var(--text-light); font-size:0.9rem;">טוען...</p></div>
@@ -958,25 +1219,8 @@
                     <div style="background:var(--surface); border-radius:20px; box-shadow:var(--shadow); padding:1.5rem; border:1px solid var(--border); margin-bottom:1.5rem;">
                         <h3 style="font-size:1.3rem; margin-top:0; margin-bottom:1rem;">📈 ניתוח והשוואה חודשים</h3>
                         <p style="color:var(--text-light); font-size:0.82rem; margin-bottom:1rem;">השוואת הכנסות, הוצאות וחיסכון בין החודשים האחרונים + תובנות חכמות</p>
-                        <div id="monthlyComparisonSection" style="width:100%; max-height:600px; overflow-y:auto;"><p style="color:var(--text-light); text-align:center;">טוען נתונים...</p></div>
+                        <div id="monthlyComparisonSection" style="width:100%;"><p style="color:var(--text-light); text-align:center;">טוען נתונים...</p></div>
                     </div>
-
-                    <h3 style="font-size: 1.4rem; margin-bottom: 0.8rem;">סיכום וייצוא החודש הנוכחי</h3>
-                    <div class="stats-export-bar">
-                        <button class="btn-outline" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openInsightsModal()">🧠 תובנות חכמות (AI)</button>
-                        <button class="btn-outline" style="border-color:#f59e0b; color:#f59e0b;" onclick="openBankImportModal()">📥 ייבוא דף בנק</button>
-                        <button class="btn-outline" style="border-color:#6d28d9; color:#6d28d9;" onclick="openExportCenter()">📤 ייצוא ודוחות</button>
-                        <button class="btn-outline" style="border-color:#64748b; color:#64748b; display:none;" onclick="openBackupModal()">💾 גיבוי / שחזור</button>
-                    </div>
-                    <h3 style="font-size: 1.4rem; margin-bottom: 0.4rem;">סקירה חודשית: הכנסות מול הוצאות</h3>
-                    <p style="color:var(--text-light); font-size:0.85rem; margin-bottom:0.8rem;">מתעדכן בזמן אמת על כל פעולה בתקציב.</p>
-                    <div class="chart-container" style="margin-bottom:1.8rem;"><canvas id="monthlyOverviewChart"></canvas></div>
-
-                    <h3 style="font-size: 1.4rem; margin-bottom: 0.8rem;">מעקב הוצאות לפי ימים</h3>
-                    <select id="chartDateFilter" onchange="renderStatisticsChart()" class="table-input" style="width: auto; margin-bottom: 1rem;">
-                        <option value="7" selected>7 ימים אחרונים</option><option value="14">14 ימים אחרונים</option><option value="30">30 ימים אחרונים</option>
-                    </select>
-                    <div class="chart-container"><canvas id="expensesChart"></canvas></div>
                 </div>
 
                 <div id="mainTablesSection">
@@ -1044,7 +1288,7 @@
 
     <div class="mobile-bottom-nav" id="mobileNav">
         <button class="mobile-nav-btn active" id="mobBtnMain" onclick="switchView('main')"><span>📝</span>תקציב</button>
-        <button class="mobile-nav-btn" id="mobBtnStats" onclick="switchView('stats')"><span>📊</span>דוחות</button>
+        <button class="mobile-nav-btn" id="mobBtnStats" onclick="switchView('stats')"><span>📊</span>דשבורד</button>
         <button class="mobile-nav-btn" style="color:var(--success);" onclick="askCameraPermission('expense')"><span>📷</span>סריקה</button>
         <button class="mobile-nav-btn" id="mobBtnSalik" style="display:none; color:#d97706;" onclick="askCameraPermission('income')"><span>💳</span>סליקה</button>
         <button class="mobile-nav-btn" onclick="openMobileMonthsModal()"><span>📅</span>חודשים</button>
@@ -3205,8 +3449,7 @@
             '🏦 הלוואה משפחתי > הלוואה מהבנק: רבית 0% טובה הרבה יותר מ-5-7%.',
             '💼 בחודש כמסתו עלה הוצאות של 30%? לא בשם קטנות — תדרוש שכר עלייה.',
             '📊 עקוב יומי בהוצאות = מודעות גבוהה. רוב אנשים מופתעים כמה הם מוציאים.',
-            '🎯 יעד שנתי לחיסכון קונקרטי — למשל "₪10,000 בשנה" — זה עוזר בממש.',
-            '🚗 רכב: בן 8+ שנים מזל גבוה יותר בתחזוקה — קנה כלי קדום אם ניתן.',
+                        '🚗 רכב: בן 8+ שנים מזל גבוה יותר בתחזוקה — קנה כלי קדום אם ניתן.',
             '🏡 שכרית > שיכרות כרטיס אשראי: ריבית נמוכה = עלות אמיתית נמוכה יותר.',
             '📈 השקעה ה-100 הראשונה קשה יותר מהשקעה ה-10,000. התחל עכשיו.',
             '💰 "בטוח חיים" לא תמיד הכרחי — בדוק את צרכיך בפועל לפני הקנייה.',
@@ -3555,32 +3798,12 @@
         function renderAnnualSavings() {
             const el = document.getElementById('annualSavingsBox'); if (!el) return;
             const info = computeAnnualSavings();
-            const target = Number(userSettings.annual_goal && userSettings.annual_goal.target) || 0;
-            const pct = target > 0 ? Math.min(100, Math.round((info.total / target) * 100)) : 0;
             const totalColor = info.total < 0 ? 'var(--danger)' : 'var(--success)';
 
             let html = `<div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
                     <strong style="font-size:1.6rem; color:${totalColor};">₪${info.total.toLocaleString()}</strong>
-                    <span style="font-size:0.85rem; color:var(--text-light);">נצבר בשנת ${info.year}${target > 0 ? ` מתוך יעד ₪${target.toLocaleString()}` : ''}</span>
+                    <span style="font-size:0.85rem; color:var(--text-light);">נצבר בשנת ${info.year}</span>
                 </div>`;
-
-            if (target > 0) {
-                html += `<div style="background:var(--border); border-radius:10px; height:14px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:linear-gradient(90deg, var(--success), #086b52); transition:width .4s;"></div></div>
-                    <div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">${pct}% מהיעד השנתי ${pct >= 100 ? '🏆' : ''}</div>`;
-                // המלצה: כמה צריך לחסוך בממוצע לחודש מכאן ועד סוף השנה כדי להגיע ליעד
-                const remainingAnnual = target - info.total;
-                if (remainingAnnual <= 0) {
-                    html += `<div style="font-size:0.82rem; color:var(--success); margin-top:6px; font-weight:600;">🏆 היעד השנתי כבר הושג!</div>`;
-                } else {
-                    const monthsLeft = Math.max(1, 12 - new Date().getMonth()); // כולל החודש הנוכחי
-                    const perMonth = remainingAnnual / monthsLeft;
-                    html += `<div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">💡 נותרו ${monthsLeft} חודשים לסוף ${info.year} — כדי להגיע ליעד צריך לחסוך בממוצע ₪${Math.round(perMonth).toLocaleString()}/חודש מכאן ואילך.</div>`;
-                }
-            } else {
-                // FIX: בלי יעד מוגדר (target=0, ברירת המחדל) לא הייתה מוצגת שום המלצה ולא אפילו רמז
-                // שיש בכלל פיצ'ר כזה - המשתמש לא היה מבין למה הוא "לא רואה המלצות". עכשיו יש הכוונה ברורה.
-                html += `<div style="font-size:0.82rem; color:var(--text-light); margin-top:6px;">💡 עדיין לא הוגדר יעד חיסכון שנתי — לחץ "קבע יעד שנתי" למעלה כדי לקבל כאן המלצה חודשית מותאמת.</div>`;
-            }
 
             if (info.byMonth.length) {
                 html += '<div style="margin-top:14px; border-top:1px solid var(--border); padding-top:10px; display:flex; flex-direction:column; gap:6px;">';
@@ -3596,13 +3819,6 @@
             el.innerHTML = html;
         }
 
-        function openAnnualGoalModal() {
-            const cur = Number(userSettings.annual_goal && userSettings.annual_goal.target) || 0;
-            const v = prompt(`מהו יעד החיסכון השנתי שלך ל-${new Date().getFullYear()}? (₪)`, cur || '');
-            if (v === null) return; const n = Number(v); if (isNaN(n) || n < 0) return alert("מספר לא תקין");
-            userSettings.annual_goal = { year: String(new Date().getFullYear()), target: n };
-            saveUserSettings(); renderAnnualSavings();
-        }
 
         // ===== תובנות חכמות (AI) =====
         function openInsightsModal() { document.getElementById('insightsContent').innerText = 'לחץ "נתח את החודש" כדי לקבל סיכום חכם.'; document.getElementById('insightsModal').style.display='flex'; }
@@ -3620,7 +3836,8 @@
                 try {
                     const prompt = `אתה יועץ פיננסי. נתח בקצרה ובעברית את החודש. הכנסות: ₪${income}. סך הוצאות בפועל: ₪${totalExp}. קטגוריות (שם, בפועל, יעד): ${JSON.stringify(cats)}. החזר טקסט קצר (לא JSON, עד 120 מילים) הכולל: משפט סיכום על המאזן; 2-3 תובנות על קטגוריות בולטות או חריגות מהיעד; וטיפ מעשי אחד לחיסכון.`;
                     const txt = await geminiGenerate([{ text: prompt }], { json: false, retries: 2 });
-                    box.innerText = txt; return;
+                    // FIX: ה-AI מחזיר Markdown (**מודגש**, # כותרות, * תבליטים) שהוצג ככוכביות גולמיות
+                    box.innerText = String(txt || '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').replace(/^\s*[*-]\s+/gm, '• '); return;
                 } catch(e) { /* נופלים לניתוח מקומי */ }
             }
             box.innerText = buildLocalInsights(income, totalExp, cats);
@@ -3708,7 +3925,7 @@
                 document.getElementById('mainTablesSection').style.display = 'block'; 
             } else if (viewName === 'stats') { 
                 document.getElementById('btnViewStats').classList.add('active'); document.getElementById('mobBtnStats').classList.add('active');
-                document.getElementById('statisticsSection').style.display = 'block'; renderMonthlyOverviewChart(); renderStatisticsChart(); renderAnnualSavings(); renderMonthlyComparisonChart(); 
+                document.getElementById('statisticsSection').style.display = 'block'; renderAnalyticsDashboard(); renderAnnualSavings(); renderMonthlyComparisonChart(); 
             } else if (viewName === 'about') {
                 document.getElementById('btnViewAbout')?.classList.add('active'); document.getElementById('mobBtnAbout')?.classList.add('active');
                 document.getElementById('aboutSection').style.display = 'block';
@@ -3788,8 +4005,11 @@
             // (ר' calculateAll ו-_periodicSaveTimer). זה מונע מצב שבו כשל רשת חד-פעמי גורם למסך ריק
             // שנשמר אוטומטית ודורס נתונים אמיתיים.
             _cloudLoadConfirmed = false;
+            // FIX: שתי טעינות במקביל (למשל החלפת חשבון מהירה / שחזור session תוך כדי כניסה) היו מנקות
+            // את הטבלאות ואז שתיהן מוסיפות שורות — כל סעיף הופיע פעמיים ונשמר כך לענן. רק הטעינה
+            // האחרונה רשאית לצייר; הניקוי נעשה אחרי ה-await, מיד לפני הציור.
+            const myLoad = loadCurrentMonthData._seq = (loadCurrentMonthData._seq || 0) + 1;
             const inc = document.getElementById('incomeBody'); const fix = document.getElementById('fixedBody'); const varb = document.getElementById('variableBody');
-            inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = '';
             // FIX: First try exact match, then try normalized (handle Safari comma vs Chrome no-comma)
             // FIX: הייתה כאן .order('id', ...) — בטבלת month_data אין עמודה בשם id, אז זה גרם לשגיאת
             // Postgres (42703) בכל טעינה, בלי יוצא מן הכלל. לפני התיקון בקובץ הזה השגיאה הזו הושתקה
@@ -3830,6 +4050,8 @@
                 } catch(e2) {}
             }
             const mirrorHasContent = mirror && mirror.data && ((mirror.data.income||[]).length || (mirror.data.fixed||[]).length || (mirror.data.variable||[]).length);
+            if (myLoad !== loadCurrentMonthData._seq) return; // טעינה חדשה יותר כבר בדרך
+            inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = '';
 
             // FIX: אם הגיבוי המקומי מסומן synced:false — כלומר יש שינוי אחרון שמעולם לא אושר כנשמר בענן —
             // מעדיפים אותו תמיד, גם אם בענן כבר קיימת שורה (ישנה יותר) לחודש הזה. בלי זה, שמירה שנכשלה
@@ -4131,7 +4353,7 @@
             }; 
             const totalExp = round1(processExpenses('fixedBody', 'sumFixedTarget', 'sumFixedActual') + processExpenses('variableBody', 'sumVarTarget', 'sumVarActual')); 
             document.getElementById('totalIncomeTxt').innerText = `₪${fmtNum(incomeSum)}`; document.getElementById('totalExpensesTxt').innerText = `₪${fmtNum(totalExp)}`; document.getElementById('balanceTxt').innerText = `₪${fmtNum(incomeSum - totalExp)}`; document.getElementById('balanceTxt').style.color = (incomeSum - totalExp) < 0 ? 'var(--danger)' : 'var(--primary)'; 
-            const statsSec = document.getElementById('statisticsSection'); if (statsSec && statsSec.style.display !== 'none') { renderMonthlyOverviewChart(incomeSum, totalExp); renderStatisticsChart(); }
+            const statsSec = document.getElementById('statisticsSection'); if (statsSec && statsSec.style.display !== 'none') { scheduleDashboardRender(); }
             // FIX: לא שומרים (מקומית או לענן) לפני שאישרנו בוודאות את מצב הענן לחודש הזה —
             // ראה _cloudLoadConfirmed ב-loadCurrentMonthData. מונע דריסת נתונים אמיתיים במסך ריק זמני.
             if (shouldSave && tempUserSession && _cloudLoadConfirmed) { document.getElementById('saveStatusIndicator').style.display = 'none'; writeLocalMirror(); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => { saveDataToCloud().catch(() => {}); }, 600); }
@@ -4416,7 +4638,7 @@
             }
         }
 
-        function toggleAiChat() { const chatBox = document.getElementById('aiChatBox'); chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex'; }
+        function toggleAiChat() { const chatBox = document.getElementById('aiChatBox'); if (!chatBox) return; chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex'; }
         function handleAiKeyPress(e) { if(e.key === 'Enter') sendAiMessageReal(); }
         
         async function sendAiMessageReal() {
@@ -6257,6 +6479,7 @@
             if(pastMonths.length === 0) { listElement.innerHTML = '<li style="color: var(--text-light); font-size: 0.95rem;">אין חודשים קודמים</li>'; }
             else { pastMonths.forEach(month => { const li = document.createElement('li'); li.className = 'history-item'; li.style.display = 'flex'; li.style.justifyContent = 'space-between'; li.style.alignItems = 'center'; li.innerHTML = `<span>${month.replace('עסקי - ', '')}</span><div style="display:flex; gap:0.5rem; flex-wrap:wrap;"><button class="btn-link" style="padding:0.25rem 0.5rem; font-size:0.8rem; white-space:nowrap;" onclick="editPastMonth('${month}'); event.stopPropagation();">✏️</button><button class="btn-link" style="padding:0.25rem 0.5rem; font-size:0.8rem; white-space:nowrap;" title="צפה בדוח" onclick="showMonthHistoryModal('${month}'); event.stopPropagation();">📊</button></div>`; listElement.appendChild(li); }); }
             renderAnnualSavings();
+            scheduleDashboardRender();
         }
 
         // FIX: כל חודשי המשתמש, כולל החודש הפעיל (אפילו אם עדיין לא נשמר ל-DB), ממוינים
@@ -6392,69 +6615,266 @@
             window.location.href = `mailto:${finalEmail}?subject=דוח תקציב פיננסי - הכיס שלי&body=${encodeURIComponent(emailBody)}`;
         }
 
-        function renderMonthlyOverviewChart(incomeSum, totalExp) {
-            const canvas = document.getElementById('monthlyOverviewChart'); if (!canvas) return;
-            if (incomeSum === undefined || totalExp === undefined) {
-                incomeSum = 0; document.querySelectorAll('#incomeBody .val-input').forEach(i => incomeSum += Number(i.value) || 0);
-                totalExp = 0; document.querySelectorAll('#fixedBody .actual-val, #variableBody .actual-val').forEach(a => totalExp += Number(a.value) || 0);
+        // ===================== דשבורד ניתוח פיננסי =====================
+        // כל הגרפים קוראים צבעים מ-CSS (--viz-*) כך שמצב לילה מקבל גוונים משלו, ונבנים מחדש
+        // מנתונים "חיים" של החודש הפעיל + החודשים השמורים, בסדר כרונולוגי.
+        const _dashCharts = {};
+        let _dashRange = 6;
+        let _dashRenderTimer = null;
+
+        function _monthTotals(d) {
+            d = d || {};
+            const sum = (arr, k) => (arr || []).reduce((s, x) => s + (Number(x && x[k]) || 0), 0);
+            const income = round1(sum(d.income, 'amount'));
+            const fixed = round1(sum(d.fixed, 'actual'));
+            const variable = round1(sum(d.variable, 'actual'));
+            const target = round1(sum(d.fixed, 'target') + sum(d.variable, 'target'));
+            return { income, fixed, variable, expenses: round1(fixed + variable), target, savings: round1(income - fixed - variable) };
+        }
+
+        // כל החודשים (ללא כפילויות) בסדר כרונולוגי, כשהחודש הפעיל תמיד מגיע מהמסך
+        function _chronoMonthsWithLive() {
+            const live = (typeof tempUserSession !== 'undefined' && tempUserSession && workingMonthStr) ? getLiveSnapshot() : null;
+            const map = new Map();
+            (allUserMonthsData || []).forEach(m => { if (m && m.data && monthStrSortKey(m.month_str) > 0) map.set(m.month_str, m); });
+            if (live) {
+                for (const k of Array.from(map.keys())) if (isSameMonthStr(k, workingMonthStr)) map.delete(k);
+                map.set(workingMonthStr, { month_str: workingMonthStr, data: live });
             }
-            const savings = incomeSum - totalExp;
-            const ctx = canvas.getContext('2d');
-            if (monthlyChartInstance) monthlyChartInstance.destroy();
-            monthlyChartInstance = new Chart(ctx, {
+            return Array.from(map.values()).sort((a, b) => monthStrSortKey(a.month_str) - monthStrSortKey(b.month_str));
+        }
+
+        function _vizTokens() {
+            const cs = getComputedStyle(document.documentElement);
+            const v = n => cs.getPropertyValue(n).trim();
+            return {
+                income: v('--viz-income'), expense: v('--viz-expense'), savings: v('--viz-savings'), actual: v('--viz-actual'),
+                target: v('--viz-target'), over: v('--viz-over'), fixed: v('--viz-fixed'), variable: v('--viz-variable'),
+                grid: v('--viz-grid'), axis: v('--viz-axis'), text: v('--text-dark'), muted: v('--text-light'), surface: v('--surface'),
+                good: v('--status-good'), bad: v('--status-bad')
+            };
+        }
+
+        const _shekel = n => (n < 0 ? '−' : '') + '₪' + fmtNum(Math.abs(n));
+        const _shortShekel = n => { const a = Math.abs(n); const s = a >= 1000 ? (round1(a / 1000) + 'K') : String(Math.round(a)); return (n < 0 ? '−' : '') + '₪' + s; };
+        const _shortMonth = ms => String(ms).replace(/^עסקי - /, '').split(' ')[0];
+
+        function _chartBase(t, extra) {
+            const base = {
+                responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        rtl: true, textDirection: 'rtl', backgroundColor: t.text, titleColor: t.surface, bodyColor: t.surface,
+                        padding: 10, cornerRadius: 8, boxPadding: 4, usePointStyle: true,
+                        titleFont: { family: 'Rubik', weight: '600' }, bodyFont: { family: 'Rubik' },
+                        callbacks: { label: c => ` ${c.dataset.label}: ${_shekel(c.parsed[c.chart.options.indexAxis === 'y' ? 'x' : 'y'] || 0)}` }
+                    }
+                }
+            };
+            return Object.assign(base, extra || {});
+        }
+
+        function _axis(t, opts) {
+            return Object.assign({
+                grid: { color: t.grid, drawTicks: false }, border: { display: false },
+                ticks: { color: t.muted, font: { family: 'Rubik', size: 11 }, padding: 6 }
+            }, opts || {});
+        }
+
+        function _mountChart(id, config) {
+            const el = document.getElementById(id); if (!el || !window.Chart) return null;
+            if (_dashCharts[id]) _dashCharts[id].destroy();
+            _dashCharts[id] = new Chart(el, config);
+            return _dashCharts[id];
+        }
+
+        // תוויות ערך בקצה עמודה אופקית (במקום מספר על כל נקודה - רק בגרפי הסעיפים)
+        const _barEndLabels = {
+            id: 'barEndLabels',
+            afterDatasetsDraw(chart, args, opts) {
+                const { ctx } = chart; const dsIndex = opts.datasetIndex || 0;
+                const meta = chart.getDatasetMeta(dsIndex); if (!meta || meta.hidden) return;
+                ctx.save(); ctx.font = '600 11px Rubik, sans-serif'; ctx.fillStyle = opts.color; ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
+                meta.data.forEach((bar, i) => {
+                    const val = chart.data.datasets[dsIndex].data[i]; if (!val) return;
+                    ctx.fillText(_shortShekel(val), Math.min(bar.x, bar.base) - 6, bar.y);
+                });
+                ctx.restore();
+            }
+        };
+
+        function setDashRange(n) {
+            _dashRange = n;
+            document.querySelectorAll('.dash-range-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.range) === n));
+            renderAnalyticsDashboard();
+        }
+
+        function _isStatsVisible() { const s = document.getElementById('statisticsSection'); return !!(s && s.style.display !== 'none'); }
+
+        // calculateAll קורא לזה על כל הקשה - מאחדים לרינדור אחד
+        function scheduleDashboardRender() {
+            clearTimeout(_dashRenderTimer);
+            _dashRenderTimer = setTimeout(() => { if (_isStatsVisible()) renderAnalyticsDashboard(); }, 250);
+        }
+        // שמירה על התאימות לקריאות הישנות (calculateAll / switchView)
+        function renderMonthlyOverviewChart() { scheduleDashboardRender(); }
+
+        function _kpiTile(label, value, sub, delta, goodWhenUp, accent) {
+            let deltaHtml = '<span class="kpi-delta neutral">אין נתון קודם</span>';
+            if (delta !== null && isFinite(delta)) {
+                const up = delta > 0, flat = Math.abs(delta) < 0.5;
+                const good = flat ? null : (up === goodWhenUp);
+                const cls = flat ? 'neutral' : (good ? 'good' : 'bad');
+                deltaHtml = `<span class="kpi-delta ${cls}">${flat ? '●' : (up ? '▲' : '▼')} ${Math.abs(Math.round(delta))}% מהחודש הקודם</span>`;
+            }
+            return `<div class="kpi"><div class="kpi-label"><i style="background:${accent}"></i>${label}</div><div class="kpi-value">${value}</div>${sub ? `<div class="kpi-sub">${sub}</div>` : ''}${deltaHtml}</div>`;
+        }
+
+        function renderAnalyticsDashboard() {
+            if (!document.getElementById('analyticsDashboard') || !window.Chart) return;
+            const t = _vizTokens();
+            const all = _chronoMonthsWithLive();
+            const months = all.slice(-_dashRange);
+            const curIdx = all.findIndex(m => isSameMonthStr(m.month_str, workingMonthStr));
+            const cur = curIdx > -1 ? all[curIdx] : { month_str: workingMonthStr, data: getLiveSnapshot() };
+            const prev = curIdx > 0 ? all[curIdx - 1] : null;
+            const C = _monthTotals(cur.data), P = prev ? _monthTotals(prev.data) : null;
+            const pct = (a, b) => (b ? ((a - b) / Math.abs(b)) * 100 : null);
+            const rate = x => (x.income > 0 ? (x.savings / x.income) * 100 : 0);
+            const lbl = document.getElementById('dashMonthLabel'); if (lbl) lbl.innerText = cur.month_str;
+
+            // ---- KPI ----
+            const used = C.target > 0 ? Math.round((C.expenses / C.target) * 100) : null;
+            const kpis = document.getElementById('dashKpis');
+            if (kpis) kpis.innerHTML =
+                _kpiTile('הכנסות', _shekel(C.income), '', P ? pct(C.income, P.income) : null, true, t.income) +
+                _kpiTile('הוצאות', _shekel(C.expenses), `קבועות ${_shekel(C.fixed)} · משתנות ${_shekel(C.variable)}`, P ? pct(C.expenses, P.expenses) : null, false, t.expense) +
+                _kpiTile('חיסכון', _shekel(C.savings), '', P ? pct(C.savings, P.savings) : null, true, t.savings) +
+                _kpiTile('שיעור חיסכון', Math.round(rate(C)) + '%', 'יעד מומלץ: 20% ומעלה', P ? (rate(C) - rate(P)) : null, true, t.savings) +
+                `<div class="kpi"><div class="kpi-label"><i style="background:${t.target}"></i>ניצול תקציב</div><div class="kpi-value">${used === null ? '—' : used + '%'}</div><div class="kpi-sub">${_shekel(C.expenses)} מתוך ${_shekel(C.target)}</div><div class="kpi-meter"><span style="width:${Math.min(used || 0, 100)}%; background:${(used || 0) > 100 ? t.over : t.actual}"></span></div></div>`;
+
+            // ---- מגמה חודשית ----
+            const T = months.map(m => _monthTotals(m.data));
+            const labels = months.map(m => _shortMonth(m.month_str));
+            _mountChart('dashTrendChart', {
+                data: { labels, datasets: [
+                    { type: 'bar', label: 'הכנסות', data: T.map(x => x.income), backgroundColor: t.income, borderRadius: 4, borderSkipped: 'start', maxBarThickness: 26, categoryPercentage: 0.62, barPercentage: 0.9, order: 2 },
+                    { type: 'bar', label: 'הוצאות', data: T.map(x => x.expenses), backgroundColor: t.expense, borderRadius: 4, borderSkipped: 'start', maxBarThickness: 26, categoryPercentage: 0.62, barPercentage: 0.9, order: 2 },
+                    { type: 'line', label: 'חיסכון', data: T.map(x => x.savings), borderColor: t.savings, backgroundColor: t.savings, borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: t.savings, pointBorderColor: t.surface, pointBorderWidth: 2, order: 1 }
+                ] },
+                options: _chartBase(t, { scales: { x: _axis(t, { grid: { display: false }, border: { display: false } }), y: _axis(t, { beginAtZero: true, ticks: { color: t.muted, font: { family: 'Rubik', size: 11 }, callback: v => _shortShekel(v) } }) } })
+            });
+
+            // ---- לאן הולך הכסף (סעיפים) ----
+            const rows = [...(cur.data.fixed || []), ...(cur.data.variable || [])].filter(r => (Number(r.actual) || 0) > 0 && (r.name || '').trim());
+            rows.sort((a, b) => b.actual - a.actual);
+            let cats = rows.slice(0, 7).map(r => ({ name: r.name.trim(), v: round1(r.actual) }));
+            if (rows.length > 7) cats.push({ name: 'אחר', v: round1(rows.slice(7).reduce((s, r) => s + r.actual, 0)) });
+            _mountChart('dashCategoryChart', {
                 type: 'bar',
-                data: { labels: ['הכנסות', 'הוצאות', 'חיסכון'], datasets: [{ label: '₪', data: [incomeSum, totalExp, savings], backgroundColor: ['#10b981', '#ef4444', savings < 0 ? '#ef4444' : '#3b82f6'], borderRadius: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: `חודש פעיל: ${workingMonthStr}` } } }
+                data: { labels: cats.map(c => c.name), datasets: [{ label: 'הוצאה', data: cats.map(c => c.v), backgroundColor: t.expense, borderRadius: 4, borderSkipped: 'start', maxBarThickness: 18 }] },
+                options: _chartBase(t, { indexAxis: 'y', layout: { padding: { left: 52 } }, interaction: { mode: 'nearest', axis: 'y', intersect: false },
+                    plugins: Object.assign(_chartBase(t).plugins, { barEndLabels: { color: t.text } }),
+                    scales: { x: _axis(t, { reverse: true, beginAtZero: true, display: false }), y: _axis(t, { position: 'right', grid: { display: false }, ticks: { color: t.text, font: { family: 'Rubik', size: 12 } } }) } }),
+                plugins: [_barEndLabels]
+            });
+
+            // ---- קבועות מול משתנות ----
+            const splitParts = [{ name: 'קבועות', v: C.fixed, c: t.fixed }, { name: 'משתנות', v: C.variable, c: t.variable }].filter(p => p.v > 0);
+            const totalEl = document.getElementById('dashSplitTotal'); if (totalEl) totalEl.innerText = _shekel(C.expenses);
+            const sl = document.getElementById('dashSplitLegend');
+            if (sl) sl.innerHTML = splitParts.length ? splitParts.map(p => `<div><span><i style="background:${p.c}"></i>${p.name}</span><strong>${_shekel(p.v)}</strong><em>${Math.round(p.v / C.expenses * 100)}%</em></div>`).join('') : '<p class="dash-empty">אין עדיין הוצאות החודש</p>';
+            _mountChart('dashSplitChart', {
+                type: 'doughnut',
+                data: { labels: splitParts.map(p => p.name), datasets: [{ label: 'הוצאות', data: splitParts.map(p => p.v), backgroundColor: splitParts.map(p => p.c), borderColor: t.surface, borderWidth: 2, hoverOffset: 4 }] },
+                options: _chartBase(t, { cutout: '72%', interaction: { mode: 'nearest', intersect: true }, plugins: Object.assign(_chartBase(t).plugins, { tooltip: Object.assign(_chartBase(t).plugins.tooltip, { callbacks: { label: c => ` ${c.label}: ${_shekel(c.parsed)}` } }) }) })
+            });
+
+            // ---- תקציב מול ביצוע ----
+            const brows = [...(cur.data.fixed || []), ...(cur.data.variable || [])].filter(r => ((Number(r.target) || 0) > 0 || (Number(r.actual) || 0) > 0) && (r.name || '').trim());
+            brows.sort((a, b) => (b.target || b.actual) - (a.target || a.actual));
+            const bwrap = document.getElementById('dashBudgetWrap'); if (bwrap) bwrap.style.height = Math.max(160, brows.length * 38 + 30) + 'px';
+            _mountChart('dashBudgetChart', {
+                type: 'bar',
+                data: { labels: brows.map(r => r.name.trim()), datasets: [
+                    { label: 'יעד', data: brows.map(r => round1(r.target || 0)), backgroundColor: t.target, borderRadius: 4, borderSkipped: 'start', maxBarThickness: 12, categoryPercentage: 0.7, barPercentage: 0.85 },
+                    { label: 'בפועל', data: brows.map(r => round1(r.actual || 0)), backgroundColor: brows.map(r => (r.target > 0 && r.actual > r.target) ? t.over : t.actual), borderRadius: 4, borderSkipped: 'start', maxBarThickness: 12, categoryPercentage: 0.7, barPercentage: 0.85 }
+                ] },
+                options: _chartBase(t, { indexAxis: 'y', interaction: { mode: 'index', axis: 'y', intersect: false },
+                    plugins: Object.assign(_chartBase(t).plugins, { tooltip: Object.assign(_chartBase(t).plugins.tooltip, { callbacks: {
+                        label: c => ` ${c.dataset.label}: ${_shekel(c.parsed.x || 0)}`,
+                        afterBody: items => { const r = brows[items[0].dataIndex]; if (!r || !(r.target > 0)) return ''; const d = round1(r.target - r.actual); return d < 0 ? `חריגה: ${_shekel(-d)}` : `נותרו: ${_shekel(d)}`; }
+                    } }) }),
+                    scales: { x: _axis(t, { reverse: true, beginAtZero: true, ticks: { color: t.muted, font: { family: 'Rubik', size: 11 }, callback: v => _shortShekel(v) } }), y: _axis(t, { position: 'right', grid: { display: false }, ticks: { color: t.text, font: { family: 'Rubik', size: 12 } } }) } })
+            });
+
+            // ---- שיעור חיסכון ----
+            const rates = T.map(x => (x.income > 0 ? Math.round((x.savings / x.income) * 100) : 0));
+            _mountChart('dashRateChart', {
+                type: 'line',
+                data: { labels, datasets: [
+                    { label: 'שיעור חיסכון', data: rates, borderColor: t.savings, backgroundColor: t.savings + '1f', fill: 'origin', borderWidth: 2, tension: 0.3, pointRadius: 4, pointBackgroundColor: t.savings, pointBorderColor: t.surface, pointBorderWidth: 2 },
+                    { label: 'יעד מומלץ', data: labels.map(() => 20), borderColor: t.muted, borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false }
+                ] },
+                options: _chartBase(t, { plugins: Object.assign(_chartBase(t).plugins, { tooltip: Object.assign(_chartBase(t).plugins.tooltip, { callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y}%` } }) }),
+                    scales: { x: _axis(t, { grid: { display: false } }), y: _axis(t, { suggestedMin: 0, suggestedMax: 40, ticks: { color: t.muted, font: { family: 'Rubik', size: 11 }, callback: v => v + '%' } }) } })
+            });
+
+            renderStatisticsChart();
+        }
+
+        function renderStatisticsChart() {
+            const canvas = document.getElementById('expensesChart'); if (!canvas || !window.Chart) return;
+            const t = _vizTokens();
+            const days = Number((document.getElementById('chartDateFilter') || {}).value) || 14;
+            const now = new Date(); const labels = [], keys = [], agg = {};
+            for (let i = days - 1; i >= 0; i--) {
+                const d = new Date(now.getTime() - i * 86400000); const k = d.toLocaleDateString('he-IL');
+                keys.push(k); labels.push(d.getDate() + '/' + (d.getMonth() + 1)); agg[k] = 0;
+            }
+            const cutoff = now.getTime() - days * 86400000;
+            (dailyExpenseLogs || []).forEach(l => { if (l.timestamp >= cutoff && agg[l.dateStr] !== undefined) agg[l.dateStr] += Number(l.amount) || 0; });
+            if (expenseChartInstance) expenseChartInstance.destroy();
+            expenseChartInstance = new Chart(canvas, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'הוצאות ביום', data: keys.map(k => round1(agg[k])), backgroundColor: t.expense, borderRadius: 4, borderSkipped: 'start', maxBarThickness: 22 }] },
+                options: _chartBase(t, { scales: { x: _axis(t, { grid: { display: false }, ticks: { color: t.muted, font: { family: 'Rubik', size: 10 }, maxRotation: 0, autoSkipPadding: 8 } }), y: _axis(t, { beginAtZero: true, ticks: { color: t.muted, font: { family: 'Rubik', size: 11 }, callback: v => _shortShekel(v), maxTicksLimit: 5 } }) } })
             });
         }
 
-        function renderStatisticsChart() { const ctx = document.getElementById('expensesChart').getContext('2d'); const daysToGenerate = Number(document.getElementById('chartDateFilter').value); const now = new Date(); const labels = []; const aggregatedData = {}; for (let i = daysToGenerate - 1; i >= 0; i--) { const d = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000)); const dateStr = d.toLocaleDateString('he-IL'); labels.push(dateStr); aggregatedData[dateStr] = 0; } const cutoffTime = now.getTime() - (daysToGenerate * 24 * 60 * 60 * 1000); dailyExpenseLogs.forEach(log => { if (log.timestamp >= cutoffTime && aggregatedData[log.dateStr] !== undefined) { aggregatedData[log.dateStr] += log.amount; } }); const data = labels.map(l => aggregatedData[l]); if (expenseChartInstance) { expenseChartInstance.destroy(); } expenseChartInstance = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'סך הוצאות ביום זה (₪)', data: data, backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); }
+        // החלפת מצב לילה/יום - הגרפים נצבעים מחדש בגווני המצב החדש
+        new MutationObserver(() => { if (_isStatsVisible()) renderAnalyticsDashboard(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
         // ===== ניתוח השוואה חודשים + AI Insights =====
+        // FIX: המשתנה הזה מעולם לא הוגדר - השימוש בו בתוך ה-setTimeout למטה זרק ReferenceError,
+        // ולכן גרף השוואת החודשים לא צויר אף פעם (רק הטבלה שמעליו הופיעה).
+        let monthlyComparisonChartInstance = null;
         function renderMonthlyComparisonChart() {
-          if (!allUserMonthsData || allUserMonthsData.length < 2) {
+          // FIX: allUserMonthsData מגיע בסדר שרירותי מהשרת, והחודש הפעיל בו ישן (מה שנשמר אחרון) —
+          // משתמשים ברשימה הכרונולוגית עם נתוני החודש הפעיל "חיים" מהמסך.
+          const allMonths = _chronoMonthsWithLive();
+          if (allMonths.length < 2) {
             const sec = document.getElementById('monthlyComparisonSection');
             if(sec) sec.innerHTML = '<p style="color:var(--text-light); text-align:center;">צריך לפחות 2 חודשים כדי לעשות השוואה</p>';
             return;
           }
-          const recent = allUserMonthsData.slice(-6); // 6 חודשים אחרונים
+          const recent = allMonths.slice(-6); // 6 חודשים אחרונים
           const labels = recent.map(m => m.month_str.split(' ')[0]); // רק שם החודש
-          const incomes = recent.map(m => m.data.income.reduce((s, i) => s + i.amount, 0));
-          const expenses = recent.map(m => (m.data.fixed.reduce((s, f) => s + f.actual, 0) + m.data.variable.reduce((s, v) => s + v.actual, 0)));
+          const incomes = recent.map(m => _monthTotals(m.data).income);
+          const expenses = recent.map(m => _monthTotals(m.data).expenses);
           const savings = recent.map((m, i) => incomes[i] - expenses[i]);
 
-          // טבלה
-          let tableHtml = '<table style="width:100%; border-collapse:collapse; margin-bottom:2rem;"><tr style="background:#f0f0f0; font-weight:bold;"><th>חודש</th><th>הכנסות (₪)</th><th>הוצאות (₪)</th><th>חיסכון (₪)</th></tr>';
+          // טבלה (הגרף עצמו עבר לדשבורד - "מגמה חודשית" למעלה)
+          let tableHtml = '<div class="table-responsive-wrapper"><table class="dash-table"><thead><tr><th>חודש</th><th>הכנסות</th><th>הוצאות</th><th>חיסכון</th><th>שיעור חיסכון</th></tr></thead><tbody>';
           recent.forEach((m, i) => {
-            const savingColor = savings[i] >= 0 ? 'var(--success)' : 'var(--danger)';
-            tableHtml += `<tr style="border-bottom:1px solid #ddd;"><td style="padding:10px;">${m.month_str}</td><td style="color:var(--success);">₪${incomes[i].toLocaleString()}</td><td style="color:var(--danger);">₪${expenses[i].toLocaleString()}</td><td style="color:${savingColor}; font-weight:bold;">₪${savings[i].toLocaleString()}</td></tr>`;
+            const rate = incomes[i] > 0 ? Math.round(savings[i] / incomes[i] * 100) : 0;
+            tableHtml += `<tr><td>${escapeHtml(m.month_str)}</td><td>₪${fmtNum(incomes[i])}</td><td>₪${fmtNum(expenses[i])}</td><td class="${savings[i] >= 0 ? 'val-good' : 'val-bad'}">${savings[i] >= 0 ? '' : '−'}₪${fmtNum(Math.abs(savings[i]))}</td><td>${rate}%</td></tr>`;
           });
-          tableHtml += '</table>';
-
-          // גרף
-          const canvasId = 'comparisonChart_' + Date.now();
-          let chartHtml = tableHtml + `<canvas id="${canvasId}" style="max-height:300px;"></canvas>`;
+          tableHtml += '</tbody></table></div>';
           const sec = document.getElementById('monthlyComparisonSection');
-          if(sec) sec.innerHTML = chartHtml;
-
-          setTimeout(() => {
-            const ctx = document.getElementById(canvasId);
-            if(ctx && window.Chart) {
-              if (monthlyComparisonChartInstance) monthlyComparisonChartInstance.destroy();
-              monthlyComparisonChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                  labels: labels,
-                  datasets: [
-                    {label: 'הכנסות (₪)', data: incomes, borderColor: '#10b981', borderWidth: 2, tension: 0.4, fill: false},
-                    {label: 'הוצאות (₪)', data: expenses, borderColor: '#ef4444', borderWidth: 2, tension: 0.4, fill: false},
-                    {label: 'חיסכון (₪)', data: savings, borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, fill: false}
-                  ]
-                },
-                options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: true}}}
-              });
-            }
-          }, 100);
+          if(sec) sec.innerHTML = tableHtml;
 
           // AI Insights
           generateAndDisplayAIInsights(recent, incomes, expenses, savings);
@@ -6470,7 +6890,7 @@
           if(incomes.length >= 2) {
             const lastIncome = incomes[incomes.length-1];
             const prevIncome = incomes[incomes.length-2];
-            const diff = ((lastIncome - prevIncome) / prevIncome * 100).toFixed(1);
+            const diff = prevIncome ? ((lastIncome - prevIncome) / prevIncome * 100).toFixed(1) : '100';
             if(lastIncome > prevIncome) insights.push(`✅ ההכנסות עלו ב-${diff}% בחודש האחרון`);
             else if(lastIncome < prevIncome) insights.push(`⚠️ ההכנסות ירדו ב-${Math.abs(diff)}% בחודש האחרון`);
           }
@@ -6479,8 +6899,8 @@
           if(expenses.length >= 2) {
             const lastExp = expenses[expenses.length-1];
             const prevExp = expenses[expenses.length-2];
-            if(lastExp > prevExp * 1.15) insights.push(`⚠️ הוצאות עלו ב-${((lastExp - prevExp) / prevExp * 100).toFixed(1)}% - לחתוך קצת בחודש הבא`);
-            else if(lastExp < prevExp * 0.85) insights.push(`✅ הצלחת להקטין הוצאות ב-${((prevExp - lastExp) / prevExp * 100).toFixed(1)}%`);
+            if(prevExp > 0 && lastExp > prevExp * 1.15) insights.push(`⚠️ הוצאות עלו ב-${((lastExp - prevExp) / prevExp * 100).toFixed(1)}% - לחתוך קצת בחודש הבא`);
+            else if(prevExp > 0 && lastExp < prevExp * 0.85) insights.push(`✅ הצלחת להקטין הוצאות ב-${((prevExp - lastExp) / prevExp * 100).toFixed(1)}%`);
           }
 
           // כלל 3: יעד חיסכון
@@ -6492,7 +6912,7 @@
           if(expenseVariance < avgExpense * 0.2) insights.push(`📊 הוצאות יציבות - טוב מאוד!`);
           else insights.push(`📊 הוצאות משתנות - חשוב להתקע אזהרה`);
 
-          let insightHtml = '<div style="background:#f0fdf4; border-left:4px solid #10b981; padding:1rem; margin:1rem 0; border-radius:8px;"><strong>💡 תובנות AI:</strong><ul style="margin:0.5rem 0;">';
+          let insightHtml = '<div class="dash-insights"><strong>💡 תובנות</strong><ul>';
           insights.forEach(i => insightHtml += `<li>${i}</li>`);
           insightHtml += '</ul></div>';
 
@@ -7171,4 +7591,4 @@
         </div>
     </div>
 </body>
-</html>
+</html>
