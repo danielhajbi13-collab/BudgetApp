@@ -1,29 +1,87 @@
 name: Keep Supabase Active
 
+# Free Supabase projects are paused after ~7 days without activity.
+# This pings EVERY project of ours twice a day with a real database query.
+# A failed run makes GitHub email the repo owner, so a paused project, a
+# missing key or a disabled schedule is noticed within hours, not weeks.
+#
+# Adding a new Supabase project = add one entry under `matrix.include`
+# and one repository secret holding that project's anon/publishable key.
+
 on:
   schedule:
-    - cron: '17 3 * * *'
+    - cron: '17 3,15 * * *'
   workflow_dispatch:
 
 permissions: {}
 
 jobs:
   keep-alive:
+    name: ping ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: BudgetApp
+            ref: lktciczanxnrdydwybez
+            table: month_data
+            key_secret: SUPABASE_PUBLISHABLE_KEY
+          - name: MyTeam
+            ref: eenegwvjswdokuapmvmk
+            table: businesses
+            key_secret: MYTEAM_SUPABASE_KEY
+          - name: batei-knesset-sderot
+            ref: taaoypchtowbnwzftqhy
+            table: synagogues
+            key_secret: SDEROT_SUPABASE_KEY
     steps:
-      - name: Query Supabase database
+      - name: Query ${{ matrix.name }} database
         env:
-          SUPABASE_URL: https://lktciczanxnrdydwybez.supabase.co
-          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          REF: ${{ matrix.ref }}
+          TABLE: ${{ matrix.table }}
+          KEY: ${{ secrets[matrix.key_secret] }}
+          KEY_SECRET: ${{ matrix.key_secret }}
         run: |
-          set -euo pipefail
-          curl --fail --silent --show-error \
-            --retry 3 \
-            --retry-delay 5 \
-            --connect-timeout 10 \
-            --max-time 30 \
-            -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+          set -uo pipefail
+          HOST="${REF}.supabase.co"
+          DASH="https://supabase.com/dashboard/project/${REF}"
+
+          if [ -z "${KEY}" ]; then
+            echo "::error::Secret ${KEY_SECRET} is missing. Add the project's anon key under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+          if ! getent hosts "${HOST}" > /dev/null; then
+            echo "::error::${HOST} does not resolve - the project is PAUSED. Restore it now: ${DASH}"
+            exit 1
+          fi
+
+          code=$(curl --silent --show-error --output /tmp/body \
+            --write-out '%{http_code}' \
+            --retry 3 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            -H "apikey: ${KEY}" -H "Authorization: Bearer ${KEY}" \
             -H "Accept: application/json" \
-            "${SUPABASE_URL}/rest/v1/month_data?select=user_id&limit=1" \
-            > /dev/null
-          echo "Supabase database activity check completed successfully."
+            "https://${HOST}/rest/v1/${TABLE}?select=*&limit=1") || code=000
+
+          if [ "${code}" != "200" ]; then
+            echo "::error::${HOST} answered HTTP ${code} (paused, restoring, or wrong key). Check: ${DASH}"
+            head -c 300 /tmp/body 2>/dev/null || true
+            exit 1
+          fi
+          echo "${HOST}: database query OK."
+
+  # GitHub silently disables scheduled workflows after 60 days without
+  # commits. Re-enabling it on every run resets that timer.
+  stay-enabled:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Keep this schedule enabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/keep-supabase-active.yml/enable"
+          echo "Schedule stays enabled."
