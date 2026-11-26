@@ -858,6 +858,7 @@
                     <button onclick="openCreateManagerModal()" style="background:linear-gradient(135deg, var(--admin), #5b21b6);color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(139,92,246,0.2);">➕ מנהל חדש</button>
                     <button onclick="openAdminManagersChat()" style="background:linear-gradient(135deg, var(--comm), var(--comm-hover));color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(14,165,233,0.2);">💬 צ'אט עם המנהלים</button>
                     <button onclick="openAdminInboxModal()" style="background:linear-gradient(135deg, var(--comm), var(--comm-hover));color:white;border:none;border-radius:12px;padding:0.8rem 1.5rem;font-weight:600;cursor:pointer; box-shadow:0 4px 10px rgba(37,99,235,0.2);">📬 תיבת פניות <span class="js-admin-inq-badge inq-badge"></span></button>
+                    <button onclick="openHubBillsModal()" class="btn-outline">📬 חשבונות מהמייל</button>
                     <button onclick="openChangeAdminCredsModal()" class="btn-outline">🔑 שינוי פרטי כניסה</button>
                     <button onclick="handleLogout()" class="btn-outline">🚪 יציאה</button>
                 </div>
@@ -2064,7 +2065,20 @@
                     <button class="btn-outline set-wide" onclick="settingsGo(openBankImportModal)">📥 ייבוא דפי בנק ואשראי</button>
                     <button class="btn-outline set-wide" onclick="settingsGo(openBankHistoryFromSettings)">📋 היסטוריית העלאות</button>
                     <button class="btn-outline set-wide" onclick="settingsGo(openTrashModal)">🗑️ סל מיחזור</button>
+                    <button class="btn-outline set-wide" id="setHubBillsBtn" style="display:none;" onclick="settingsGo(openHubBillsModal)">📬 חשבונות מהמייל</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== חשבונות שזוהו בתיבת המייל (נדחפים ממרכזיית המייל, גלויים לבעלים בלבד) ====== -->
+    <div class="modal-overlay" id="hubBillsModal">
+        <div class="modal-content" style="max-width: 560px;">
+            <div class="modal-header"><h3>📬 חשבונות מהמייל</h3><button class="btn-close-modal" onclick="closeHubBillsModal()">✕</button></div>
+            <div class="modal-body">
+                <p class="set-lead">חשבונות וחיובים שמרכזיית המייל זיהתה בתיבה שלך. מסמנים ✓ כשטיפלת.</p>
+                <label class="set-switch"><input type="checkbox" id="hubBillsShowDone" onchange="renderHubBills()"><span>הצג גם כאלה שטופלו</span></label>
+                <div id="hubBillsList" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">טוען...</div>
             </div>
         </div>
     </div>
@@ -6851,6 +6865,46 @@
             const auto = document.getElementById('setRecurringAuto'); if (auto) auto.checked = isRecurringAutoOn();
             document.getElementById('settingsModal').style.display = 'flex';
             switchSettingsTab(tab || 'profile');
+            refreshHubBillsButton();
+        }
+
+        // ===================== חשבונות מהמייל =====================
+        // מרכזיית המייל דוחפת לטבלה hub_bills; ה-RLS מחזיר שורות רק לבעלים (המנהל הראשי
+        // או המשתמש שהוגדר ב-hub_settings), כך שלכל משתמש אחר הכפתור פשוט לא מופיע.
+        let _hubBills = [];
+        async function refreshHubBillsButton() {
+            const btn = document.getElementById('setHubBillsBtn'); if (!btn) return;
+            const res = await appRpc('hub_is_owner');
+            btn.style.display = (res === true) ? '' : 'none';
+        }
+        async function openHubBillsModal() {
+            document.getElementById('hubBillsModal').style.display = 'flex';
+            const list = document.getElementById('hubBillsList'); list.innerText = 'טוען...';
+            const { data, error } = await _supabase.from('hub_bills').select('*').order('received_at', { ascending: false }).limit(200);
+            if (error) { list.innerText = 'שגיאה בטעינה: ' + (error.message || ''); return; }
+            _hubBills = data || [];
+            renderHubBills();
+        }
+        function closeHubBillsModal() { document.getElementById('hubBillsModal').style.display = 'none'; }
+        function renderHubBills() {
+            const list = document.getElementById('hubBillsList'); if (!list) return;
+            const showDone = document.getElementById('hubBillsShowDone').checked;
+            const rows = _hubBills.filter(b => showDone || !b.done);
+            if (!rows.length) { list.innerText = _hubBills.length ? 'הכול טופל 🎉' : 'עוד לא זוהו חשבונות.'; return; }
+            list.innerHTML = rows.map(b => {
+                const when = new Date(b.received_at).toLocaleDateString('he-IL');
+                const urgent = b.urgency === 'high' ? ' <span style="color:var(--danger,#ef4444);font-weight:700;">דחוף</span>' : '';
+                return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:12px;' + (b.done ? 'opacity:0.55;' : '') + '">'
+                    + '<input type="checkbox" ' + (b.done ? 'checked' : '') + ' onchange="setHubBillDone(\'' + escapeHtml(b.id) + '\', this.checked)" style="margin-top:4px;">'
+                    + '<div style="flex:1;min-width:0;"><div style="font-weight:600;">' + escapeHtml(b.summary || '') + urgent + '</div>'
+                    + '<div style="font-size:0.8rem;color:var(--text-light,#64748b);">' + escapeHtml(b.sender || '') + ' · ' + when + '</div></div></div>';
+            }).join('');
+        }
+        async function setHubBillDone(id, done) {
+            const { error } = await _supabase.from('hub_bills').update({ done: !!done }).eq('id', id);
+            if (error) { alert('שגיאה בשמירה: ' + (error.message || '')); return; }
+            const b = _hubBills.find(x => x.id === id); if (b) b.done = !!done;
+            renderHubBills();
         }
         function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
         function switchSettingsTab(tab) {
