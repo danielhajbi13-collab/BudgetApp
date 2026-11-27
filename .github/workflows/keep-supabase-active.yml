@@ -31,10 +31,11 @@ jobs:
             table: month_data
             key_secret: SUPABASE_PUBLISHABLE_KEY
             site: https://danielhajbi13-collab.github.io/BudgetApp/
-          # MyTeam (eenegwvjswdokuapmvmk, table businesses) is paused on
-          # purpose: the free plan allows only 2 active projects per account
-          # (BudgetApp + Sderot). Re-add it here if it becomes active again.
-          - name: batei-knesset-sderot
+          # Supabase project "sderot-and-myteam": holds both the Sderot
+          # synagogues site and MyTeam (merged 2026-11-27, because the free
+          # plan allows only 2 active projects). The old MyTeam project
+          # eenegwvjswdokuapmvmk is paused on purpose; don't add it back.
+          - name: sderot-and-myteam
             ref: taaoypchtowbnwzftqhy
             table: synagogues
             key_secret: SDEROT_SUPABASE_KEY
