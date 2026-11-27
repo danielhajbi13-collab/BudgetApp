@@ -772,6 +772,40 @@
         .rec-save { margin-top: 10px; }
         .rec-done { font-weight: 600; color: var(--text-dark); }
         @media (max-width: 480px) { .mem-add { grid-template-columns: 1fr 1fr; } .mem-add .btn-add { grid-column: span 2; } }
+        /* ===== כרטיסי אשראי: שבב, זיכרון, התאמת סכומים ===== */
+        .card-chip { display: inline-flex; align-items: center; gap: 3px; background: var(--surface-2); color: var(--text-dark); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-family: inherit; cursor: pointer; line-height: 1.5; }
+        button.card-chip:hover { border-color: var(--primary); color: var(--primary); }
+        .card-chip-static { cursor: default; margin-top: 4px; }
+        .card-new { background: #fef3c7; color: #b45309; border-radius: 6px; padding: 1px 6px; font-size: 0.7rem; font-weight: 700; }
+        .cards-bar { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem 0.9rem; margin-bottom: 12px; }
+        .cards-bar-head { font-weight: 700; color: var(--text-dark); font-size: 0.9rem; margin-bottom: 6px; }
+        .cards-bar-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 0; }
+        .cards-bar-owner { flex: 1; min-width: 130px; max-width: 220px; font-size: 0.85rem; }
+        .cards-bar-meta { font-size: 0.78rem; color: var(--text-light); }
+        .bank-row-dup { background: #fffbeb; }
+        html[data-theme="dark"] .bank-row-dup { background: rgba(245,158,11,0.10); }
+        .recon-summary { border-radius: 12px; padding: 0.7rem 0.9rem; font-weight: 700; font-size: 0.92rem; margin-bottom: 8px; }
+        .recon-summary.ok, .recon-file.ok { background: rgba(16,185,129,0.10); border: 1px solid rgba(16,185,129,0.35); color: var(--text-dark); }
+        .recon-summary.bad, .recon-file.bad { background: rgba(245,158,11,0.10); border: 1px solid rgba(245,158,11,0.45); color: var(--text-dark); }
+        .recon-file { border-radius: 12px; padding: 0.65rem 0.85rem; margin-bottom: 8px; font-size: 0.85rem; }
+        .recon-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; overflow-wrap: anywhere; }
+        .recon-head span, .recon-src, .recon-note { color: var(--text-light); font-size: 0.78rem; }
+        .recon-checks { line-height: 1.6; }
+        .recon-note { margin-top: 4px; }
+        .recon-gap { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
+        .recon-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; }
+        .recon-line span { min-width: 0; overflow-wrap: anywhere; }
+        .recon-line small { display: block; color: var(--text-light); font-size: 0.74rem; }
+        .recon-btn { flex: none; background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; padding: 4px 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .card-mem-row { display: grid; grid-template-columns: auto 1fr 32px; gap: 8px; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--hairline); }
+        .card-mem-row small { display: block; font-size: 0.75rem; color: var(--text-light); }
+        .cardtx-filters { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 10px; }
+        .cardtx-filters .input-field { margin: 0; font-size: 0.88rem; padding: 0.5rem 0.7rem; }
+        .cardtx-group { border: 1px solid var(--border); border-radius: 12px; padding: 0.6rem 0.8rem; margin-bottom: 10px; background: var(--surface); }
+        .cardtx-ghead { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+        .cardtx-row { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 5px 0; border-top: 1px solid var(--hairline); font-size: 0.85rem; color: var(--text-dark); }
+        .cardtx-row small { display: block; color: var(--text-light); font-size: 0.74rem; }
+        .cat-clean { margin-top: 12px; background: var(--surface-2); border: 1px dashed var(--border); border-radius: 12px; padding: 0.8rem 0.9rem; font-size: 0.86rem; color: var(--text-dark); line-height: 1.55; }
     </style>
 </head>
 <body>
@@ -1775,7 +1809,7 @@
                             </select>
                         </div>
                         <div>
-                            <label style="font-size:0.82rem; font-weight:600; color:var(--text-dark); margin-bottom:4px; display:block;">שייך לכרטיס (אופציונלי):</label>
+                            <label style="font-size:0.82rem; font-weight:600; color:var(--text-dark); margin-bottom:4px; display:block;">חברת האשראי (אם לא זוהתה):</label>
                             <select id="bankCardSource" class="input-field" style="margin:0; font-size:0.85rem; padding:0.55rem 0.8rem;">
                                 <option value="">— ללא שיוך —</option>
                                 <option value="ויזה">ויזה</option>
@@ -1792,10 +1826,13 @@
                     <p style="color:var(--text-light); font-size:0.82rem; margin-top:8px; line-height:1.5;">💡 טיפ: העלה כמה חודשים בבת אחת (למשל 3 דפי אשראי) — המערכת תזהה הוצאות קבועות שחוזרות כל חודש ותציע לזכור אותן.</p>
                     <div id="bankImportStatus" style="margin-top:16px; font-weight:600; color:var(--primary); display:none;"></div>
                     <div id="bankImportError" style="margin-top:16px; color:var(--danger); font-weight:600; display:none;"></div>
+                    <div id="bankCatCleanup"></div>
                 </div>
 
                 <div id="bankStepReview" style="display:none;">
                     <div id="bankRecurringBox" style="display:none;"></div>
+                    <div id="bankReconBox"></div>
+                    <div id="bankCardsBar" class="cards-bar" style="display:none;"></div>
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
                         <p style="color:var(--text-light); font-size:0.9rem; margin:0;">נמצאו <strong id="bankTxCount" style="color:var(--text-dark);">0</strong> הוצאות (<strong id="bankTxTotal" style="color:#dc2626;">₪0</strong>)<span id="bankIncomeNote"></span>. סקור ולחץ אישור.</p>
                         <button class="btn-outline" style="font-size:0.85rem; padding:0.4rem 0.8rem;" onclick="resetBankImport()">↺ קובץ אחר</button>
@@ -1816,7 +1853,7 @@
             </div>
             <div class="modal-footer" id="bankImportFooter" style="display:none;">
                 <button class="btn-outline" onclick="closeBankImportModal()">ביטול</button>
-                <button class="btn-primary" style="margin-top:0; width:auto; background:linear-gradient(135deg, var(--success), #086b52);" onclick="applyBankImport()">✅ הוסף לתקציב</button>
+                <button class="btn-primary" style="margin-top:0; width:auto; background:linear-gradient(135deg, var(--success), #086b52);" id="bankApplyBtn" onclick="applyBankImport()">✅ הוסף לתקציב</button>
             </div>
         </div>
     </div>
@@ -2026,6 +2063,7 @@
             <div class="set-tabs" role="tablist">
                 <button class="set-tab active" data-tab="profile" onclick="switchSettingsTab('profile')">👤 פרופיל</button>
                 <button class="set-tab" data-tab="memory" onclick="switchSettingsTab('memory')">🧠 זיכרון</button>
+                <button class="set-tab" data-tab="cards" onclick="switchSettingsTab('cards')">💳 כרטיסים</button>
                 <button class="set-tab" data-tab="look" onclick="switchSettingsTab('look')">🎨 מראה</button>
                 <button class="set-tab" data-tab="data" onclick="switchSettingsTab('data')">🗂️ נתונים</button>
             </div>
@@ -2056,6 +2094,12 @@
                     <button class="btn-outline set-wide" onclick="applyRecurringToCurrentMonth()">➕ הוסף את כולן לחודש הנוכחי</button>
                     <button class="btn-outline set-wide" onclick="settingsGo(openBankImportModal)">📥 זהה הוצאות קבועות מדפי בנק</button>
                 </div>
+                <div class="set-pane" data-pane="cards" style="display:none;">
+                    <p class="set-lead">כרטיסי האשראי שהמערכת זיהתה בייבוא, ושל מי כל כרטיס. בייבוא הבא הכרטיס יסומן לבד עם השם הזה.</p>
+                    <div id="setCardsList"></div>
+                    <button class="btn-outline set-wide" onclick="settingsGo(function(){ openCardTxModal(''); })">📋 עסקאות לפי כרטיס / בעלים</button>
+                    <div id="setCatCleanup"></div>
+                </div>
                 <div class="set-pane" data-pane="look" style="display:none;">
                     <label class="set-switch"><input type="checkbox" id="setThemeToggle" onchange="settingsToggleTheme()"><span>🌙 מצב לילה</span></label>
                     <p class="set-lead">הבחירה נשמרת במכשיר הזה.</p>
@@ -2067,6 +2111,23 @@
                     <button class="btn-outline set-wide" onclick="settingsGo(openTrashModal)">🗑️ סל מיחזור</button>
                     <button class="btn-outline set-wide" id="setHubBillsBtn" style="display:none;" onclick="settingsGo(openHubBillsModal)">📬 חשבונות מהמייל</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== עסקאות לפי כרטיס / בעלים ====== -->
+    <div class="modal-overlay" id="cardTxModal">
+        <div class="modal-content set-modal">
+            <div class="modal-header"><h3>💳 עסקאות לפי כרטיס</h3><button class="btn-close-modal" onclick="closeCardTxModal()">✕</button></div>
+            <div class="modal-body">
+                <div class="cardtx-filters">
+                    <select id="cardTxFilter" class="input-field" onchange="renderCardTx()" aria-label="סינון לפי כרטיס או בעלים"></select>
+                    <select id="cardTxRange" class="input-field" onchange="renderCardTx()" aria-label="טווח חודשים">
+                        <option value="current">החודש הנוכחי</option>
+                        <option value="all">כל החודשים</option>
+                    </select>
+                </div>
+                <div id="cardTxBody"></div>
             </div>
         </div>
     </div>
@@ -4099,10 +4160,15 @@
             if (entry.type === 'income') {
                 monthData.income.push({ name: entry.name, amount: round1(entry.amount), source: entry.source || 'manual', date: entry.date });
             } else {
-                let row = monthData.variable.find(v => v.name === entry.category || v.name.includes(entry.category));
-                if (!row) { row = { name: entry.category, target: 0, actual: 0, logs: [] }; monthData.variable.push(row); }
+                // FIX: התאמה לקטגוריה קיימת (קבועות או משתנות) אחרי הסרת סיומת חברת אשראי
+                const allRows = monthData.fixed.concat(monthData.variable);
+                const catName = canonicalCategory(entry.category, allRows.map(v => v.name));
+                let row = allRows.find(v => v.name === catName);
+                if (!row) { row = { name: catName, target: 0, actual: 0, logs: [] }; monthData.variable.push(row); }
                 row.actual = round1((row.actual || 0) + entry.amount);
-                row.logs = row.logs || []; row.logs.push({ amount: round1(entry.amount), store: entry.store || '', date: entry.date, source: entry.source || 'manual' });
+                const log = { amount: round1(entry.amount), store: entry.store || '', date: entry.date, source: entry.source || 'manual' };
+                if (entry.card) log.card = entry.card; if (entry.issuer) log.issuer = entry.issuer; if (entry.owner) log.owner = entry.owner;
+                row.logs = row.logs || []; row.logs.push(log);
             }
             await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: targetMonthStr, data: monthData });
             if (cached) cached.data = monthData; else allUserMonthsData.push({ month_str: targetMonthStr, data: monthData });
@@ -4238,7 +4304,7 @@
                     const fullStore = escapeHtml(cleanStoreDisplay(l.store));
                     const dateTxt = (function(){ try { return new Date(l.date).toLocaleDateString('he-IL'); } catch(_e){ return escapeHtml(String(l.date||'')); } })();
                     return `<div class="log-item" style="flex-direction:column; align-items:stretch; gap:7px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px;">`
-                        + `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">${sourceBadge(src)}<strong style="font-size:1rem; white-space:nowrap;">₪${fmtNum(l.amount)}</strong></div>`
+                        + `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;"><span style="display:flex; flex-wrap:wrap; gap:5px; align-items:center; min-width:0;">${sourceBadge(src)}${cardChip(l)}</span><strong style="font-size:1rem; white-space:nowrap;">₪${fmtNum(l.amount)}</strong></div>`
                         + `<div style="font-size:0.9rem; color:var(--text-dark); font-weight:600; white-space:normal; overflow-wrap:anywhere; word-break:break-word; line-height:1.45;">${fullStore}</div>`
                         + `<div style="font-size:0.8rem; color:var(--text-light);">📅 ${dateTxt}</div>`
                         + `<div style="display:flex; gap:6px; align-items:center;">`
@@ -4805,7 +4871,7 @@
             const hit = localCategorize._flat.find(o => n.includes(o.k)); return hit ? hit.cat : null;
         }
 
-        function openBankImportModal() { resetBankImport(); document.getElementById('bankImportModal').style.display = 'flex'; }
+        function openBankImportModal() { resetBankImport(); renderCatCleanup('bankCatCleanup'); document.getElementById('bankImportModal').style.display = 'flex'; }
         function closeBankImportModal() { document.getElementById('bankImportModal').style.display = 'none'; }
         function resetBankImport() { parsedBankTransactions = []; window._bankImportMonthCache = {}; document.getElementById('bankFileInput').value = ''; document.getElementById('bankStepUpload').style.display = 'block'; document.getElementById('bankStepReview').style.display = 'none'; document.getElementById('bankImportFooter').style.display = 'none'; document.getElementById('bankImportStatus').style.display = 'none'; document.getElementById('bankImportError').style.display = 'none'; }
         function bankStatus(msg) { const el = document.getElementById('bankImportStatus'); el.style.display = 'block'; el.innerText = msg; }
@@ -4863,9 +4929,11 @@
             const parseN   = s => parseFloat(String(s).replace(/,/g, ''));
 
             const rawTxs = [];
+            const pdfSkipped = [];
+            let headLines = [];
             for (const line of lines) {
                 const dm = DATE_RE.exec(line);
-                if (!dm) continue;
+                if (!dm) { if (!rawTxs.length && headLines.length < 25) headLines.push(line); continue; }
                 const [dd, mm, yyyy] = dm[1].split('/');
                 const isoDate = yyyy + '-' + mm + '-' + dd;
 
@@ -4877,7 +4945,10 @@
                     const n = parseN(m[1]);
                     if (!isNaN(n) && n > 0 && n < 9999999) nums.push(n);
                 }
-                if (nums.length < 2) continue; // חייב להיות לפחות סכום + יתרה
+                if (nums.length < 2) { // חייב להיות לפחות סכום + יתרה
+                    if (nums.length === 1 && !/(סה["״']?כ|סך הכל|יתרה)/.test(line)) pdfSkipped.push({ reason: 'unparsed', why: 'שורה עם תאריך בלי סכום ויתרה ברורים', store: line.replace(DATE_RE, '').trim().slice(0, 60), amount: nums[0], signed: -nums[0], date: isoDate });
+                    continue;
+                }
 
                 // יתרה = המספר האחרון (הכי שמאלי ב-RTL = הכי גדול בד"כ)
                 const balance = nums[nums.length - 1];
@@ -4928,6 +4999,8 @@
                     _typeConfidence: 'guess'
                 });
             }
+            txs._recon = { mode: 'none', total: null, totalDeb: null, totalCred: null, skipped: pdfSkipped };
+            txs._fileCtx = scanCardContext(headLines.join('\n'));
             return txs;
         }
 
@@ -4954,8 +5027,17 @@
                 bankStatus('קורא את הקובץ' + label + '...');
                 try {
                     const res = await parseOneBankFile(file);
-                    res.txs.forEach(t => { t._file = file.name; });
-                    window._pendingBankFiles.push({ name: file.name || 'קובץ בנק', fingerprint: fp });
+                    const ctx = res.ctx || {};
+                    const fileIssuer = ctx.issuer || _importCardSource || '';
+                    res.txs.forEach(t => {
+                        t._file = file.name;
+                        if (!t.card && ctx.card) t.card = ctx.card;
+                        if (!t.holder && ctx.holder) t.holder = ctx.holder;
+                        if (!t.issuer && fileIssuer) t.issuer = fileIssuer;
+                        // הבעלים: מה שהמשתמש שמר בזיכרון הכרטיסים קודם, ואחר כך השם שבקובץ
+                        t.owner = cardOwner(t.card, t.holder || '');
+                    });
+                    window._pendingBankFiles.push({ name: file.name || 'קובץ בנק', fingerprint: fp, recon: res.recon || { mode: 'none', skipped: [] } });
                     all = all.concat(res.txs);
                     if (!res.categorized) needsCategorize = needsCategorize.concat(res.txs);
                 } catch (err) { console.error(err); failed.push(escapeHtml(file.name) + ': ' + escapeHtml(err.message || 'שגיאה בקריאה')); }
@@ -4964,11 +5046,12 @@
             window._pendingBankFingerprint = window._pendingBankFiles.length === 1 ? window._pendingBankFiles[0].fingerprint : null;
             window._pendingBankFileName = window._pendingBankFiles.length === 1 ? window._pendingBankFiles[0].name : null;
             if (dupWarn && dupNotes.length) { dupWarn.innerHTML = dupNotes.join('<br>') + '<br>ייבוא שוב עלול ליצור רשומות כפולות.'; dupWarn.style.display = 'block'; }
-            if (!all.length) { bankError(failed.length ? failed.join(' | ') : 'לא זוהו תנועות בקבצים.'); return; }
+            if (!all.length) { bankError((failed.length ? failed.join(' | ') : 'לא זוהו תנועות בקבצים.') + ' — שום דבר לא יובא.'); return; }
             if (needsCategorize.length) { bankStatus(`זוהו ${all.length} תנועות. מנתח ומסווג...`); await categorizeTransactions(needsCategorize); }
             await markDuplicates(all);
             all.sort((x, y) => String(x.date).localeCompare(String(y.date)));
             parsedBankTransactions = all;
+            window._bankFailedFiles = failed.slice();
             if (failed.length) bankError('חלק מהקבצים לא נקראו: ' + failed.join(' | '));
             renderBankReview();
             renderRecurringSuggestions(all);
@@ -4981,7 +5064,7 @@
                 bankStatus("מנתח קובץ PDF בנקאי...");
                 const pdfTxs = await parsePDFBankStatement(file);
                 if (!pdfTxs || pdfTxs.length === 0) throw new Error("לא נמצאו תנועות ב-PDF. ודא שהקובץ הוא דף חשבון טקסטואלי (לא סרוק).");
-                return { txs: pdfTxs, categorized: false };
+                return { txs: pdfTxs, categorized: false, recon: pdfTxs._recon, ctx: pdfTxs._fileCtx };
             }
             let allRows = [];
             if (file.name.toLowerCase().endsWith('.csv')) {
@@ -5026,7 +5109,7 @@
             if (budgetTxs.length > 0) {
                 // קובץ תקציב שלנו — לא צריך סיווג AI
                 budgetTxs.forEach(t => { t.include = true; t.duplicate = false; });
-                return { txs: budgetTxs, categorized: true };
+                return { txs: budgetTxs, categorized: true, recon: { mode: 'none', total: null, totalDeb: null, totalCred: null, skipped: [] }, ctx: { card: '', holder: '', issuer: '' } };
             }
 
             const txs = extractTransactions(allRows);
@@ -5050,7 +5133,7 @@
                 }
             }
 
-            return { txs: txs, categorized: false };
+            return { txs: txs, categorized: false, recon: txs._recon, ctx: txs._fileCtx };
         }
 
         // ======================================================
@@ -5156,7 +5239,11 @@
                 // FIX: קבצי אשראי עם עמודה אחת "סכום חיוב" / "חובה" (בלי עמודת זכות) — העמודה זוהתה כעמודת
                 // חובה של דף בנק, ואז לא נשארה עמודת סכום והקובץ כולו נדחה ("לא זוהו תנועות").
                 let aiFromDebit = false;
-                if (ai === -1 && cri === -1 && dbi > -1) { ai = dbi; aiFromDebit = true; }
+                // (dbi !== di: שורת פרטים מעל הטבלה כמו "מועד חיוב: 10/12" היא לא עמודת תאריך וגם עמודת סכום)
+                if (ai === -1 && cri === -1 && dbi > -1 && dbi !== di) { ai = dbi; aiFromDebit = true; }
+                // FIX: בקבצי כאל/מקס יש גם "סכום עסקה (מקורי)" וגם "סכום חיוב". מה שיורד מהחשבון (ומה שבשורת הסה"כ)
+                // הוא סכום החיוב — בעסקת תשלומים הוא רק חלק מהסכום המקורי. לכן עמודת "סכום חיוב" קודמת.
+                else if (cri === -1 && dbi > -1 && dbi !== di && String(cells[dbi]).includes('סכום')) { ai = dbi; aiFromDebit = true; }
                 const ni = matchIdx(cells, descKw, [di, ai, dbi, cri]);
 
                 const haveDual = dbi > -1 && cri > -1;
@@ -5174,18 +5261,73 @@
                 if (s === '' || s === '-' || s === '.') return NaN;
                 return parseFloat(s);
             };
-            const isSummaryRow = descStr => ["סה\"כ","סהכ","סך הכל","סך הכול","יתרת פתיחה","יתרת סגירה","יתרה לתאריך","total","balance"].some(k => descStr.includes(k));
+            // שורת סיכום / יתרה. FIX: בעבר כל שורה שהתיאור שלה הכיל "total" נזרקה בשקט — גם עסקה
+            // אמיתית כמו "TOTAL ENERGIES". עכשיו שורה עם תאריך תקין נחשבת סיכום רק אם התיאור מתחיל במילת הסיכום.
+            const SUM_RE = /(סה["״']?\s?כ|סהכ|סך\s?ה?כול|סך\s?הכל|\btotal\b)/i;
+            const BAL_RE = /(יתרת פתיחה|יתרת סגירה|יתרה לתאריך|\bbalance\b)/i;
+            // "total" / "balance" באנגלית רק כמילה לבד (או עם נקודתיים/מספר אחריה) — לא "TOTAL ENERGIES"
+            const SUM_START_RE = /^\s*(סה["״']?\s?כ|סהכ|סך\s?ה?כול|סך\s?הכל|יתרת|יתרה לתאריך|(total|balance)\s*(?=$|[:\-–]|\d|₪))/i;
+
+            // ===== עמודת כרטיס / בעל כרטיס בכל שורה (מקס: "4 ספרות אחרונות של כרטיס האשראי") =====
+            let cardCol = -1, holderCol = -1;
+            if (headerRowIdx > -1) {
+                const hdr = (rows[headerRowIdx] || []).map(c => String(c == null ? '' : c).trim());
+                const used = [dCol, nCol, aCol, debCol, credCol];
+                cardCol = hdr.findIndex((c, idx) => used.indexOf(idx) === -1 && /(4 ספרות|ספרות אחרונות|מספר כרטיס|מס' כרטיס|^כרטיס$|card)/i.test(c));
+                holderCol = hdr.findIndex((c, idx) => used.indexOf(idx) === -1 && idx !== cardCol && /(בעל הכרטיס|מחזיק הכרטיס|שם בעל|שם המשתמש|card ?holder)/i.test(c));
+            }
+            // הקשר כרטיס ברמת הקובץ (שורות הכותרת שמעל הטבלה) — כאל / ישראכרט / מקס
+            const headText = rows.slice(0, headerRowIdx > -1 ? headerRowIdx : Math.min(rows.length, 8)).map(r => (r || []).map(c => String(c == null ? '' : c).trim()).filter(Boolean).join(' | ')).join('\n');
+            const fileCtx = scanCardContext(headText);
+            let curCard = fileCtx.card, curHolder = fileCtx.holder;
 
             const txs = [];
+            const skipped = [];            // שורות שלא נכנסו כתנועה — עם סיבה (להצגה בהתאמת הסכומים)
+            const totals = { single: [], deb: [], cred: [] }; // שורות "סה"כ" שבקובץ עצמו
+            const rowText = r => (r || []).map(c => String(c == null ? '' : c).trim()).filter(Boolean).join(' | ');
+            const pushTx = (tx, r) => {
+                if (cardCol > -1) { const m = String(r[cardCol] == null ? '' : r[cardCol]).match(/(\d{4})(?!\d)/); if (m) tx.card = m[1]; }
+                if (!tx.card && curCard) tx.card = curCard;
+                if (holderCol > -1 && String(r[holderCol] || '').trim()) tx.holder = String(r[holderCol]).trim();
+                else if (curHolder) tx.holder = curHolder;
+                txs.push(tx);
+            };
             if (headerRowIdx > -1 && (dualMode || aCol > -1)) {
                 for (let i = headerRowIdx + 1; i < rows.length; i++) {
                     const r = rows[i] || [];
+                    const text = rowText(r);
+                    if (!text) continue;
                     const dateRaw = dCol > -1 ? r[dCol] : null;
                     const desc = nCol > -1 ? r[nCol] : "";
-                    if (!dateRaw) continue;
-                    const descStr = String(desc);
-                    if (isSummaryRow(descStr)) continue;
-                    const iso = toIsoDate(dateRaw); if (!iso) continue;
+                    const descStr = String(desc == null ? '' : desc);
+                    const iso = dateRaw ? toIsoDate(dateRaw) : null;
+                    const amtCell = dualMode ? null : r[aCol];
+                    const amtVal = dualMode ? NaN : parseNum(amtCell);
+
+                    // שורת סיכום / יתרה
+                    if ((SUM_RE.test(text) || BAL_RE.test(text)) && (!iso || SUM_START_RE.test(descStr))) {
+                        if (SUM_RE.test(text) && !BAL_RE.test(text)) {
+                            if (dualMode) {
+                                const d = parseNum(r[debCol]), c = parseNum(r[credCol]);
+                                if (!isNaN(d) && d !== 0) totals.deb.push(Math.abs(d));
+                                if (!isNaN(c) && c !== 0) totals.cred.push(Math.abs(c));
+                            } else {
+                                let v = amtVal;
+                                if (isNaN(v)) { const nums = text.match(/-?\d[\d,]*\.?\d*/g) || []; const last = nums.map(x => parseFloat(x.replace(/,/g, ''))).filter(x => !isNaN(x) && Math.abs(x) >= 1).pop(); if (last !== undefined) v = last; }
+                                if (!isNaN(v) && v !== 0) totals.single.push(v);
+                            }
+                        }
+                        continue;
+                    }
+                    if (!iso) {
+                        // שורה בלי תאריך: אולי כותרת מקטע של כרטיס אחר (ישראכרט: "מסטרקארד - 1234"),
+                        // ואולי תנועה שהתאריך שלה לא פוענח — אז היא נרשמת כ"לא פוענחה"
+                        const ctx = scanCardContext(text);
+                        if (ctx.card) { curCard = ctx.card; if (ctx.holder) curHolder = ctx.holder; continue; }
+                        const someAmt = dualMode ? (parseNum(r[debCol]) || parseNum(r[credCol])) : amtVal;
+                        if (dateRaw && !isNaN(someAmt) && someAmt !== 0) skipped.push({ reason: 'unparsed', why: 'התאריך לא זוהה (' + String(dateRaw).slice(0, 20) + ')', store: descStr.trim() || text.slice(0, 60), amount: Math.abs(someAmt), signed: dualMode ? (isNaN(parseNum(r[debCol])) ? Math.abs(someAmt) : -Math.abs(someAmt)) : someAmt, date: '' });
+                        continue;
+                    }
 
                     let amount, type;
                     if (dualMode) {
@@ -5194,12 +5336,17 @@
                         const credV = isNaN(cred) ? 0 : Math.abs(cred);
                         if (credV > 0) { amount = credV; type = 'income'; }
                         else if (debV > 0) { amount = debV; type = 'expense'; }
-                        else continue;
+                        else {
+                            const rawD = String(r[debCol] == null ? '' : r[debCol]).trim(), rawC = String(r[credCol] == null ? '' : r[credCol]).trim();
+                            if ((rawD && rawD !== '0' && isNaN(deb)) || (rawC && rawC !== '0' && isNaN(cred))) skipped.push({ reason: 'unparsed', why: 'הסכום לא זוהה', store: descStr.trim(), amount: null, date: iso });
+                            continue;
+                        }
                     } else {
                         const amtRaw = r[aCol];
                         if (amtRaw === undefined || amtRaw === null || String(amtRaw).trim() === '') continue;
                         const val = parseNum(amtRaw);
-                        if (isNaN(val) || val === 0) continue;
+                        if (isNaN(val)) { skipped.push({ reason: 'unparsed', why: 'הסכום לא זוהה ("' + String(amtRaw).slice(0, 20) + '")', store: descStr.trim(), amount: null, date: iso }); continue; }
+                        if (val === 0) continue;
                         const wasNegative = val < 0; // סימון לזיהוי אוטומטי בשלב מאוחר יותר
                         type = wasNegative ? 'expense' : 'income';
                         const headerCell = String(rows[headerRowIdx][aCol] || "").toLowerCase();
@@ -5217,7 +5364,7 @@
                         if (absAmt2 === 0) continue;
                         // FIX: הסימן היה מפורש בתא (שלילי/חיובי) או נקבע ע"פ כותרת עמודה מפורשת - סיווג אמין,
                         // לכן ה-AI לא ידרוס אותו (ר' categorizeTransactions).
-                        txs.push({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt2, type: type, category: null, include: true, _wasNegative: wasNegative, _typeConfidence: 'high' });
+                        pushTx({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt2, type: type, category: null, include: true, _wasNegative: wasNegative, _typeConfidence: 'high', _fileSigned: val }, r);
                         continue;
                     }
 
@@ -5225,10 +5372,122 @@
                     const absAmt = round1(amount);
                     if (absAmt === 0) continue;
                     // FIX: זו שורה שהגיעה מ-dualMode (עמודות חובה/זכות נפרדות) - קריאה ישירה ואמינה
-                    txs.push({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt, type: type, category: null, include: true, _wasNegative: false, _typeConfidence: 'high' });
+                    pushTx({ date: iso, store: String(desc || "תנועה").trim() || "תנועה", amount: absAmt, type: type, category: null, include: true, _wasNegative: false, _typeConfidence: 'high', _fileSigned: type === 'income' ? amount : -amount }, r);
                 }
             }
+            // סכום הביקורת של הקובץ עצמו: אם יש כמה שורות "סה"כ" (למשל סיכום לכל כרטיס + סיכום כולל) — הגדולה היא הכוללת
+            const pickTotal = arr => arr.length ? arr.reduce((a, b) => Math.abs(b) > Math.abs(a) ? b : a) : null;
+            txs._recon = {
+                mode: dualMode ? 'dual' : 'single',
+                total: dualMode ? null : pickTotal(totals.single),
+                totalDeb: dualMode ? pickTotal(totals.deb) : null,
+                totalCred: dualMode ? pickTotal(totals.cred) : null,
+                skipped: skipped
+            };
+            txs._fileCtx = fileCtx;
             return txs;
+        }
+
+        // ===================== כרטיסים: זיהוי, זיכרון ותצוגה =====================
+        // חברות האשראי — לזיהוי מתוך כותרת הקובץ, ולהסרה משמות קטגוריות ("אוכל בחוץ cal" -> "אוכל בחוץ")
+        const ISSUERS = [
+            ['ויזה כאל', 'כאל'], ['visa cal', 'כאל'], ['כאל', 'כאל'], ['cal', 'כאל'],
+            ['לאומי קארד', 'מקס'], ['leumi card', 'מקס'], ['מקס', 'מקס'], ['max', 'מקס'],
+            ['ישראכרט', 'ישראכרט'], ['ישראכארט', 'ישראכרט'], ['isracard', 'ישראכרט'],
+            ['אמריקן אקספרס', 'אמקס'], ['american express', 'אמקס'], ['אמקס', 'אמקס'], ['amex', 'אמקס'],
+            ['דיינרס', 'דיינרס'], ['diners', 'דיינרס'],
+            ['מאסטרקארד', 'מאסטרקארד'], ['מאסטרקרד', 'מאסטרקארד'], ['מסטרקארד', 'מאסטרקארד'], ['mastercard', 'מאסטרקארד'],
+            ['ויזה', 'ויזה'], ['visa', 'ויזה']
+        ];
+        const _escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // גבולות מילה שעובדים גם בעברית (ב-JS \b לא מכיר אותיות עבריות)
+        const _wordRe = (w, flags) => new RegExp('(^|[^0-9A-Za-z֐-׿])' + _escRe(w) + '(?=$|[^0-9A-Za-z֐-׿])', flags || 'i');
+        function detectIssuer(text) {
+            const s = String(text || '');
+            for (const [w, label] of ISSUERS) { if (_wordRe(w).test(s)) return label; }
+            return '';
+        }
+        // מוצא 4 ספרות אחרונות של כרטיס ושם בעל הכרטיס בטקסט של כותרת / מקטע
+        function scanCardContext(text) {
+            const s = String(text || '');
+            let card = '';
+            const issuerAlt = ISSUERS.map(x => _escRe(x[0])).join('|');
+            const pats = [
+                /(?:המסתיים|מסתיים|הסתיים|ספרות אחרונות|ending|מס['׳]? כרטיס|מספר כרטיס)[^0-9\n|]{0,20}(\d{4})(?!\d)/i,
+                /(?:[x\*•·]{2,}[\s\-]*)(\d{4})(?!\d)/i,
+                new RegExp('(?:כרטיס|card|' + issuerAlt + ')[^0-9\\n|]{0,25}?[\\s\\-–:]+(\\d{4})(?![\\d/.])', 'i')
+            ];
+            for (const re of pats) { const m = s.match(re); if (m && !/[\/.]$/.test(s.slice(0, m.index + m[0].length - 4))) { card = m[1]; break; } }
+            let holder = '';
+            const hm = s.match(/(?:שם בעל הכרטיס|בעל הכרטיס|מחזיק הכרטיס|שם בעל החשבון|בעל החשבון|שם הלקוח|על שם|לכבוד|card ?holder)\s*[:\-–]?\s*([A-Za-zא-ת][A-Za-zא-ת'"״׳.\- ]{1,30})/i);
+            if (hm) holder = hm[1].replace(/\s{2,}.*$/, '').replace(/\s*(כרטיס|מספר|ת\.?ז|תאריך).*$/, '').trim();
+            return { card: card, holder: holder, issuer: detectIssuer(s) };
+        }
+
+        // זיכרון כרטיסים: מספר (4 ספרות) -> בעלים. נשמר בשורת __settings__ של המשתמש (כמו זיכרון ההוצאות הקבועות)
+        function _cardsMemKey() { return (tempUserSession && tempUserSession._bizMode) ? 'cards_biz' : 'cards'; }
+        function getCardMemory() { const m = userSettings && userSettings[_cardsMemKey()]; return (m && typeof m === 'object' && !Array.isArray(m)) ? m : {}; }
+        function setCardMemory(map) { userSettings[_cardsMemKey()] = map; return saveUserSettings(); }
+        function cardOwner(card, fallback) { const m = card && getCardMemory()[card]; return (m && m.owner) || fallback || ''; }
+        // ממזג לזיכרון כרטיסים שזוהו בייבוא. שם שהמשתמש ערך לא נדרס בשם מהקובץ.
+        function rememberCards(list) {
+            const mem = Object.assign({}, getCardMemory()); let changed = false;
+            list.forEach(c => {
+                if (!c || !/^\d{4}$/.test(c.card || '')) return;
+                const cur = mem[c.card];
+                if (!cur) { mem[c.card] = { owner: c.owner || '', issuer: c.issuer || '', seen: new Date().toISOString().slice(0, 10) }; changed = true; }
+                else {
+                    const next = Object.assign({}, cur);
+                    if (!next.owner && c.owner) next.owner = c.owner;
+                    if (!next.issuer && c.issuer) next.issuer = c.issuer;
+                    next.seen = new Date().toISOString().slice(0, 10);
+                    if (JSON.stringify(next) !== JSON.stringify(cur)) { mem[c.card] = next; changed = true; }
+                }
+            });
+            return changed ? setCardMemory(mem) : Promise.resolve();
+        }
+        function cardLabel(card, issuer, owner) {
+            const parts = [];
+            if (card) parts.push(card); else if (issuer) parts.push(issuer);
+            if (owner) parts.push(owner);
+            return parts.join(' · ');
+        }
+        function cardChip(l) {
+            if (!l || (!l.card && !l.issuer)) return '';
+            const owner = cardOwner(l.card, l.owner);
+            const title = 'כרטיס' + (l.card ? ' המסתיים ב-' + l.card : '') + (l.issuer ? ' (' + l.issuer + ')' : '') + (owner ? ' · ' + owner : '');
+            return `<button type="button" class="card-chip" title="${escapeHtml(title)} — לחץ לכל העסקאות בכרטיס" onclick="openCardTxModal('${escapeHtml(l.card || '')}')">💳 ${escapeHtml(cardLabel(l.card, l.issuer, owner))}</button>`;
+        }
+
+        // ===== קטגוריות: בלי כפילויות עם סיומת של חברת אשראי =====
+        // "אוכל בחוץ cal" / "כאל — אוכל בחוץ" / "כרטיס אשראי (ויזה)" -> השם הנקי. הכרטיס שייך לשדה הכרטיס.
+        function stripIssuerFromCategory(name) {
+            let s = String(name || '').trim(), prev;
+            const issuerAlt = ISSUERS.map(x => _escRe(x[0])).join('|');
+            // חייב מפריד (רווח, מקף, סוגריים) לפני/אחרי שם החברה — כדי ש-"local" לא יאבד את "cal"
+            const edgeEnd = new RegExp('[\\s\\-–—_/|,(]+\\(?\\s*(?:' + issuerAlt + ')\\s*\\)?\\s*$', 'i');
+            const edgeStart = new RegExp('^\\s*\\(?\\s*(?:' + issuerAlt + ')\\s*\\)?[\\s\\-–—_/|:,]+', 'i');
+            do {
+                prev = s;
+                s = s.replace(edgeEnd, '').trim();
+                s = s.replace(edgeStart, '').trim();
+                if (/כרטיס|card/i.test(s)) s = s.replace(/[\s\-–—]+\d{4}$/, '').trim();   // "כרטיס אשראי 1234" (לא "חיסכון 2026")
+            } while (s !== prev && s);
+            return s || String(name || '').trim();
+        }
+        function normCatKey(name) { return stripIssuerFromCategory(name).toLowerCase().replace(/["'״׳.,()\-–—_]/g, ' ').replace(/\s+/g, ' ').trim(); }
+        // מחזיר את שם הקטגוריה הקיים שמתאים (אחרי הסרת סיומת חברת האשראי), או את השם הנקי
+        function canonicalCategory(cat, existingNames) {
+            const base = stripIssuerFromCategory(cat);
+            const key = normCatKey(base);
+            const names = (existingNames || []).filter(Boolean);
+            const exact = names.find(n => n === base);
+            if (exact) return exact;
+            const same = names.filter(n => normCatKey(n) === key);
+            const clean = same.find(n => stripIssuerFromCategory(n) === n.trim());
+            if (clean) return clean;
+            if (same.length) return same[0]; // רק גרסה עם סיומת קיימת — לא יוצרים עוד אחת (הניקוי מאחד בהמשך)
+            return base;
         }
 
         // זיהוי כרטיס אשראי ספציפי -> קטגוריה נפרדת לכל כרטיס (לפי 4 ספרות או שם הכרטיס)
@@ -5268,8 +5527,17 @@
 
             const finalize = () => {
                 const expenses = txs.filter(t => t.type === 'expense');
-                expenses.forEach(t => { if (t.category === "כרטיס אשראי") t.category = creditCardCategory(t.store); });
+                // FIX: הכרטיס / חברת האשראי נשמרים בשדה הכרטיס של התנועה ולא בשם הקטגוריה
+                // (בעבר נוצרו קטגוריות כמו "כאל — אוכל בחוץ" / "כרטיס אשראי 1234" לצד הקטגוריה הקיימת).
+                expenses.forEach(t => {
+                    if (t.category === "כרטיס אשראי" && !t.card) {
+                        const m = String(t.store || '').match(/(\d{4})(?!\d)/g);
+                        if (m) t.card = m[m.length - 1]; // חיוב חודשי של כרטיס בדף הבנק — לאיזה כרטיס שולם
+                    }
+                });
                 applyCardSourcePrefix(expenses);
+                const existing = getExpenseRowNames();
+                txs.forEach(t => { if (t.category && t.type !== 'income') t.category = canonicalCategory(t.category, existing.concat(ALL_CATEGORIES)); });
             };
 
             if (!hasAiKey()) { finalize(); return; }
@@ -5302,17 +5570,12 @@
             finalize();
         }
 
-        // הוספת קידומת שם כרטיס לכל קטגוריה כאשר המשתמש בחר "שייך לכרטיס"
+        // FIX: "שייך לכרטיס" כבר לא מוסיף קידומת לשם הקטגוריה (זה מה שיצר "כאל — אוכל בחוץ" ליד "אוכל בחוץ").
+        // חברת האשראי נשמרת בשדה issuer של כל תנועה ומוצגת בשבב הכרטיס.
         function applyCardSourcePrefix(expenses) {
             const src = _importCardSource;
             if (!src) return;
-            expenses.forEach(t => {
-                // לא מוסיפים קידומת אם זה כבר כרטיס מזוהה (למנוע כפילות כמו "ויזה - כרטיס אשראי (ויזה)")
-                const cat = t.category || '';
-                if (cat.startsWith(src)) return;
-                if (cat.includes('כרטיס אשראי') && cat.includes(src)) return;
-                t.category = src + ' — ' + cat;
-            });
+            expenses.forEach(t => { if (!t.issuer) t.issuer = src; });
         }
 
         const ALL_CATEGORIES = ["כרטיס אשראי","משיכת מזומן","שיקים","עמלות בנק","חשבונות ותשתיות","ביטוח","חיסכון והשקעות","הלוואות ומשכנתא","בריאות","קניות סופר","דלק ונסיעות","אוכל בחוץ","פנאי ובילוי","טיפוח ופארם","ביגוד והנעלה","קניות כלליות"];
@@ -5341,9 +5604,165 @@
                 const list = (isInc ? INCOME_CATEGORIES : ALL_CATEGORIES).slice();
                 if (t.category && list.indexOf(t.category) === -1) list.unshift(t.category); // קטגוריה דינמית (למשל "כרטיס אשראי 1234")
                 const catCell = `<select class="table-input" style="min-width:140px; font-size:0.85rem;" onchange="parsedBankTransactions[${i}].category=this.value">${list.map(c => `<option value="${escapeHtml(c)}" ${c === t.category ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}</select>`;
-                const rowBg = t.duplicate ? ' style="background:#fffbeb;"' : '';
-                return `<tr${rowBg}><td style="text-align:center;"><input type="checkbox" class="checkbox-done" ${t.include ? 'checked' : ''} onchange="parsedBankTransactions[${i}].include=this.checked; updateBankTotal();"></td><td style="white-space:nowrap; font-size:0.85rem;">${new Date(t.date).toLocaleDateString('he-IL')}</td><td style="font-size:0.88rem;">${typeBadge}${dupBadge}<br>${escapeHtml(t.store)}</td><td style="font-weight:700; white-space:nowrap; color:${amtColor};">${amtSign}₪${fmtNum(t.amount)}</td><td>${catCell}</td></tr>`;
+                const rowBg = t.duplicate ? ' class="bank-row-dup"' : '';
+                const cTag = (t.card || t.issuer) ? `<span class="card-chip card-chip-static">💳 ${escapeHtml(cardLabel(t.card, t.issuer, cardOwner(t.card, t.holder)))}</span>` : '';
+                return `<tr${rowBg}><td style="text-align:center;"><input type="checkbox" class="checkbox-done" ${t.include ? 'checked' : ''} onchange="parsedBankTransactions[${i}].include=this.checked; updateBankTotal();"></td><td style="white-space:nowrap; font-size:0.85rem;">${new Date(t.date).toLocaleDateString('he-IL')}</td><td style="font-size:0.88rem;">${typeBadge}${dupBadge}<br>${escapeHtml(t.store)}${cTag ? '<br>' + cTag : ''}</td><td style="font-weight:700; white-space:nowrap; color:${amtColor};">${amtSign}₪${fmtNum(t.amount)}</td><td>${catCell}</td></tr>`;
             }).join('');
+            renderImportCardsBar();
+            renderBankRecon();
+        }
+
+        // ===== כרטיסים שזוהו בייבוא הנוכחי — אפשר לתת להם שם בעלים כבר כאן =====
+        function renderImportCardsBar() {
+            const box = document.getElementById('bankCardsBar'); if (!box) return;
+            const mem = getCardMemory(); const seen = {};
+            parsedBankTransactions.forEach(t => {
+                if (!t.card || !/^\d{4}$/.test(t.card)) return;
+                const c = seen[t.card] || (seen[t.card] = { card: t.card, issuer: t.issuer || '', holder: t.holder || '', count: 0, sum: 0 });
+                c.count++; if (t.type !== 'income') c.sum += t.amount || 0;
+            });
+            const cards = Object.values(seen);
+            if (!cards.length) { box.innerHTML = ''; box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            box.innerHTML = `<div class="cards-bar-head">💳 כרטיסים בקובץ</div>` + cards.map(c => {
+                const known = !!mem[c.card];
+                return `<div class="cards-bar-row"><span class="card-chip card-chip-static">💳 ${escapeHtml(c.card)}${c.issuer ? ' · ' + escapeHtml(c.issuer) : ''}</span>${known ? '' : '<span class="card-new">חדש</span>'}<input type="text" class="table-input cards-bar-owner" value="${escapeHtml(cardOwner(c.card, c.holder))}" placeholder="של מי הכרטיס?" onchange="setImportCardOwner('${c.card}', this.value)" aria-label="בעל הכרטיס ${escapeHtml(c.card)}"><span class="cards-bar-meta">${c.count} תנועות · ₪${fmtNum(Math.round(c.sum))}</span></div>`;
+            }).join('');
+        }
+        async function setImportCardOwner(card, owner) {
+            owner = String(owner || '').trim();
+            const mem = Object.assign({}, getCardMemory());
+            const t0 = parsedBankTransactions.find(t => t.card === card) || {};
+            mem[card] = Object.assign({ issuer: t0.issuer || '', seen: new Date().toISOString().slice(0, 10) }, mem[card] || {}, { owner: owner });
+            parsedBankTransactions.forEach(t => { if (t.card === card) t.owner = owner; });
+            await setCardMemory(mem);
+            renderBankReview();
+        }
+
+        // ===================== התאמת סכומים: מה שבקובץ מול מה שייובא =====================
+        // הייבוא לא "הושלם" עד שהסכום (ומספר השורות) שייובאו שווים לסה"כ שבקובץ עצמו — או, אם אין בקובץ
+        // שורת סה"כ, לסכום של כל השורות שפוענחו. כל פער מוצג עם השורות שגרמו לו ועם אפשרות לתקן.
+        const _close = (a, b) => Math.abs(a - b) < 0.5;
+        function _txSigned(t) { return (typeof t._fileSigned === 'number') ? t._fileSigned : (t.type === 'income' ? t.amount : -t.amount); }
+        function computeFileRecon(f) {
+            const r = f.recon || { mode: 'none', skipped: [] };
+            const txs = parsedBankTransactions.filter(t => t._file === f.name);
+            const skipped = (r.skipped || []).filter(s => !s._added);
+            const inc = txs.filter(t => t.include);
+            const already = txs.filter(t => !t.include && t.duplicate && t.dupKind === 'existing'); // כבר בתקציב — נחשב "מכוסה"
+            const covered = inc.concat(already);
+            const gapTxs = txs.filter(t => !t.include && !(t.duplicate && t.dupKind === 'existing'));
+            const sum = (arr, fn) => arr.reduce((a, x) => a + (Number(fn(x)) || 0), 0);
+            const checks = [];
+            let source = 'parsed', unexplained = 0;
+            if (r.mode === 'single' && r.total != null) {
+                source = 'file';
+                const got = sum(covered, _txSigned), all = sum(txs, _txSigned) + sum(skipped, s => s.signed || 0);
+                const flip = !_close(r.total, got) && _close(r.total, -got);
+                checks.push({ label: 'סה"כ', expected: Math.abs(r.total), got: Math.abs(flip ? -got : got), ok: _close(r.total, got) || _close(r.total, -got) });
+                if (!_close(r.total, all) && !_close(r.total, -all)) unexplained = Math.abs(r.total) - Math.abs(all);
+            } else if (r.mode === 'dual' && (r.totalDeb != null || r.totalCred != null)) {
+                source = 'file';
+                const deb = arr => sum(arr.filter(t => _txSigned(t) < 0), t => -_txSigned(t));
+                const cred = arr => sum(arr.filter(t => _txSigned(t) > 0), t => _txSigned(t));
+                if (r.totalDeb != null) {
+                    const g = deb(covered); checks.push({ label: 'חובה', expected: r.totalDeb, got: g, ok: _close(r.totalDeb, g) });
+                    const a = deb(txs) + sum(skipped.filter(s => (s.signed || 0) < 0), s => -s.signed); if (!_close(r.totalDeb, a)) unexplained += r.totalDeb - a;
+                }
+                if (r.totalCred != null) {
+                    const g = cred(covered); checks.push({ label: 'זכות', expected: r.totalCred, got: g, ok: _close(r.totalCred, g) });
+                    const a = cred(txs) + sum(skipped.filter(s => (s.signed || 0) > 0), s => s.signed); if (!_close(r.totalCred, a)) unexplained += r.totalCred - a;
+                }
+            } else {
+                const exp = sum(txs, t => t.amount) + sum(skipped, s => s.amount || 0);
+                checks.push({ label: 'סה"כ', expected: exp, got: sum(covered, t => t.amount), ok: _close(exp, sum(covered, t => t.amount)) });
+            }
+            const expectedCount = txs.length + skipped.length;
+            const gotCount = covered.length;
+            const ok = checks.every(c => c.ok) && gotCount === expectedCount && Math.abs(unexplained) < 0.5;
+            return { f, source, checks, expectedCount, gotCount, already, gapTxs, skipped, unexplained, ok,
+                     importAmount: sum(inc, t => t.amount), importCount: inc.length };
+        }
+        function computeAllRecon() { return (window._pendingBankFiles || []).map(computeFileRecon); }
+
+        function renderBankRecon() {
+            const box = document.getElementById('bankReconBox'); if (!box) return;
+            const recs = computeAllRecon();
+            const failedFiles = window._bankFailedFiles || [];
+            if (!recs.length && !failedFiles.length) { box.innerHTML = ''; return; }
+            const allOk = recs.length && recs.every(x => x.ok) && !failedFiles.length;
+            const reasonTxt = t => t.duplicate ? (t.dupKind === 'infile' ? 'מופיעה פעמיים בקובץ — סומנה ככפולה' : 'ייתכן כפול') : 'הוסרה ידנית מהרשימה';
+            let html = `<div class="recon-summary ${allOk ? 'ok' : 'bad'}">${allOk
+                ? '✅ הסריקה הושלמה — הסכומים ומספר השורות תואמים לקובץ'
+                : '⚠️ הסריקה עדיין לא הושלמה — יש פער בין הקובץ למה שייובא. בדוק את השורות שמתחת.'}</div>`;
+            failedFiles.forEach(ff => { html += `<div class="recon-file bad"><div class="recon-head"><strong>❌ קובץ שלא נקרא</strong></div><div class="recon-line">${ff} — שום שורה ממנו לא תיובא.</div></div>`; });
+            recs.forEach((x, fi) => {
+                const fname = escapeHtml(x.f.name);
+                const checksTxt = x.checks.map(c => `${c.label}: בקובץ ₪${fmtNum(round1(c.expected))} · ייובא ₪${fmtNum(round1(c.got))}${c.ok ? '' : ` · <b>פער ₪${fmtNum(round1(Math.abs(c.expected - c.got)))}</b>`}`).join('<br>');
+                const srcTxt = x.source === 'file' ? 'לפי שורת הסה"כ שבקובץ' : 'אין שורת סה"כ בקובץ — לפי סכום כל השורות שפוענחו';
+                let lines = '';
+                x.gapTxs.forEach(t => {
+                    const i = parsedBankTransactions.indexOf(t);
+                    lines += `<div class="recon-line"><span>${escapeHtml(t.store)} · ${new Date(t.date).toLocaleDateString('he-IL')} · ₪${fmtNum(t.amount)}<small>${reasonTxt(t)}</small></span><button type="button" class="recon-btn" onclick="reconInclude(${i})">✓ כלול</button></div>`;
+                });
+                x.skipped.forEach(s => {
+                    const si = (x.f.recon.skipped || []).indexOf(s);
+                    lines += `<div class="recon-line"><span>${escapeHtml(s.store || 'שורה')}${s.amount != null ? ' · ₪' + fmtNum(round1(s.amount)) : ''}<small>לא פוענחה: ${escapeHtml(s.why || '')}</small></span><button type="button" class="recon-btn" onclick="reconAddSkipped(${fi}, ${si})">➕ הוסף</button></div>`;
+                });
+                if (Math.abs(x.unexplained) >= 0.5) {
+                    lines += `<div class="recon-line"><span>₪${fmtNum(round1(Math.abs(x.unexplained)))} ${x.unexplained > 0 ? 'בסה"כ של הקובץ לא נמצאו בשורות שזוהו' : 'יותר ממה שרשום בסה"כ של הקובץ'}<small>${x.unexplained > 0 ? 'ייתכן שיש בקובץ שורות בפורמט לא מוכר. בדוק את הקובץ והוסף את החסר.' : 'ייתכן שנקלטה שורה שאינה עסקה (למשל סיכום ביניים). הסר אותה מהרשימה.'}</small></span>${x.unexplained > 0 ? `<button type="button" class="recon-btn" onclick="reconAddManual(${fi})">➕ הוסף ידנית</button>` : ''}</div>`;
+                }
+                if (x.gotCount !== x.expectedCount && !lines) lines += `<div class="recon-line"><span>מספר השורות לא תואם: בקובץ ${x.expectedCount}, ייובאו ${x.gotCount}</span></div>`;
+                const alreadyTxt = x.already.length ? `<div class="recon-note">ℹ️ ${x.already.length} שורות (₪${fmtNum(round1(x.already.reduce((a, t) => a + t.amount, 0)))}) כבר קיימות בתקציב ולא ייובאו שוב — הן נחשבות כמכוסות.</div>` : '';
+                html += `<div class="recon-file ${x.ok ? 'ok' : 'bad'}"><div class="recon-head"><strong>${x.ok ? '✅' : '⚠️'} ${fname}</strong><span>${x.gotCount}/${x.expectedCount} שורות</span></div><div class="recon-checks">${checksTxt}<div class="recon-src">${srcTxt}</div></div>${alreadyTxt}${lines ? `<div class="recon-gap">${lines}</div>` : ''}</div>`;
+            });
+            box.innerHTML = html;
+            const btn = document.getElementById('bankApplyBtn');
+            if (btn) btn.innerText = allOk ? '✅ הוסף לתקציב' : '⚠️ הוסף לתקציב (חלקי)';
+        }
+        function reconInclude(i) { const t = parsedBankTransactions[i]; if (!t) return; t.include = true; renderBankReview(); }
+        function _newTxForFile(f, base) {
+            const sibling = parsedBankTransactions.find(t => t._file === f.name && Math.sign(_txSigned(t)) === Math.sign(base.signed || -1)) || parsedBankTransactions.find(t => t._file === f.name) || {};
+            const type = sibling.type || 'expense';
+            const t = { date: base.date, store: base.store || 'תנועה', amount: round1(Math.abs(base.amount)), type: type, include: true, duplicate: false,
+                        _file: f.name, _typeConfidence: 'manual', _fileSigned: base.signed != null ? base.signed : (type === 'income' ? Math.abs(base.amount) : -Math.abs(base.amount)),
+                        card: sibling.card || '', issuer: sibling.issuer || '', holder: sibling.holder || '', owner: sibling.owner || '' };
+            t.category = type === 'income' ? localCategorizeIncome(t.store) : canonicalCategory(localCategorize(t.store) || 'קניות כלליות', getExpenseRowNames().concat(ALL_CATEGORIES));
+            return t;
+        }
+        function _askDate(def) {
+            const v = prompt('תאריך התנועה (יום/חודש/שנה):', def ? new Date(def).toLocaleDateString('he-IL') : '');
+            if (v === null) return null;
+            const iso = toIsoDate(String(v).trim());
+            if (!iso) { alert('התאריך לא תקין.'); return null; }
+            return iso;
+        }
+        function reconAddSkipped(fi, si) {
+            const f = (window._pendingBankFiles || [])[fi]; if (!f) return;
+            const s = f.recon.skipped[si]; if (!s) return;
+            let amount = s.amount;
+            if (amount == null) { const a = prompt('סכום התנועה (₪):', ''); if (a === null) return; amount = Math.abs(parseFloat(String(a).replace(/[^\d.\-]/g, ''))); if (!amount) return alert('הסכום לא תקין.'); }
+            const fallback = (parsedBankTransactions.find(t => t._file === f.name) || {}).date;
+            const date = s.date || _askDate(fallback); if (!date) return;
+            const t = _newTxForFile(f, { date, store: s.store, amount, signed: s.signed != null ? s.signed : null });
+            s._added = true;
+            parsedBankTransactions.push(t);
+            parsedBankTransactions.sort((x, y) => String(x.date).localeCompare(String(y.date)));
+            renderBankReview();
+        }
+        function reconAddManual(fi) {
+            const f = (window._pendingBankFiles || [])[fi]; if (!f) return;
+            const store = prompt('שם בית העסק / תיאור:', ''); if (store === null) return;
+            const a = prompt('סכום (₪):', ''); if (a === null) return;
+            const amount = Math.abs(parseFloat(String(a).replace(/[^\d.\-]/g, ''))); if (!amount) return alert('הסכום לא תקין.');
+            const date = _askDate((parsedBankTransactions.find(t => t._file === f.name) || {}).date); if (!date) return;
+            // תנועה שנוספה ידנית כדי לסגור פער — נרשמת כאילו נקראה מהקובץ (הסימן לפי שאר התנועות בקובץ)
+            const sib = parsedBankTransactions.find(t => t._file === f.name);
+            const sign = sib ? Math.sign(_txSigned(sib)) || -1 : -1;
+            const t = _newTxForFile(f, { date, store: store.trim() || 'תנועה', amount, signed: sign * amount });
+            parsedBankTransactions.push(t);
+            parsedBankTransactions.sort((x, y) => String(x.date).localeCompare(String(y.date)));
+            renderBankReview();
         }
 
         // החלפה ידנית של הכנסה/הוצאה בשורת סקירה - רשת ביטחון אחרונה כשה-AI/heuristic טעו
@@ -5408,11 +5827,11 @@
                     const info = await getMonthDataForImport(txMonth);
                     existing = info.exists ? buildSignaturesFromMonthData(info.data) : {};
                 }
-                let dup = false;
-                if (existing[sigWithStore] || existing[sigNoDate]) dup = true;       // כבר קיים בחודש היעד
-                else if (seenInFile[sigWithStore]) dup = true;                       // מופיע פעמיים באותו קובץ
+                let dup = false, kind = '';
+                if (existing[sigWithStore] || existing[sigNoDate]) { dup = true; kind = 'existing'; }      // כבר קיים בחודש היעד
+                else if (seenInFile[sigWithStore]) { dup = true; kind = 'infile'; }                         // מופיע פעמיים באותו קובץ
                 seenInFile[sigWithStore] = true;
-                t.duplicate = dup;
+                t.duplicate = dup; t.dupKind = kind;
                 if (dup) t.include = false; // ברירת מחדל: לא לייבא כפילות, עד שהמשתמש יאשר ידנית
             }
         }
@@ -5423,15 +5842,20 @@
             const sumInc = parsedBankTransactions.filter(t => t.include && t.type === 'income').reduce((s, t) => s + t.amount, 0);
             const el = document.getElementById('bankTxTotal');
             if (el) el.innerHTML = `<span style="color:#dc2626;">הוצאות: ₪${fmtNum(sumExp)}</span> | <span style="color:#16a34a;">הכנסות: ₪${fmtNum(sumInc)}</span>`;
+            renderBankRecon();
         }
 
-        function addLogToCategory(categoryName, amount, store, dateStr) {
+        function addLogToCategory(categoryName, amount, store, dateStr, meta) {
             amount = round1(amount);
             const varBody = document.getElementById('variableBody');
-            let row = Array.from(varBody.querySelectorAll('tr')).find(r => r.querySelector('.name-input').value.trim() === categoryName) || Array.from(varBody.querySelectorAll('tr')).find(r => r.querySelector('.name-input').value.includes(categoryName));
+            // FIX: מתאימים לקטגוריה קיימת (גם בהוצאות הקבועות) אחרי הסרת סיומת חברת אשראי — לא נוצרת "אוכל בחוץ cal" ליד "אוכל בחוץ"
+            categoryName = canonicalCategory(categoryName, getExpenseRowNames());
+            let row = findExpenseRowByName(categoryName);
             if (!row) { appendExpenseRowUI(varBody, categoryName, 0, 0, 'variable', []); row = varBody.lastElementChild; }
             const actualInput = row.querySelector('.actual-val'); actualInput.value = round1((Number(actualInput.value) || 0) + amount);
-            let logs = JSON.parse(row.getAttribute('data-logs') || "[]"); logs.push({ amount, store: store || "ייבוא בנקאי", date: dateStr, source: 'import' }); row.setAttribute('data-logs', JSON.stringify(logs)); renderLogsInsideRow(row);
+            const log = { amount, store: store || "ייבוא בנקאי", date: dateStr, source: 'import' };
+            if (meta) { if (meta.card) log.card = meta.card; if (meta.issuer) log.issuer = meta.issuer; if (meta.owner) log.owner = meta.owner; }
+            let logs = JSON.parse(row.getAttribute('data-logs') || "[]"); logs.push(log); row.setAttribute('data-logs', JSON.stringify(logs)); renderLogsInsideRow(row);
             dailyExpenseLogs.push({ timestamp: new Date(dateStr).getTime(), dateStr: new Date(dateStr).toLocaleDateString('he-IL'), amount, store });
             const cb = row.querySelector('.checkbox-done'); const tgt = Number(row.querySelector('.target-val').value); if (cb && tgt > 0) cb.checked = (Number(actualInput.value) >= tgt);
         }
@@ -6475,6 +6899,25 @@
             const selected = parsedBankTransactions.filter(t => t.include);
             if (selected.length === 0) return alert("לא נבחרו שורות לייבוא.");
 
+            // התאמת סכומים: אם יש פער בין הקובץ למה שנבחר — לא מייבאים "בשקט"; המשתמש מאשר ייבוא חלקי במפורש
+            const reconBefore = computeAllRecon();
+            const failedFilesBefore = (window._bankFailedFiles || []).length;
+            const badFiles = reconBefore.filter(x => !x.ok);
+            if (badFiles.length || failedFilesBefore) {
+                const gapTxt = badFiles.map(x => {
+                    const g = x.checks.filter(c => !c.ok).map(c => `${c.label}: פער ₪${fmtNum(round1(Math.abs(c.expected - c.got)))}`).join(', ');
+                    return `• ${x.f.name}: ${x.gotCount}/${x.expectedCount} שורות${g ? ' · ' + g : ''}`;
+                }).join('\n');
+                if (!confirm(`⚠️ הסריקה לא הושלמה — מה שייובא לא תואם לקובץ:\n${gapTxt}${failedFilesBefore ? `\n• ${failedFilesBefore} קבצים לא נקראו בכלל` : ''}\n\nלייבא בכל זאת רק את השורות שסומנו? (הייבוא יסומן כחלקי)\nאפשר ללחוץ "ביטול" ולתקן את השורות ברשימת הפערים.`)) return;
+            }
+            // זיכרון כרטיסים: כל כרטיס שזוהה נשמר (עם שם בעל הכרטיס מהקובץ, אם יש), כדי שבייבוא הבא יזוהה לבד
+            try {
+                const seenCards = {};
+                parsedBankTransactions.forEach(t => { if (t.card && /^\d{4}$/.test(t.card) && !seenCards[t.card]) seenCards[t.card] = { card: t.card, owner: t.owner || t.holder || '', issuer: t.issuer || '' }; });
+                await rememberCards(Object.values(seenCards));
+            } catch (e) { console.error('שמירת זיכרון הכרטיסים נכשלה:', e); }
+            const _meta = t => ({ card: t.card || '', issuer: t.issuer || '', owner: cardOwner(t.card, t.owner || t.holder || '') });
+
             // FIX: דפי בנק כוללים לרוב תנועות ממספר חודשים (למשל דוח "3 חודשים אחרונים"). קודם
             // מפרידים כל תנועה לפי חודש_str האמיתי שלה לפי התאריך שבה — לא זורקים הכל אוטומטית
             // לחודש שמוצג כרגע על המסך.
@@ -6511,7 +6954,7 @@
                         appendIncomeRowUI(document.getElementById('incomeBody'), t.store, t.amount, 'import', t.date);
                         incCount++;
                     } else {
-                        addLogToCategory(t.category || "קניות כלליות", t.amount, t.store, t.date);
+                        addLogToCategory(t.category || "קניות כלליות", t.amount, t.store, t.date, _meta(t));
                         expCount++;
                         totalExp += t.amount || 0;
                     }
@@ -6532,7 +6975,7 @@
                         if (t.type === 'income') {
                             await addEntryToOtherMonth(monthStr, { type: 'income', name: t.store, amount: t.amount, source: 'import', date: t.date });
                         } else {
-                            await addEntryToOtherMonth(monthStr, { type: 'expense', category: t.category || "קניות כלליות", amount: t.amount, store: t.store, date: t.date, source: 'import' });
+                            await addEntryToOtherMonth(monthStr, Object.assign({ type: 'expense', category: t.category || "קניות כלליות", amount: t.amount, store: t.store, date: t.date, source: 'import' }, _meta(t)));
                         }
                         otherCount++;
                         importedTransactions.push(t);
@@ -6546,6 +6989,7 @@
             // שמירה בהיסטוריה — תמיד לפי מה שבאמת נכתב בהצלחה (importedTransactions), לא לפי כל מה
             // שנבחר. כך ההיסטוריה לעולם לא "נעלמת" גם כשהייתה תקלה חלקית.
             const _histFiles = (window._pendingBankFiles && window._pendingBankFiles.length > 1) ? window._pendingBankFiles : [];
+            const _reconFor = name => { const x = reconBefore.find(r => r.f.name === name); return x ? { ok: x.ok && failedMonths.length === 0, expected: round1(x.checks.reduce((a, c) => a + c.expected, 0)), rows: x.expectedCount, imported: importedTransactions.filter(t => t._file === name).length } : null; };
             for (const f of _histFiles) {
                 const mine = importedTransactions.filter(t => t._file === f.name);
                 try {
@@ -6554,7 +6998,8 @@
                         total: Math.round(mine.filter(t => t.type !== 'income').reduce((a, t) => a + (t.amount || 0), 0)),
                         month: workingMonthStr,
                         failedMonths: failedMonths,
-                        transactions: mine.map(t => ({ date: t.date || '', store: t.store || '', amount: t.amount || 0, type: t.type || 'expense', category: t.category || '' }))
+                        recon: _reconFor(f.name),
+                        transactions: mine.map(t => ({ date: t.date || '', store: t.store || '', amount: t.amount || 0, type: t.type || 'expense', category: t.category || '', card: t.card || '' }))
                     });
                 } catch (e) { console.error('שמירת היסטוריית הייבוא נכשלה:', e); }
             }
@@ -6566,12 +7011,14 @@
                         total: Math.round(totalExp),
                         month: workingMonthStr,
                         failedMonths: failedMonths,
+                        recon: _reconFor(window._pendingBankFileName),
                         transactions: importedTransactions.map(t => ({
                             date: t.date || '',
                             store: t.store || '',
                             amount: t.amount || 0,
                             type: t.type || 'expense',
-                            category: t.category || ''
+                            category: t.category || '',
+                            card: t.card || ''
                         }))
                     });
                 } catch (e) { console.error('שמירת היסטוריית הייבוא נכשלה:', e); }
@@ -6583,7 +7030,15 @@
             const otherNote = otherMonthsList.length ? `\n\n📅 ${otherCount} תנועות שייכות לחודשים אחרים (לפי תאריך) ונוספו ישירות לחודשים: ${otherMonthsList.join(', ')}.` : '';
             const skippedNote = skippedNewMonths.length ? `\n\n⏭️ דילגנו על החודשים הבאים לפי בחירתך ולא פתחנו עבורם תזרים חדש: ${skippedNewMonths.join(', ')}.` : '';
             const failedNote = failedMonths.length ? `\n\n⚠️ שגיאה בשמירת חלק מהתנועות לחודשים: ${failedMonths.join(', ')}. בדוק את החודשים האלה — ואם חסר משהו, ייבא מחדש רק את התנועות החסרות (לא את כל הקובץ, כדי למנוע כפילות).` : '';
-            alert(`הייבוא הושלם${failedMonths.length ? ' (עם שגיאות חלקיות)' : ' בהצלחה'}!\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}${skippedNote}${failedNote}`);
+            // FIX: "הושלם" רק כשהסכומים תואמים לקובץ וכל מה שנבחר נכתב בפועל. אחרת — ייבוא חלקי, עם הפער.
+            const complete = badFiles.length === 0 && !failedFilesBefore && failedMonths.length === 0 && skippedNewMonths.length === 0 && importedTransactions.length === selected.length;
+            const reconLines = reconBefore.map(x => {
+                const exp = x.checks.map(c => `${c.label} ₪${fmtNum(round1(c.expected))}`).join(', ');
+                const wrote = importedTransactions.filter(t => t._file === x.f.name);
+                return `• ${x.f.name}: בקובץ ${exp} (${x.expectedCount} שורות) · יובאו ${wrote.length} שורות ₪${fmtNum(round1(wrote.reduce((a, t) => a + t.amount, 0)))}${x.already.length ? ` · ${x.already.length} כבר היו בתקציב` : ''}`;
+            }).join('\n');
+            const head = complete ? '✅ הסריקה והייבוא הושלמו — הסכומים תואמים לקובץ.' : '⚠️ ייבוא חלקי — לא כל מה שבקובץ נכנס לתקציב.';
+            alert(`${head}\n${reconLines}\n\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}${skippedNote}${failedNote}`);
             fetchAllUserMonths();
         }
 
@@ -6861,7 +7316,7 @@
             set('setName', u.username); set('setId', u.user_id); set('setPhone', u.phone); set('setEmail', u.email);
             set('setMode', u._bizMode ? '💼 חשבון עסקי' : '👤 חשבון אישי');
             const av = document.getElementById('setAvatar'); if (av) av.innerText = String(u.username || '?').trim().charAt(0);
-            _refreshSettingsTheme(); renderMemorySettings();
+            _refreshSettingsTheme(); renderMemorySettings(); renderCardsSettings();
             const auto = document.getElementById('setRecurringAuto'); if (auto) auto.checked = isRecurringAutoOn();
             document.getElementById('settingsModal').style.display = 'flex';
             switchSettingsTab(tab || 'profile');
@@ -6937,6 +7392,199 @@
             if (!n || a <= 0) return alert('הזן שם וסכום חודשי.');
             const mem = getRecurringMemory().slice(); mem.push({ key: _recurringKey(n) || n, name: n, amount: a, category: '', savedAt: new Date().toISOString().slice(0, 10) });
             await setRecurringMemory(mem); document.getElementById('memNewName').value = ''; document.getElementById('memNewAmount').value = ''; renderMemorySettings();
+        }
+
+        // ===================== הגדרות: כרטיסים =====================
+        function renderCardsSettings() {
+            const el = document.getElementById('setCardsList'); if (!el) return;
+            const mem = getCardMemory(); const cards = Object.keys(mem).sort();
+            if (!cards.length) el.innerHTML = '<p class="set-empty">עדיין לא זוהו כרטיסים. בייבוא הבא של דף אשראי (כאל, מקס, ישראכרט) המערכת תזהה את 4 הספרות ואת שם בעל הכרטיס ותשמור אותם כאן.</p>';
+            else el.innerHTML = cards.map(c => `<div class="card-mem-row"><span class="card-chip card-chip-static" style="margin:0;">💳 ${escapeHtml(c)}</span><div><input type="text" class="mem-amt" value="${escapeHtml(mem[c].owner || '')}" placeholder="של מי הכרטיס?" onchange="updateCardOwner('${c}', this.value)" aria-label="בעל הכרטיס ${escapeHtml(c)}"><small>${escapeHtml(mem[c].issuer || 'חברה לא ידועה')}${mem[c].seen ? ' · נראה ב-' + escapeHtml(new Date(mem[c].seen).toLocaleDateString('he-IL')) : ''}</small></div><button class="btn-delete" title="מחק מהזיכרון" onclick="deleteCardMem('${c}')">✕</button></div>`).join('');
+            renderCatCleanup('setCatCleanup');
+        }
+        async function updateCardOwner(card, owner) {
+            const mem = Object.assign({}, getCardMemory()); if (!mem[card]) return;
+            mem[card] = Object.assign({}, mem[card], { owner: String(owner || '').trim() });
+            await setCardMemory(mem);
+            document.querySelectorAll('#fixedBody tr, #variableBody tr').forEach(r => { if (r.querySelector('.logs-wrapper')) renderLogsInsideRow(r, r.querySelector('.logs-dropdown') && r.querySelector('.logs-dropdown').style.display === 'flex'); });
+        }
+        async function deleteCardMem(card) {
+            if (!confirm(`למחוק את כרטיס ${card} מהזיכרון?\n(העסקאות שכבר יובאו לא יימחקו)`)) return;
+            const mem = Object.assign({}, getCardMemory()); delete mem[card]; await setCardMemory(mem); renderCardsSettings();
+        }
+
+        // ===================== עסקאות לפי כרטיס / בעלים =====================
+        function _collectCardLogs(range) {
+            const months = [];
+            if (range === 'all') (allUserMonthsData || []).forEach(m => { if (!isSameMonthStr(m.month_str, workingMonthStr)) months.push({ label: m.month_str, data: m.data }); });
+            months.push({ label: workingMonthStr, data: getLiveSnapshot() });
+            const out = [];
+            months.forEach(m => {
+                [].concat(m.data.fixed || [], m.data.variable || []).forEach(cat => (cat.logs || []).forEach(l => {
+                    out.push({ month: m.label, category: cat.name || '', store: cleanStoreDisplay(l.store), amount: Number(l.amount) || 0, date: l.date, card: l.card || '', issuer: l.issuer || '', owner: cardOwner(l.card, l.owner) });
+                }));
+            });
+            return out;
+        }
+        function openCardTxModal(preset) {
+            const sel = document.getElementById('cardTxFilter');
+            const mem = getCardMemory();
+            const logs = _collectCardLogs('all');
+            const cards = {}, owners = {};
+            Object.keys(mem).forEach(c => { cards[c] = true; if (mem[c].owner) owners[mem[c].owner] = true; });
+            logs.forEach(l => { if (l.card) cards[l.card] = true; if (l.owner) owners[l.owner] = true; });
+            let opts = '<option value="all">כל הכרטיסים</option>';
+            const ownerList = Object.keys(owners).sort();
+            if (ownerList.length) opts += '<optgroup label="לפי בעלים">' + ownerList.map(o => `<option value="owner:${escapeHtml(o)}">👤 ${escapeHtml(o)}</option>`).join('') + '</optgroup>';
+            const cardList = Object.keys(cards).sort();
+            if (cardList.length) opts += '<optgroup label="לפי כרטיס">' + cardList.map(c => `<option value="card:${c}">💳 ${escapeHtml(cardLabel(c, '', cardOwner(c)))}</option>`).join('') + '</optgroup>';
+            opts += '<option value="none">ללא כרטיס</option>';
+            sel.innerHTML = opts;
+            sel.value = preset ? 'card:' + preset : 'all';
+            if (!sel.value) sel.value = 'all';
+            document.getElementById('cardTxModal').style.display = 'flex';
+            renderCardTx();
+        }
+        function closeCardTxModal() { document.getElementById('cardTxModal').style.display = 'none'; }
+        function renderCardTx() {
+            const body = document.getElementById('cardTxBody'); if (!body) return;
+            const f = document.getElementById('cardTxFilter').value || 'all';
+            const range = document.getElementById('cardTxRange').value || 'current';
+            let logs = _collectCardLogs(range);
+            if (f === 'none') logs = logs.filter(l => !l.card && !l.issuer);
+            else if (f.startsWith('card:')) logs = logs.filter(l => l.card === f.slice(5));
+            else if (f.startsWith('owner:')) logs = logs.filter(l => l.owner === f.slice(6));
+            else logs = logs.filter(l => l.card || l.issuer);
+            if (!logs.length) { body.innerHTML = '<p class="set-empty">אין עסקאות להצגה בסינון הזה.</p>'; return; }
+            // קיבוץ: בעלים -> כרטיס
+            const groups = {};
+            logs.forEach(l => { const k = (l.owner || 'ללא שם') + '|' + (l.card || l.issuer || 'ללא כרטיס'); (groups[k] = groups[k] || { owner: l.owner, card: l.card, issuer: l.issuer, items: [] }).items.push(l); });
+            const total = logs.reduce((a, l) => a + l.amount, 0);
+            const keys = Object.keys(groups).sort();
+            body.innerHTML = `<div class="set-memsum">${logs.length} עסקאות · ₪${fmtNum(round1(total))}</div>` + keys.map(k => {
+                const g = groups[k]; const sum = g.items.reduce((a, l) => a + l.amount, 0);
+                g.items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+                const title = g.card || g.issuer ? '💳 ' + escapeHtml(cardLabel(g.card, g.issuer, g.owner)) : 'ללא כרטיס';
+                return `<div class="cardtx-group"><div class="cardtx-ghead"><span>${title}</span><span>₪${fmtNum(round1(sum))}</span></div>` + g.items.map(l => {
+                    const d = (function(){ try { return new Date(l.date).toLocaleDateString('he-IL'); } catch(_e) { return ''; } })();
+                    return `<div class="cardtx-row"><div>${escapeHtml(l.store)}<small>${escapeHtml(l.category)} · ${d}${range === 'all' ? ' · ' + escapeHtml(l.month) : ''}</small></div><strong>₪${fmtNum(l.amount)}</strong></div>`;
+                }).join('') + '</div>';
+            }).join('');
+        }
+
+        // ===================== ניקוי חד-פעמי: "אוכל בחוץ cal" -> "אוכל בחוץ" =====================
+        function findCatDupGroups(names) {
+            const groups = {};
+            (names || []).filter(Boolean).forEach(n => { const k = normCatKey(n); if (!k) return; const g = groups[k] || (groups[k] = []); if (g.indexOf(n) === -1) g.push(n); });
+            return Object.values(groups)
+                .filter(g => g.length > 1 || g.some(n => stripIssuerFromCategory(n) !== n.trim()))
+                .map(g => ({ target: g.find(n => stripIssuerFromCategory(n) === n.trim()) || stripIssuerFromCategory(g[0]), names: g }));
+        }
+        // כשמעבירים פעולות מ-"X cal" / "כרטיס אשראי 1234" — חברת האשראי / הכרטיס עוברים לשדה הכרטיס של הפעולה
+        function _tagLogFromCatName(l, origName, target) {
+            if (origName === target) return l;
+            const suffix = String(origName).replace(target, ' ');
+            const iss = detectIssuer(suffix); const m = String(origName).match(/(\d{4})\s*$/);
+            const out = Object.assign({}, l);
+            if (!out.issuer && iss) out.issuer = iss;
+            if (!out.card && m) out.card = m[1];
+            return out;
+        }
+        function mergeCategoriesInData(md) {
+            const rows = [].concat(md.fixed || [], md.variable || []);
+            const groups = findCatDupGroups(rows.map(r => r.name));
+            let merged = 0;
+            groups.forEach(g => {
+                const members = rows.filter(r => g.names.indexOf(r.name) > -1);
+                let keeper = members.find(r => r.name === g.target) || members[0];
+                const origKeeperName = keeper.name;
+                keeper.logs = (keeper.logs || []).map(l => _tagLogFromCatName(l, origKeeperName, g.target));
+                keeper.name = g.target;
+                members.forEach(r => {
+                    if (r === keeper) return;
+                    keeper.logs = keeper.logs.concat((r.logs || []).map(l => _tagLogFromCatName(l, r.name, g.target)));
+                    keeper.actual = round1((Number(keeper.actual) || 0) + (Number(r.actual) || 0));
+                    keeper.target = (Number(keeper.target) || 0) + (Number(r.target) || 0);
+                    ['fixed', 'variable'].forEach(k => { if (md[k]) md[k] = md[k].filter(x => x !== r); });
+                    merged++;
+                });
+                if (origKeeperName !== g.target) merged++;
+            });
+            return merged;
+        }
+        function mergeCategoriesInDom() {
+            const groups = findCatDupGroups(getExpenseRowNames());
+            let merged = 0;
+            groups.forEach(g => {
+                const members = Array.from(document.querySelectorAll('#fixedBody tr, #variableBody tr')).filter(r => g.names.indexOf((r.querySelector('.name-input').value || '').trim()) > -1);
+                if (!members.length) return;
+                let keeper = members.find(r => r.querySelector('.name-input').value.trim() === g.target) || members[0];
+                const origKeeperName = keeper.querySelector('.name-input').value.trim();
+                let kLogs = JSON.parse(keeper.getAttribute('data-logs') || '[]').map(l => _tagLogFromCatName(l, origKeeperName, g.target));
+                keeper.querySelector('.name-input').value = g.target;
+                const kAct = keeper.querySelector('.actual-val'), kTgt = keeper.querySelector('.target-val');
+                members.forEach(r => {
+                    if (r === keeper) return;
+                    const nm = r.querySelector('.name-input').value.trim();
+                    kLogs = kLogs.concat(JSON.parse(r.getAttribute('data-logs') || '[]').map(l => _tagLogFromCatName(l, nm, g.target)));
+                    kAct.value = round1((Number(kAct.value) || 0) + (Number(r.querySelector('.actual-val').value) || 0));
+                    const t = (Number(kTgt.value) || 0) + (Number(r.querySelector('.target-val').value) || 0); kTgt.value = t || '';
+                    r.remove(); merged++;
+                });
+                if (origKeeperName !== g.target) merged++;
+                keeper.setAttribute('data-logs', JSON.stringify(kLogs));
+            });
+            if (merged) {
+                document.querySelectorAll('#fixedBody tr, #variableBody tr').forEach(r => renderLogsInsideRow(r));
+                rebuildDailyLogsFromTable();
+                calculateAll(true);
+            }
+            return merged;
+        }
+        function _catCleanupScan() {
+            const cur = findCatDupGroups(getExpenseRowNames());
+            const others = [];
+            (allUserMonthsData || []).forEach(m => {
+                if (isSameMonthStr(m.month_str, workingMonthStr) || !m.data) return;
+                const g = findCatDupGroups([].concat(m.data.fixed || [], m.data.variable || []).map(r => r.name));
+                if (g.length) others.push({ month: m.month_str, groups: g });
+            });
+            return { cur, others };
+        }
+        function renderCatCleanup(elId) {
+            const el = document.getElementById(elId); if (!el) return;
+            const s = _catCleanupScan();
+            const all = s.cur.concat(...s.others.map(o => o.groups));
+            if (!all.length) { el.innerHTML = ''; return; }
+            const examples = [];
+            all.forEach(g => g.names.filter(n => n !== g.target).forEach(n => { const ex = `"${n}" ייכנס ל-"${g.target}"`; if (examples.indexOf(ex) === -1 && examples.length < 4) examples.push(ex); }));
+            const where = [s.cur.length ? 'בחודש הנוכחי' : '', s.others.length ? `ב-${s.others.length} חודשים נוספים` : ''].filter(Boolean).join(' ו');
+            el.innerHTML = `<div class="cat-clean">🧹 <strong>נמצאו קטגוריות כפולות עם שם חברת אשראי</strong> ${where}:<br>${examples.map(escapeHtml).join('<br>')}<br><span style="color:var(--text-light); font-size:0.8rem;">האיחוד מעביר את כל הפעולות לקטגוריה הנקייה, ושם הכרטיס / החברה נשמר על כל פעולה.</span><button class="btn-outline set-wide" style="margin-top:8px;" onclick="runCategoryCleanup('${elId}')">🧹 אחד את הקטגוריות</button></div>`;
+        }
+        async function runCategoryCleanup(elId) {
+            const s = _catCleanupScan();
+            const n = s.cur.length + s.others.reduce((a, o) => a + o.groups.length, 0);
+            if (!n) { renderCatCleanup(elId); return; }
+            if (!confirm(`לאחד ${n} קבוצות של קטגוריות כפולות (למשל "אוכל בחוץ cal" לתוך "אוכל בחוץ")?\nהסכומים והפעולות עוברים לקטגוריה הנקייה. שום פעולה לא נמחקת.`)) return;
+            let done = mergeCategoriesInDom();
+            const failed = [];
+            for (const o of s.others) {
+                try {
+                    // קוראים את החודש מחדש מהענן ממש לפני השינוי, כדי לא לדרוס עדכון שנעשה בינתיים
+                    const { data, error } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', o.month);
+                    if (error || !data || !data.length || !data[0].data) { failed.push(o.month); continue; }
+                    const md = data[0].data;
+                    const k = mergeCategoriesInData(md);
+                    if (!k) continue;
+                    const { error: upErr } = await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: o.month, data: md });
+                    if (upErr) { failed.push(o.month); continue; }
+                    const cached = (allUserMonthsData || []).find(m => m.month_str === o.month); if (cached) cached.data = md;
+                    done += k;
+                } catch (e) { console.error('איחוד קטגוריות נכשל בחודש ' + o.month, e); failed.push(o.month); }
+            }
+            userSettings.cat_cleanup_done = new Date().toISOString().slice(0, 10); saveUserSettings();
+            alert(failed.length ? `אוחדו ${done} קטגוריות. בחודשים האלה האיחוד נכשל ואפשר לנסות שוב: ${failed.join(', ')}` : `✅ אוחדו ${done} קטגוריות כפולות.`);
+            renderCatCleanup(elId);
         }
 
         // ===================== דשבורד ניתוח פיננסי =====================
