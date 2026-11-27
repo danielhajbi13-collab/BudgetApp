@@ -23,23 +23,30 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # key_secret: repository secret with the anon key (optional).
+          # site: public site whose JS bundle already ships the anon key;
+          #       used when the secret is not set, so no secret is needed.
           - name: BudgetApp
             ref: lktciczanxnrdydwybez
             table: month_data
             key_secret: SUPABASE_PUBLISHABLE_KEY
+            site: https://danielhajbi13-collab.github.io/BudgetApp/
           - name: MyTeam
             ref: eenegwvjswdokuapmvmk
             table: businesses
             key_secret: MYTEAM_SUPABASE_KEY
+            site: ''
           - name: batei-knesset-sderot
             ref: taaoypchtowbnwzftqhy
             table: synagogues
             key_secret: SDEROT_SUPABASE_KEY
+            site: https://batei-knesset-sderot.vercel.app/
     steps:
       - name: Query ${{ matrix.name }} database
         env:
           REF: ${{ matrix.ref }}
           TABLE: ${{ matrix.table }}
+          SITE: ${{ matrix.site }}
           KEY: ${{ secrets[matrix.key_secret] }}
           KEY_SECRET: ${{ matrix.key_secret }}
         run: |
@@ -47,15 +54,29 @@ jobs:
           HOST="${REF}.supabase.co"
           DASH="https://supabase.com/dashboard/project/${REF}"
 
-          if [ -z "${KEY}" ]; then
-            echo "::error::Secret ${KEY_SECRET} is missing. Add the project's anon key under Settings > Secrets and variables > Actions."
-            exit 1
-          fi
-
+          # 1. A paused project disappears from DNS. This needs no key,
+          #    so it is checked for every project, always.
           if ! getent hosts "${HOST}" > /dev/null; then
             echo "::error::${HOST} does not resolve - the project is PAUSED. Restore it now: ${DASH}"
             exit 1
           fi
+
+          # 2. Find the public anon key: secret first, else the live site.
+          if [ -z "${KEY}" ] && [ -n "${SITE}" ]; then
+            for f in "${SITE}" $(curl -sL --max-time 20 "${SITE}" \
+                | grep -oE '(src|href)="[^"]+\.js"' | sed -E 's/^(src|href)="//; s/"$//'); do
+              case "$f" in http*) url="$f" ;; /*) url="${SITE%/}${f}" ;; *) url="${SITE%/}/${f}" ;; esac
+              KEY=$(curl -sL --max-time 20 "$url" \
+                | grep -oE 'sb_publishable_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+' \
+                | head -1 || true)
+              [ -n "${KEY}" ] && break
+            done
+          fi
+          if [ -z "${KEY}" ]; then
+            echo "::warning::${HOST} is up, but no key to query it (set secret ${KEY_SECRET} for a full check)."
+            exit 0
+          fi
+          echo "::add-mask::${KEY}"
 
           code=$(curl --silent --show-error --output /tmp/body \
             --write-out '%{http_code}' \
