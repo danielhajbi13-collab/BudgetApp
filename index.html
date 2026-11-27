@@ -805,6 +805,28 @@
         .cardtx-ghead { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
         .cardtx-row { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 5px 0; border-top: 1px solid var(--hairline); font-size: 0.85rem; color: var(--text-dark); }
         .cardtx-row small { display: block; color: var(--text-light); font-size: 0.74rem; }
+        /* ===== הוצאות בין חודשים ===== */
+        .xm-lead { color: var(--text-light); font-size: 0.85rem; margin: 0 0 8px; line-height: 1.5; }
+        .xm-summary { font-size: 0.86rem; color: var(--text-dark); background: var(--primary-light); border-radius: 10px; padding: 0.55rem 0.8rem; margin-bottom: 8px; line-height: 1.6; }
+        .xm-list { display: flex; flex-direction: column; gap: 8px; }
+        .xm-item { border: 1px solid var(--border); border-radius: 12px; padding: 0.65rem 0.8rem; background: var(--surface); display: flex; flex-direction: column; gap: 6px; }
+        .xm-item.off { opacity: 0.72; border-style: dashed; }
+        .xm-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+        .xm-top strong { white-space: nowrap; }
+        .xm-store { font-weight: 600; color: var(--text-dark); overflow-wrap: anywhere; }
+        .xm-meta { font-size: 0.78rem; color: var(--text-light); }
+        .xm-state { font-size: 0.8rem; font-weight: 700; }
+        .xm-state.on { color: var(--success, #10b981); }
+        .xm-state.offc { color: var(--text-light); }
+        .xm-badge { display: inline-flex; align-items: center; background: #fef3c7; color: #92400e; border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+        html[data-theme="dark"] .xm-badge { background: rgba(245,158,11,0.18); color: #fbbf24; }
+        .bm-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 0.9rem; margin-bottom: 12px; }
+        .bm-head { font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+        .bm-month { border-top: 1px solid var(--hairline); padding-top: 8px; margin-top: 8px; }
+        .bm-month-title { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; margin-bottom: 4px; }
+        .bm-opt { display: flex; gap: 8px; align-items: flex-start; font-size: 0.85rem; color: var(--text-dark); padding: 4px 0; cursor: pointer; line-height: 1.45; }
+        .bm-opt input { margin-top: 3px; accent-color: var(--primary); flex: none; }
+        .bm-opt small { display: block; color: var(--text-light); font-size: 0.76rem; }
         .cat-clean { margin-top: 12px; background: var(--surface-2); border: 1px dashed var(--border); border-radius: 12px; padding: 0.8rem 0.9rem; font-size: 0.86rem; color: var(--text-dark); line-height: 1.55; }
     </style>
 </head>
@@ -1353,6 +1375,23 @@
                             <button class="btn-add" onclick="addExpenseRow('variable')">הוסף סעיף</button>
                         </div>
                     </div>
+
+                    <!-- הוצאות בין חודשים: ירדו בחודש אחד ושייכות לחודש אחר. מופיעות בשני החודשים, נספרות רק באחד -->
+                    <div class="table-section" id="crossMonthSection" style="display:none;">
+                        <h3 style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span>🔁 הוצאות בין חודשים</span>
+                            <select id="crossMonthFilter" class="input-field" style="margin:0; width:auto; max-width:100%; font-size:0.82rem; padding:0.4rem 0.6rem;" onchange="renderCrossMonth()" aria-label="סינון הוצאות בין חודשים">
+                                <option value="all">הכול</option>
+                                <option value="charged">ירדו החודש, שייכות לחודש אחר</option>
+                                <option value="belong">שייכות לחודש הזה, ירדו בחודש אחר</option>
+                                <option value="counted">נספרות בחודש הזה</option>
+                                <option value="notcounted">לא נספרות בחודש הזה</option>
+                            </select>
+                        </h3>
+                        <p class="xm-lead">כל הוצאה כאן מופיעה בשני החודשים, אבל נספרת רק באחד מהם. אתה בוחר באיזה.</p>
+                        <div id="crossMonthSummary" class="xm-summary"></div>
+                        <div id="crossMonthList" class="xm-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1832,6 +1871,7 @@
                 <div id="bankStepReview" style="display:none;">
                     <div id="bankRecurringBox" style="display:none;"></div>
                     <div id="bankReconBox"></div>
+                    <div id="bankMonthsBox"></div>
                     <div id="bankCardsBar" class="cards-bar" style="display:none;"></div>
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
                         <p style="color:var(--text-light); font-size:0.9rem; margin:0;">נמצאו <strong id="bankTxCount" style="color:var(--text-dark);">0</strong> הוצאות (<strong id="bankTxTotal" style="color:#dc2626;">₪0</strong>)<span id="bankIncomeNote"></span>. סקור ולחץ אישור.</p>
@@ -2385,7 +2425,7 @@
         let _importFileType = 'auto';
         let _importCardSource = '';
 
-        let workingMonthStr = ""; let tempUserSession = null; let tempRecoveryData = null; let autoSaveTimer; let dailyExpenseLogs = []; let expenseChartInstance = null; let monthlyChartInstance = null; let activeRowForLog = null; let currentReceiptBase64 = null; let currentReceiptMime = "image/jpeg"; let parsedBankTransactions = []; let allUserMonthsData = []; let isAdminMode = false; let isImpersonating = false;
+        let workingMonthStr = ""; let tempUserSession = null; let tempRecoveryData = null; let autoSaveTimer; let dailyExpenseLogs = []; let crossMonthItems = []; let expenseChartInstance = null; let monthlyChartInstance = null; let activeRowForLog = null; let currentReceiptBase64 = null; let currentReceiptMime = "image/jpeg"; let parsedBankTransactions = []; let allUserMonthsData = []; let isAdminMode = false; let isImpersonating = false;
         // FIX: מונע שמירה אוטומטית (ומחיקת נתונים אמיתיים בענן) לפני שאישרנו בוודאות מה מצב הענן
         // עבור החודש הנוכחי — ראה loadCurrentMonthData / calculateAll / _periodicSaveTimer.
         let _cloudLoadConfirmed = false;
@@ -4159,18 +4199,15 @@
             }
             if (entry.type === 'income') {
                 monthData.income.push({ name: entry.name, amount: round1(entry.amount), source: entry.source || 'manual', date: entry.date });
+            } else if (entry.type === 'cross') {
+                // רק רישום "הוצאה בין חודשים" (מופיעה בחודש הזה, נספרת בחודש אחר)
+                setCrossItemInData(monthData, entry.item);
             } else {
-                // FIX: התאמה לקטגוריה קיימת (קבועות או משתנות) אחרי הסרת סיומת חברת אשראי
-                const allRows = monthData.fixed.concat(monthData.variable);
-                const catName = canonicalCategory(entry.category, allRows.map(v => v.name));
-                let row = allRows.find(v => v.name === catName);
-                if (!row) { row = { name: catName, target: 0, actual: 0, logs: [] }; monthData.variable.push(row); }
-                row.actual = round1((row.actual || 0) + entry.amount);
-                const log = { amount: round1(entry.amount), store: entry.store || '', date: entry.date, source: entry.source || 'manual' };
-                if (entry.card) log.card = entry.card; if (entry.issuer) log.issuer = entry.issuer; if (entry.owner) log.owner = entry.owner;
-                row.logs = row.logs || []; row.logs.push(log);
+                const cat = addLogToMonthData(monthData, entry);
+                if (entry.crossItem) setCrossItemInData(monthData, Object.assign({}, entry.crossItem, { category: cat }));
             }
-            await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: targetMonthStr, data: monthData });
+            const { error: upErr } = await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: targetMonthStr, data: monthData });
+            if (upErr) throw upErr;
             if (cached) cached.data = monthData; else allUserMonthsData.push({ month_str: targetMonthStr, data: monthData });
         }
         
@@ -4232,21 +4269,21 @@
             // בשקט (או נקטעה כי האפליקציה נסגרה) הייתה נדרסת ע"י הגרסה הישנה מהענן בכניסה הבאה — וזה בדיוק
             // מה שגרם לתחושת "הנתונים נעלמו אחרי כמה ימים".
             if (mirrorHasContent && mirror.synced === false) {
-                const d = mirror.data; dailyExpenseLogs = d.daily_logs || [];
+                const d = mirror.data; dailyExpenseLogs = d.daily_logs || []; crossMonthItems = Array.isArray(d.cross_month) ? d.cross_month : [];
                 (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount, i.source, i.date));
                 (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
                 (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
                 _cloudLoadConfirmed = true;
                 setTimeout(() => { saveDataToCloud().catch(() => {}); }, 800);
             } else if (data && data.length > 0) {
-                const d = data[0].data; dailyExpenseLogs = d.daily_logs || [];
+                const d = data[0].data; dailyExpenseLogs = d.daily_logs || []; crossMonthItems = Array.isArray(d.cross_month) ? d.cross_month : [];
                 d.income.forEach(i => appendIncomeRowUI(inc, i.name, i.amount, i.source, i.date));
                 d.fixed.forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
                 d.variable.forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
                 _cloudLoadConfirmed = true;
             } else if (mirrorHasContent) {
                 // שחזור מהגיבוי המקומי ושמירה חוזרת לענן
-                const d = mirror.data; dailyExpenseLogs = d.daily_logs || [];
+                const d = mirror.data; dailyExpenseLogs = d.daily_logs || []; crossMonthItems = Array.isArray(d.cross_month) ? d.cross_month : [];
                 (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount, i.source, i.date));
                 (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
                 (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
@@ -4257,13 +4294,13 @@
                 // המסוכן (למשל אחרי שבוע ב-iPhone שבו Safari מוחק את ה-localStorage). לא מציירים מסך
                 // ריק (זה היה נשמר אוטומטית תוך 45 שניות ומוחק את הנתונים האמיתיים!) — משאירים
                 // _cloudLoadConfirmed=false (autosave חסום) ומנסים שוב בעוד כמה שניות.
-                dailyExpenseLogs = [];
+                dailyExpenseLogs = []; crossMonthItems = [];
                 const ind = document.getElementById('saveStatusIndicator');
                 if (ind) { ind.style.display = 'inline-block'; ind.style.color = 'var(--text-light)'; ind.innerText = '⏳ טוען מהענן... נסה שוב בעוד רגע'; }
                 setTimeout(() => { loadCurrentMonthData(); }, 4000);
                 return;
             } else {
-                dailyExpenseLogs = [];
+                dailyExpenseLogs = []; crossMonthItems = [];
                 const isBiz = tempUserSession && tempUserSession._bizMode;
                 defaultIncomes.forEach(i => appendIncomeRowUI(inc, i.name, i.amount));
                 if (!isBiz) { defaultFixed.forEach(f => appendExpenseRowUI(fix, f.name, f.target, f.actual, 'fixed', [])); }
@@ -4304,7 +4341,7 @@
                     const fullStore = escapeHtml(cleanStoreDisplay(l.store));
                     const dateTxt = (function(){ try { return new Date(l.date).toLocaleDateString('he-IL'); } catch(_e){ return escapeHtml(String(l.date||'')); } })();
                     return `<div class="log-item" style="flex-direction:column; align-items:stretch; gap:7px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px;">`
-                        + `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;"><span style="display:flex; flex-wrap:wrap; gap:5px; align-items:center; min-width:0;">${sourceBadge(src)}${cardChip(l)}</span><strong style="font-size:1rem; white-space:nowrap;">₪${fmtNum(l.amount)}</strong></div>`
+                        + `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;"><span style="display:flex; flex-wrap:wrap; gap:5px; align-items:center; min-width:0;">${sourceBadge(src)}${cardChip(l)}${xmBadge(l)}</span><strong style="font-size:1rem; white-space:nowrap;">₪${fmtNum(l.amount)}</strong></div>`
                         + `<div style="font-size:0.9rem; color:var(--text-dark); font-weight:600; white-space:normal; overflow-wrap:anywhere; word-break:break-word; line-height:1.45;">${fullStore}</div>`
                         + `<div style="font-size:0.8rem; color:var(--text-light);">📅 ${dateTxt}</div>`
                         + `<div style="display:flex; gap:6px; align-items:center;">`
@@ -4512,7 +4549,7 @@
         }
         function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 
-        function calculateAll(shouldSave = true) { 
+        function calculateAll(shouldSave = true) { try { renderCrossMonth(); } catch (_e) {}
             let incomeSum = 0; document.querySelectorAll('#incomeBody .val-input').forEach(i => incomeSum += Number(i.value) || 0); incomeSum = round1(incomeSum); document.getElementById('sumIncome').innerText = `₪${fmtNum(incomeSum)}`; 
             const processExpenses = (tbodyId, sumTargetId, sumActualId) => { 
                 let sumTarget = 0, sumActual = 0; 
@@ -4583,7 +4620,7 @@
         // רק כשהגוף קטן מספיק — אחרת חוזרים לשמירה הרגילה (וממילא הגיבוי המקומי כבר נשמר).
         async function saveDataToCloud(closingSave) {
             if (!tempUserSession) return;
-            const payload = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs };
+            const payload = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs, cross_month: crossMonthItems };
             document.querySelectorAll('#incomeBody tr').forEach(row => { payload.income.push({ name: row.querySelector('.name-input').value, amount: Number(row.querySelector('.val-input').value) || 0, source: row.getAttribute('data-source') || 'manual', date: row.getAttribute('data-date') || '' }); });
             const extractExpenses = (tbodyId, targetArr) => { document.querySelectorAll(`#${tbodyId} tr`).forEach(row => { targetArr.push({ name: row.querySelector('.name-input').value, target: Number(row.querySelector('.target-val').value) || 0, actual: Number(row.querySelector('.actual-val').value) || 0, logs: JSON.parse(row.getAttribute('data-logs') || "[]") }); }); };
             extractExpenses('fixedBody', payload.fixed); extractExpenses('variableBody', payload.variable);
@@ -4873,7 +4910,7 @@
 
         function openBankImportModal() { resetBankImport(); renderCatCleanup('bankCatCleanup'); document.getElementById('bankImportModal').style.display = 'flex'; }
         function closeBankImportModal() { document.getElementById('bankImportModal').style.display = 'none'; }
-        function resetBankImport() { parsedBankTransactions = []; window._bankImportMonthCache = {}; document.getElementById('bankFileInput').value = ''; document.getElementById('bankStepUpload').style.display = 'block'; document.getElementById('bankStepReview').style.display = 'none'; document.getElementById('bankImportFooter').style.display = 'none'; document.getElementById('bankImportStatus').style.display = 'none'; document.getElementById('bankImportError').style.display = 'none'; }
+        function resetBankImport() { parsedBankTransactions = []; window._bankMonthChoice = {}; window._bankImportMonthCache = {}; document.getElementById('bankFileInput').value = ''; document.getElementById('bankStepUpload').style.display = 'block'; document.getElementById('bankStepReview').style.display = 'none'; document.getElementById('bankImportFooter').style.display = 'none'; document.getElementById('bankImportStatus').style.display = 'none'; document.getElementById('bankImportError').style.display = 'none'; }
         function bankStatus(msg) { const el = document.getElementById('bankImportStatus'); el.style.display = 'block'; el.innerText = msg; }
         function bankError(msg) { const el = document.getElementById('bankImportError'); el.style.display = 'block'; el.innerText = msg; }
 
@@ -5610,6 +5647,7 @@
             }).join('');
             renderImportCardsBar();
             renderBankRecon();
+            renderBankMonthsBox();
         }
 
         // ===== כרטיסים שזוהו בייבוא הנוכחי — אפשר לתת להם שם בעלים כבר כאן =====
@@ -5790,8 +5828,11 @@
                 const amt = Number(r.querySelector('.val-input') ? r.querySelector('.val-input').value : 0) || 0;
                 if (amt) add('', amt, nm);
             });
+            // הוצאות בין חודשים של החודש הנוכחי (גם כשהן נספרות בחודש אחר — הן כבר יובאו)
+            (crossMonthItems || []).forEach(x => add(_isoOf(x.date), x.amount, x.store));
             return sigs;
         }
+        function _isoOf(d) { try { return new Date(d).toISOString().split('T')[0]; } catch (_e) { return d; } }
         // שליפת נתוני חודש (מהזיכרון אם כבר נטען, אחרת מהענן) — עם מטמון קצר לכל סבב ייבוא
         async function getMonthDataForImport(monthStr) {
             const cached = (allUserMonthsData || []).find(m => isSameMonthStr(m.month_str, monthStr));
@@ -5811,6 +5852,7 @@
                 (row.logs || []).forEach(l => { const d = (function(){ try{ return new Date(l.date).toISOString().split('T')[0]; }catch(_e){ return l.date; } })(); add(d, l.amount, l.store); });
             });
             (monthData.income || []).forEach(i => { if (i.amount) add('', i.amount, i.name); });
+            (monthData.cross_month || []).forEach(x => add(_isoOf(x.date), x.amount, x.store));
             return sigs;
         }
         async function markDuplicates(txs){
@@ -5826,6 +5868,8 @@
                 if (txMonth && !isSameMonthStr(txMonth, workingMonthStr)) {
                     const info = await getMonthDataForImport(txMonth);
                     existing = info.exists ? buildSignaturesFromMonthData(info.data) : {};
+                    // הוצאה מחודש קודם שנספרה בחודש הנוכחי (ירדה החודש) — כבר יובאה, גם אם בחודש שלה אין רישום
+                    if (domExisting[sigWithStore]) existing = Object.assign({}, existing, { [sigWithStore]: true });
                 }
                 let dup = false, kind = '';
                 if (existing[sigWithStore] || existing[sigNoDate]) { dup = true; kind = 'existing'; }      // כבר קיים בחודש היעד
@@ -5843,6 +5887,7 @@
             const el = document.getElementById('bankTxTotal');
             if (el) el.innerHTML = `<span style="color:#dc2626;">הוצאות: ₪${fmtNum(sumExp)}</span> | <span style="color:#16a34a;">הכנסות: ₪${fmtNum(sumInc)}</span>`;
             renderBankRecon();
+            renderBankMonthsBox();
         }
 
         function addLogToCategory(categoryName, amount, store, dateStr, meta) {
@@ -5854,10 +5899,24 @@
             if (!row) { appendExpenseRowUI(varBody, categoryName, 0, 0, 'variable', []); row = varBody.lastElementChild; }
             const actualInput = row.querySelector('.actual-val'); actualInput.value = round1((Number(actualInput.value) || 0) + amount);
             const log = { amount, store: store || "ייבוא בנקאי", date: dateStr, source: 'import' };
-            if (meta) { if (meta.card) log.card = meta.card; if (meta.issuer) log.issuer = meta.issuer; if (meta.owner) log.owner = meta.owner; }
+            if (meta) ['card', 'issuer', 'owner', 'xid', 'belong', 'charged'].forEach(k => { if (meta[k]) log[k] = meta[k]; });
             let logs = JSON.parse(row.getAttribute('data-logs') || "[]"); logs.push(log); row.setAttribute('data-logs', JSON.stringify(logs)); renderLogsInsideRow(row);
             dailyExpenseLogs.push({ timestamp: new Date(dateStr).getTime(), dateStr: new Date(dateStr).toLocaleDateString('he-IL'), amount, store });
             const cb = row.querySelector('.checkbox-done'); const tgt = Number(row.querySelector('.target-val').value); if (cb && tgt > 0) cb.checked = (Number(actualInput.value) >= tgt);
+            return categoryName;
+        }
+        // אותו דבר, על נתוני חודש שמור (לא על המסך)
+        function addLogToMonthData(md, entry) {
+            md.fixed = md.fixed || []; md.variable = md.variable || [];
+            const allRows = md.fixed.concat(md.variable);
+            const catName = canonicalCategory(entry.category, allRows.map(v => v.name));
+            let row = allRows.find(v => v.name === catName);
+            if (!row) { row = { name: catName, target: 0, actual: 0, logs: [] }; md.variable.push(row); }
+            row.actual = round1((Number(row.actual) || 0) + Number(entry.amount));
+            const log = { amount: round1(entry.amount), store: entry.store || '', date: entry.date, source: entry.source || 'manual' };
+            ['card', 'issuer', 'owner', 'xid', 'belong', 'charged'].forEach(k => { if (entry[k]) log[k] = entry[k]; });
+            row.logs = row.logs || []; row.logs.push(log);
+            return catName;
         }
 
         // ===================================================================
@@ -6921,21 +6980,43 @@
             // FIX: דפי בנק כוללים לרוב תנועות ממספר חודשים (למשל דוח "3 חודשים אחרונים"). קודם
             // מפרידים כל תנועה לפי חודש_str האמיתי שלה לפי התאריך שבה — לא זורקים הכל אוטומטית
             // לחודש שמוצג כרגע על המסך.
+            // תנועות מחודש קודם: לפי מה שהמשתמש בחר בסקירה (ר' renderBankMonthsBox) —
+            // 'move' = רק לחודש שלהן | 'cross-here' / 'cross-there' = "ירד החודש": מופיעות בשני החודשים, נספרות באחד
             const sameMonth = []; const otherMonthsMap = {}; // monthStr -> array of tx
+            const crossMirror = {}; // monthStr -> txs שנספרות כאן וצריכות רישום גם בחודש שלהן
+            const _grpByMonth = {}; earlierMonthGroups().forEach(g => { _grpByMonth[g.month] = g; });
+            const _newXid = () => 'xm_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
             selected.forEach(t => {
+                delete t._xm;
                 const txMonth = monthStrFromDateStr(t.date);
-                if (!txMonth || isSameMonthStr(txMonth, workingMonthStr)) { sameMonth.push(t); }
-                else { (otherMonthsMap[txMonth] = otherMonthsMap[txMonth] || []).push(t); }
+                if (!txMonth || isSameMonthStr(txMonth, workingMonthStr)) { sameMonth.push(t); return; }
+                const choice = _grpByMonth[txMonth] ? bankMonthChoiceFor(_grpByMonth[txMonth]) : 'move';
+                if (choice === 'move') { (otherMonthsMap[txMonth] = otherMonthsMap[txMonth] || []).push(t); return; }
+                if (t.type === 'income') { // הכנסה: אין "בין חודשים" — נכנסת לחודש שבו בחר המשתמש לחשב
+                    if (choice === 'cross-here') sameMonth.push(t); else (otherMonthsMap[txMonth] = otherMonthsMap[txMonth] || []).push(t);
+                    return;
+                }
+                const countIn = choice === 'cross-here' ? workingMonthStr : txMonth;
+                t._xm = { id: _newXid(), belong: txMonth, charged: workingMonthStr, countIn };
+                if (choice === 'cross-here') { sameMonth.push(t); (crossMirror[txMonth] = crossMirror[txMonth] || []).push(t); }
+                else (otherMonthsMap[txMonth] = otherMonthsMap[txMonth] || []).push(t);
             });
+            const _xmItem = (t, category) => ({ id: t._xm.id, amount: round1(t.amount), store: t.store, date: t.date, category: category || t.category || 'קניות כלליות',
+                card: t.card || '', issuer: t.issuer || '', owner: cardOwner(t.card, t.owner || t.holder || ''), belong: t._xm.belong, charged: t._xm.charged, countIn: t._xm.countIn });
+            const _xmMeta = t => t._xm ? { xid: t._xm.id, belong: t._xm.belong, charged: t._xm.charged } : {};
 
             // חודשים שעדיין אין להם תזרים במערכת - שואלים לפני שפותחים חודש חדש עבורם
             const skippedNewMonths = [];
-            for (const monthStr of Object.keys(otherMonthsMap)) {
+            const _monthsToTouch = Object.keys(otherMonthsMap).concat(Object.keys(crossMirror).filter(m => !otherMonthsMap[m]));
+            for (const monthStr of _monthsToTouch) {
                 const info = await getMonthDataForImport(monthStr);
                 if (!info.exists) {
-                    const txCount = otherMonthsMap[monthStr].length;
+                    const txCount = (otherMonthsMap[monthStr] || []).length + (crossMirror[monthStr] || []).length;
                     const openIt = confirm(`זוהו ${txCount} תנועות מחודש "${monthStr}" שעדיין לא קיים במערכת.\n\nלפתוח תזרים חודשי חדש עבור "${monthStr}" ולייבא אליו את התנועות?`);
-                    if (!openIt) { delete otherMonthsMap[monthStr]; skippedNewMonths.push(monthStr); }
+                    if (!openIt) {
+                        if (otherMonthsMap[monthStr]) { delete otherMonthsMap[monthStr]; skippedNewMonths.push(monthStr); }
+                        delete crossMirror[monthStr]; // נספרות כאן; פשוט לא יופיעו גם בחודש שלהן
+                    }
                 }
             }
 
@@ -6954,7 +7035,8 @@
                         appendIncomeRowUI(document.getElementById('incomeBody'), t.store, t.amount, 'import', t.date);
                         incCount++;
                     } else {
-                        addLogToCategory(t.category || "קניות כלליות", t.amount, t.store, t.date, _meta(t));
+                        const usedCat = addLogToCategory(t.category || "קניות כלליות", t.amount, t.store, t.date, Object.assign(_meta(t), _xmMeta(t)));
+                        if (t._xm) crossMonthItems.push(_xmItem(t, usedCat));
                         expCount++;
                         totalExp += t.amount || 0;
                     }
@@ -6975,7 +7057,10 @@
                         if (t.type === 'income') {
                             await addEntryToOtherMonth(monthStr, { type: 'income', name: t.store, amount: t.amount, source: 'import', date: t.date });
                         } else {
-                            await addEntryToOtherMonth(monthStr, Object.assign({ type: 'expense', category: t.category || "קניות כלליות", amount: t.amount, store: t.store, date: t.date, source: 'import' }, _meta(t)));
+                            const entry = Object.assign({ type: 'expense', category: t.category || "קניות כלליות", amount: t.amount, store: t.store, date: t.date, source: 'import' }, _meta(t), _xmMeta(t));
+                            if (t._xm) entry.crossItem = _xmItem(t);
+                            await addEntryToOtherMonth(monthStr, entry);
+                            if (t._xm) crossMonthItems.push(_xmItem(t)); // מופיעה גם כאן ("שייך ל...") בלי להיספר
                         }
                         otherCount++;
                         importedTransactions.push(t);
@@ -6985,6 +7070,15 @@
                     }
                 }
             }
+            // "ירד החודש, נספר כאן": רישום גם בחודש שאליו ההוצאה שייכת, בלי להיספר שם
+            for (const monthStr of Object.keys(crossMirror)) {
+                for (const t of crossMirror[monthStr]) {
+                    if (importedTransactions.indexOf(t) === -1) continue;
+                    try { await addEntryToOtherMonth(monthStr, { type: 'cross', item: crossMonthItems.find(x => x.id === t._xm.id) || _xmItem(t) }); }
+                    catch (e) { console.error('שגיאה ברישום הוצאה בין חודשים ב-' + monthStr + ':', e); if (failedMonths.indexOf(monthStr) === -1) failedMonths.push(monthStr); }
+                }
+            }
+            if (selected.some(t => t._xm)) calculateAll(true);
 
             // שמירה בהיסטוריה — תמיד לפי מה שבאמת נכתב בהצלחה (importedTransactions), לא לפי כל מה
             // שנבחר. כך ההיסטוריה לעולם לא "נעלמת" גם כשהייתה תקלה חלקית.
@@ -7038,7 +7132,10 @@
                 return `• ${x.f.name}: בקובץ ${exp} (${x.expectedCount} שורות) · יובאו ${wrote.length} שורות ₪${fmtNum(round1(wrote.reduce((a, t) => a + t.amount, 0)))}${x.already.length ? ` · ${x.already.length} כבר היו בתקציב` : ''}`;
             }).join('\n');
             const head = complete ? '✅ הסריקה והייבוא הושלמו — הסכומים תואמים לקובץ.' : '⚠️ ייבוא חלקי — לא כל מה שבקובץ נכנס לתקציב.';
-            alert(`${head}\n${reconLines}\n\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}${skippedNote}${failedNote}`);
+            const xmDone = importedTransactions.filter(t => t._xm);
+            const xmHere = xmDone.filter(t => isSameMonthStr(t._xm.countIn, workingMonthStr)).length;
+            const xmNote = xmDone.length ? `\n\n🔁 ${xmDone.length} הוצאות מחודש קודם סומנו "ירד ב${workingMonthStr}": ${xmHere} נספרות בחודש הזה, ${xmDone.length - xmHere} נספרות בחודש שלהן. כולן מופיעות בשני החודשים ב"הוצאות בין חודשים", ושם אפשר לשנות.` : '';
+            alert(`${head}\n${reconLines}\n\nנוספו לחודש הנוכחי:\n• ${expCount} הוצאות\n• ${incCount} הכנסות${otherNote}${xmNote}${skippedNote}${failedNote}`);
             fetchAllUserMonths();
         }
 
@@ -7177,7 +7274,7 @@
             // ההיסטוריה. עכשיו מכבדת בפועל את הטווח שנבחר (ר' _getReportRangeMonths).
             const months = _getReportRangeMonths();
             if (!months.length) return alert("לא נמצאו חודשים בטווח שנבחר.");
-            let wb = XLSX.utils.book_new();
+            let wb = XLSX.utils.book_new(); wb.Workbook = { Views: [{ RTL: true }] }; // גיליון מימין לשמאל
             months.forEach(monthItem => {
                 let ws = XLSX.utils.aoa_to_sheet(buildExcelData(monthItem.month_str, monthItem.data));
                 _prettifyBudgetSheet(ws);
@@ -7392,6 +7489,150 @@
             if (!n || a <= 0) return alert('הזן שם וסכום חודשי.');
             const mem = getRecurringMemory().slice(); mem.push({ key: _recurringKey(n) || n, name: n, amount: a, category: '', savedAt: new Date().toISOString().slice(0, 10) });
             await setRecurringMemory(mem); document.getElementById('memNewName').value = ''; document.getElementById('memNewAmount').value = ''; renderMemorySettings();
+        }
+
+        // ===================== הוצאות בין חודשים =====================
+        // עסקה מאוקטובר שירדה רק בנובמבר (חיוב אשראי): מופיעה בשני החודשים, נספרת רק באחד — לפי בחירת המשתמש.
+        // מבנה: data.cross_month = [{ id, amount, store, date, category, card, issuer, owner, belong, charged, countIn }]
+        // נשמר באותו אופן בשני החודשים. ההוצאה עצמה (שנכנסת לסכום "בפועל") יושבת רק בחודש שבו היא נספרת,
+        // כפעולה עם xid = id של הרישום.
+        function _isEarlierMonth(m) { const a = monthStrSortKey(m), b = monthStrSortKey(workingMonthStr); return a > -1 && b > -1 && a < b; }
+        function earlierMonthGroups() {
+            const g = {};
+            parsedBankTransactions.forEach(t => {
+                if (!t.include) return;
+                const m = monthStrFromDateStr(t.date); if (!m || !_isEarlierMonth(m)) return;
+                const x = g[m] || (g[m] = { month: m, count: 0, sum: 0, cc: false });
+                x.count++; if (t.type !== 'income') x.sum += t.amount || 0;
+                if (t.card || t.issuer) x.cc = true;
+            });
+            return Object.values(g).sort((a, b) => monthStrSortKey(a.month) - monthStrSortKey(b.month));
+        }
+        // ברירת מחדל: דף אשראי -> "ירד החודש" ונספר בחודש הנוכחי; דף בנק של כמה חודשים -> כל תנועה לחודש שלה
+        function bankMonthChoiceFor(g) { const c = (window._bankMonthChoice || {})[g.month]; return c || (g.cc ? 'cross-here' : 'move'); }
+        function renderBankMonthsBox() {
+            const box = document.getElementById('bankMonthsBox'); if (!box) return;
+            const groups = earlierMonthGroups();
+            if (!groups.length) { box.innerHTML = ''; return; }
+            const here = escapeHtml(workingMonthStr);
+            box.innerHTML = `<div class="bm-box"><div class="bm-head">📅 בקובץ יש תנועות מחודשים קודמים — מה לעשות איתן?</div>` + groups.map((g, gi) => {
+                const m = escapeHtml(g.month), ch = bankMonthChoiceFor(g);
+                const opt = (v, title, sub) => `<label class="bm-opt"><input type="radio" name="bmChoice${gi}" ${ch === v ? 'checked' : ''} onchange="setBankMonthChoice(${gi}, '${v}')"><span>${title}<small>${sub}</small></span></label>`;
+                return `<div class="bm-month"><div class="bm-month-title">${m}: ${g.count} תנועות · ₪${fmtNum(round1(g.sum))}</div>`
+                    + opt('cross-here', `🔁 ירדו ב${here} — לחשב ב${here}`, `יופיעו גם ב${m} עם הסימון "ירד ב${here}", בלי להיספר שם. אפשר לשנות אחר כך לכל הוצאה.`)
+                    + opt('cross-there', `🔁 ירדו ב${here} — לחשב ב${m}`, `יופיעו גם ב${here} עם הסימון "שייך ל${m}", בלי להיספר כאן. אפשר לשנות אחר כך לכל הוצאה.`)
+                    + opt('move', `↪ להעביר ל${m} בלבד`, `כמו דף בנק של כמה חודשים: כל תנועה נכנסת רק לחודש של התאריך שלה.`)
+                    + `</div>`;
+            }).join('') + `</div>`;
+            box._groups = groups;
+        }
+        function setBankMonthChoice(gi, v) { const box = document.getElementById('bankMonthsBox'); const g = box && box._groups && box._groups[gi]; if (!g) return; window._bankMonthChoice = window._bankMonthChoice || {}; window._bankMonthChoice[g.month] = v; }
+
+        function setCrossItemInData(md, item) {
+            md.cross_month = Array.isArray(md.cross_month) ? md.cross_month : [];
+            const i = md.cross_month.findIndex(x => x.id === item.id);
+            if (i > -1) md.cross_month[i] = Object.assign({}, md.cross_month[i], item); else md.cross_month.push(Object.assign({}, item));
+        }
+        function removeXLogFromMonthData(md, xid) {
+            let found = null;
+            [].concat(md.fixed || [], md.variable || []).forEach(row => {
+                if (found) return;
+                const i = (row.logs || []).findIndex(l => l.xid === xid);
+                if (i > -1) { found = row.logs.splice(i, 1)[0]; row.actual = Math.max(0, round1((Number(row.actual) || 0) - (Number(found.amount) || 0))); }
+            });
+            return found;
+        }
+        function _findXLogRow(xid) {
+            return Array.from(document.querySelectorAll('#fixedBody tr, #variableBody tr')).find(r => { try { return JSON.parse(r.getAttribute('data-logs') || '[]').some(l => l.xid === xid); } catch (_e) { return false; } }) || null;
+        }
+        function removeXLogFromDom(xid) {
+            const tr = _findXLogRow(xid); if (!tr) return null;
+            const logs = JSON.parse(tr.getAttribute('data-logs') || '[]');
+            const i = logs.findIndex(l => l.xid === xid); const removed = logs.splice(i, 1)[0];
+            tr.setAttribute('data-logs', JSON.stringify(logs));
+            const a = tr.querySelector('.actual-val'); a.value = round1((Number(a.value) || 0) - (Number(removed.amount) || 0)); if (Number(a.value) <= 0) a.value = (logs.length ? 0 : '');
+            rebuildDailyLogsFromTable(); renderLogsInsideRow(tr, logs.length > 0);
+            return removed;
+        }
+        // קורא חודש אחר מהענן ממש לפני השינוי, משנה ושומר (כדי לא לדרוס שינוי שנעשה בינתיים)
+        async function updateOtherMonth(monthStr, fn) {
+            const { data, error } = await _supabase.from('month_data').select('data').eq('user_id', tempUserSession.user_id).eq('month_str', monthStr);
+            if (error) throw error;
+            const md = (data && data.length && data[0].data) ? data[0].data : { income: [], fixed: [], variable: [], daily_logs: [] };
+            md.income = md.income || []; md.fixed = md.fixed || []; md.variable = md.variable || []; md.daily_logs = md.daily_logs || [];
+            fn(md);
+            const { error: upErr } = await _supabase.from('month_data').upsert({ user_id: tempUserSession.user_id, month_str: monthStr, data: md });
+            if (upErr) throw upErr;
+            const cached = (allUserMonthsData || []).find(m => isSameMonthStr(m.month_str, monthStr));
+            if (cached) cached.data = md; else if (allUserMonthsData) allUserMonthsData.push({ month_str: monthStr, data: md });
+        }
+        function _xmOther(it) { return isSameMonthStr(it.charged, workingMonthStr) ? it.belong : it.charged; }
+        function xmBadge(l) {
+            if (!l || !l.xid || !l.belong || !l.charged) return '';
+            if (isSameMonthStr(l.charged, workingMonthStr) && !isSameMonthStr(l.belong, workingMonthStr)) return `<span class="xm-badge" title="ירד בחודש הזה, שייך ל${escapeHtml(l.belong)}">↩ שייך ל${escapeHtml(l.belong)}</span>`;
+            if (isSameMonthStr(l.belong, workingMonthStr)) return `<span class="xm-badge" title="שייך לחודש הזה, ירד רק ב${escapeHtml(l.charged)}">⏩ ירד ב${escapeHtml(l.charged)}</span>`;
+            return '';
+        }
+        function renderCrossMonth() {
+            const sec = document.getElementById('crossMonthSection'); if (!sec) return;
+            const items = crossMonthItems || [];
+            if (!items.length) { sec.style.display = 'none'; return; }
+            sec.style.display = '';
+            const f = (document.getElementById('crossMonthFilter') || {}).value || 'all';
+            const here = workingMonthStr;
+            const rowsOf = items.map(it => {
+                const isCharged = isSameMonthStr(it.charged, here);
+                const countedHere = isSameMonthStr(it.countIn, here);
+                const tr = countedHere ? _findXLogRow(it.id) : null;
+                return { it, isCharged, countedHere, present: !!tr, catName: tr ? tr.querySelector('.name-input').value.trim() : (it.category || '') };
+            });
+            const sum = arr => round1(arr.reduce((a, x) => a + (Number(x.it.amount) || 0), 0));
+            const chargedHere = rowsOf.filter(x => x.isCharged), belongHere = rowsOf.filter(x => !x.isCharged);
+            const parts = [];
+            if (chargedHere.length) parts.push(`↩ ירדו החודש ושייכות לחודש אחר: <b>₪${fmtNum(sum(chargedHere))}</b> (${chargedHere.length}) · מתוכן נספרות כאן ₪${fmtNum(sum(chargedHere.filter(x => x.countedHere && x.present)))}`);
+            if (belongHere.length) parts.push(`⏩ שייכות לחודש הזה וירדו בחודש אחר: <b>₪${fmtNum(sum(belongHere))}</b> (${belongHere.length}) · מתוכן נספרות כאן ₪${fmtNum(sum(belongHere.filter(x => x.countedHere && x.present)))}`);
+            document.getElementById('crossMonthSummary').innerHTML = parts.join('<br>');
+            const shown = rowsOf.filter(x => f === 'all' || (f === 'charged' && x.isCharged) || (f === 'belong' && !x.isCharged) || (f === 'counted' && x.countedHere && x.present) || (f === 'notcounted' && !(x.countedHere && x.present)));
+            shown.sort((a, b) => String(b.it.date).localeCompare(String(a.it.date)));
+            document.getElementById('crossMonthList').innerHTML = shown.length ? shown.map(x => {
+                const it = x.it, other = escapeHtml(_xmOther(it));
+                const d = (function(){ try { return new Date(it.date).toLocaleDateString('he-IL'); } catch(_e) { return ''; } })();
+                const kind = x.isCharged ? `<span class="xm-badge">↩ ירדה ב${escapeHtml(it.charged)} · שייכת ל${escapeHtml(it.belong)}</span>` : `<span class="xm-badge">⏩ שייכת ל${escapeHtml(it.belong)} · ירדה ב${escapeHtml(it.charged)}</span>`;
+                const on = x.countedHere && x.present;
+                const state = on ? `<span class="xm-state on">✓ נספרת בחודש הזה${x.catName ? ' · ' + escapeHtml(x.catName) : ''}</span>`
+                    : (x.countedHere ? `<span class="xm-state offc">לא נמצאה בקטגוריות (אולי נמחקה) — לא נספרת באף חודש</span>` : `<span class="xm-state offc">לא נספרת כאן · נספרת ב${other}</span>`);
+                const btn = on ? `<button type="button" class="recon-btn" onclick="switchCrossCount('${escapeHtml(it.id)}')">חשב ב${other} במקום</button>`
+                               : `<button type="button" class="recon-btn" onclick="switchCrossCount('${escapeHtml(it.id)}')">חשב בחודש הזה</button>`;
+                return `<div class="xm-item ${on ? '' : 'off'}"><div class="xm-top"><span class="xm-store">${escapeHtml(cleanStoreDisplay(it.store))}</span><strong>₪${fmtNum(it.amount)}</strong></div><div style="display:flex; flex-wrap:wrap; gap:5px;">${kind}${cardChip(it)}</div><div class="xm-meta">📅 ${d}</div><div class="xm-top" style="align-items:center;">${state}${btn}</div></div>`;
+            }).join('') : '<p class="set-empty">אין הוצאות בסינון הזה.</p>';
+        }
+        async function switchCrossCount(id) {
+            const it = (crossMonthItems || []).find(x => x.id === id); if (!it) return;
+            const here = workingMonthStr, other = _xmOther(it);
+            const countedHere = isSameMonthStr(it.countIn, here);
+            const present = countedHere && !!_findXLogRow(id);
+            const meta = { card: it.card, issuer: it.issuer, owner: it.owner, xid: it.id, belong: it.belong, charged: it.charged };
+            try {
+                if (present) {
+                    if (!confirm(`להעביר את "${cleanStoreDisplay(it.store)}" (₪${fmtNum(it.amount)}) כך שתיספר ב${other}?\nהיא תמשיך להופיע גם כאן, בלי להיספר.`)) return;
+                    // קודם החודש השני (אם נכשל — לא נוגעים בכלום כאן)
+                    await updateOtherMonth(other, md => { removeXLogFromMonthData(md, id); addLogToMonthData(md, Object.assign({ category: it.category || 'קניות כלליות', amount: it.amount, store: it.store, date: it.date, source: 'import' }, meta)); setCrossItemInData(md, Object.assign({}, it, { countIn: other })); });
+                    removeXLogFromDom(id); it.countIn = other;
+                } else if (countedHere) {
+                    // נספרה כאן אבל הפעולה נמחקה מהקטגוריה — מחזירים אותה לחישוב כאן
+                    it.category = addLogToCategory(it.category || 'קניות כלליות', it.amount, it.store, it.date, meta);
+                } else {
+                    if (!confirm(`לחשב את "${cleanStoreDisplay(it.store)}" (₪${fmtNum(it.amount)}) בחודש הזה?\nב${other} היא תמשיך להופיע, בלי להיספר.`)) return;
+                    await updateOtherMonth(other, md => { removeXLogFromMonthData(md, id); setCrossItemInData(md, Object.assign({}, it, { countIn: here })); });
+                    it.category = addLogToCategory(it.category || 'קניות כלליות', it.amount, it.store, it.date, meta); it.countIn = here;
+                }
+            } catch (e) {
+                console.error('עדכון הוצאה בין חודשים נכשל:', e);
+                alert(`לא הצלחתי לעדכן את ${other} — שום דבר לא השתנה. נסה שוב בעוד רגע.\n${(e && e.message) || ''}`);
+                return;
+            }
+            calculateAll(true);
+            renderCrossMonth();
         }
 
         // ===================== הגדרות: כרטיסים =====================
@@ -7943,7 +8184,7 @@
         function populateTablesFromSnapshot(d) {
             const inc = document.getElementById('incomeBody'); const fix = document.getElementById('fixedBody'); const varb = document.getElementById('variableBody');
             inc.innerHTML = ''; fix.innerHTML = ''; varb.innerHTML = '';
-            dailyExpenseLogs = d.daily_logs || [];
+            dailyExpenseLogs = d.daily_logs || []; crossMonthItems = Array.isArray(d.cross_month) ? d.cross_month : [];
             (d.income||[]).forEach(i => appendIncomeRowUI(inc, i.name, i.amount, i.source, i.date));
             (d.fixed||[]).forEach(i => appendExpenseRowUI(fix, i.name, i.target, i.actual, 'fixed', i.logs));
             (d.variable||[]).forEach(i => appendExpenseRowUI(varb, i.name, i.target, i.actual, 'variable', i.logs));
@@ -7991,26 +8232,89 @@
             if (banner) banner.style.display = 'none';
         }
         
-        function generateAndDownloadPDF(monthName, snapshot, incSum, expSum, savings) { 
-            const userName = document.getElementById('displayUser').innerText; 
-            const reportElement = document.createElement('div'); reportElement.style.padding = '40px'; reportElement.style.direction = 'rtl'; 
-            let tablesHtml = `<div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; font-family: 'Rubik', sans-serif;"><h1 style="color: #3b82f6; font-size: 26px; margin-bottom: 10px;">דו"ח סיכום פיננסי</h1><p style="font-size: 16px;">משתמש: ${escapeHtml(userName)} | חודש נעול: ${monthName}</p></div><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; background: #f9fafb; padding: 25px; border-radius: 16px; border: 1px solid #e5e7eb; text-align: center; font-family: 'Rubik', sans-serif;"><div><span style="font-size: 14px; color: #6b7280;">סה"כ הכנסות:</span><br><strong style="color: #10b981; font-size: 24px;">₪${incSum.toLocaleString()}</strong></div><div><span style="font-size: 14px; color: #6b7280;">סה"כ הוצאות:</span><br><strong style="color: #f43f5e; font-size: 24px;">₪${expSum.toLocaleString()}</strong></div><div><span style="font-size: 14px; color: #6b7280;">חיסכון:</span><br><strong style="color: #3b82f6; font-size: 24px;">₪${savings.toLocaleString()}</strong></div></div>`; 
-            const addPdfTable = (title, items) => { 
-                tablesHtml += `<h3 style="margin-top:20px; color:#1e293b;">${title}</h3><table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size:14px;" border="1" cellpadding="10"><tr style="background:#f1f5f9;"><th>סעיף</th><th>בפועל</th></tr>`; 
-                items.forEach(item => { tablesHtml += `<tr><td>${escapeHtml(item.name)}</td><td>₪${item.actual || item.amount}</td></tr>`; }); tablesHtml += `</table>`; 
-            }; 
-            addPdfTable('הכנסות', snapshot.income); addPdfTable('הוצאות קבועות', snapshot.fixed); addPdfTable('הוצאות משתנות', snapshot.variable); 
-            reportElement.innerHTML = tablesHtml; 
-            
-            html2pdf().from(reportElement).set({ 
-                margin: 10, filename: `תקציב_${monthName}.pdf`, image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-            }).save(); 
+        // FIX: דוח הסיכום החודשי עוצב מחדש. בגרסה הקודמת: "₪undefined" בכל סעיף בלי הוצאה, מספרים לא
+        // מעוצבים (₪12500.5), שם משתמש ריק, טבלאות ריקות, בלי עמודת יעד, וברוחב של מסך הטלפון כשהופק בנייד.
+        // עכשיו: רוחב קבוע של עמוד A4, הצבעים של האפליקציה, יעד מול בפועל, וסעיפים ריקים מושמטים.
+        function buildMonthReportHtml(monthName, snapshot, incSum, expSum, savings) {
+            const N = '#1F56C4', INK = '#0f172a', MUTED = '#64748b', LINE = '#e2e8f0', SOFT = '#f4f7fd', GREEN = '#047857', RED = '#b91c1c';
+            const money = v => '₪' + fmtNum(round1(Number(v) || 0));
+            const userName = (tempUserSession && tempUserSession.username) || (document.getElementById('displayUser') || {}).innerText || '';
+            const nonEmpty = rows => (rows || []).filter(r => (Number(r.actual) || 0) !== 0 || (Number(r.target) || 0) !== 0);
+            const fixed = nonEmpty(snapshot.fixed), variable = nonEmpty(snapshot.variable);
+            const income = (snapshot.income || []).filter(i => (Number(i.amount) || 0) !== 0);
+            const spentPct = incSum > 0 ? Math.round(expSum / incSum * 100) : null;
+            const th = `padding:8px 10px; font-size:12px; color:${MUTED}; font-weight:600; text-align:right; border-bottom:1px solid ${LINE};`;
+            const td = `padding:8px 10px; font-size:13px; color:${INK}; border-bottom:1px solid ${LINE};`;
+            const num = `text-align:left; white-space:nowrap;`;
+            const kpi = (label, value, color, sub) => `<td style="width:25%; padding:0 5px;"><div class="pdf-card" style="background:#fff; border:1px solid ${LINE}; border-radius:12px; padding:12px 14px;"><div style="font-size:12px; color:${MUTED};">${label}</div><div style="font-size:21px; font-weight:700; color:${color}; margin-top:4px; direction:ltr; text-align:right;">${value}</div>${sub ? `<div style="font-size:11px; color:${MUTED}; margin-top:2px;">${sub}</div>` : ''}</div></td>`;
+            let html = `<div style="font-family:'Rubik', Arial, sans-serif; direction:rtl; color:${INK}; background:#fff;">`;
+            html += `<div style="background:${N}; color:#fff; border-radius:14px; padding:20px 24px; margin-bottom:16px;">
+                <div style="font-size:13px; opacity:0.85;">הכיס שלי · סיכום חודשי</div>
+                <div style="font-size:26px; font-weight:700; margin-top:4px;">${escapeHtml(monthName)}</div>
+                <div style="font-size:12px; opacity:0.85; margin-top:6px;">${userName ? escapeHtml(userName) + ' · ' : ''}הופק ב-${new Date().toLocaleDateString('he-IL')}</div></div>`;
+            html += `<table style="width:100%; border-collapse:separate; border-spacing:0; margin:0 -5px 18px;"><tr>
+                ${kpi('הכנסות', money(incSum), GREEN)}
+                ${kpi('הוצאות', money(expSum), RED)}
+                ${kpi(savings >= 0 ? 'נשאר לחיסכון' : 'גירעון', money(Math.abs(savings)), savings >= 0 ? N : RED)}
+                ${kpi('ניצול מההכנסה', spentPct == null ? '—' : spentPct + '%', spentPct != null && spentPct > 100 ? RED : INK, spentPct == null ? 'אין הכנסות רשומות' : (spentPct > 100 ? 'ההוצאות גבוהות מההכנסות' : 'מתוך ההכנסות החודש'))}
+            </tr></table>`;
+            // ההוצאות הגדולות החודש — פסים יחסיים
+            const top = fixed.concat(variable).filter(r => (Number(r.actual) || 0) > 0).sort((a, b) => b.actual - a.actual).slice(0, 6);
+            if (top.length) {
+                const max = top[0].actual;
+                html += `<div class="pdf-card" style="border:1px solid ${LINE}; border-radius:12px; padding:14px 16px; margin-bottom:18px;"><div style="font-size:15px; font-weight:700; margin-bottom:10px;">לאן הלך הכסף</div>`
+                    + top.map(r => `<table style="width:100%; border-collapse:collapse; margin-bottom:7px;"><tr><td style="width:32%; font-size:13px; padding:0 0 0 8px;">${escapeHtml(r.name)}</td><td><div style="background:${SOFT}; border-radius:6px; height:14px;"><div style="background:${N}; width:${Math.max(3, Math.round(r.actual / max * 100))}%; height:14px; border-radius:6px;"></div></div></td><td style="width:20%; font-size:13px; font-weight:600; ${num} padding-right:10px;">${money(r.actual)}${expSum > 0 ? ` <span style="color:${MUTED}; font-weight:400;">· ${Math.round(r.actual / expSum * 100)}%</span>` : ''}</td></tr></table>`).join('')
+                    + `</div>`;
+            }
+            const section = (title, body) => `<div class="pdf-card" style="margin-bottom:16px;"><div style="font-size:15px; font-weight:700; color:${N}; margin:0 0 6px;">${title}</div>${body}</div>`;
+            if (income.length) {
+                html += section('הכנסות', `<table style="width:100%; border-collapse:collapse;"><tr><th style="${th}">סעיף</th><th style="${th} ${num}">סכום</th></tr>`
+                    + income.map(i => `<tr><td style="${td}">${escapeHtml(i.name)}</td><td style="${td} ${num}">${money(i.amount)}</td></tr>`).join('')
+                    + `<tr><td style="${td} font-weight:700; background:${SOFT};">סה"כ הכנסות</td><td style="${td} ${num} font-weight:700; background:${SOFT};">${money(incSum)}</td></tr></table>`);
+            }
+            const expTable = (title, rows) => {
+                if (!rows.length) return '';
+                let tT = 0, tA = 0;
+                const body = rows.map(r => {
+                    const t = Number(r.target) || 0, a = Number(r.actual) || 0; tT += t; tA += a;
+                    const diff = t - a, over = t > 0 && diff < 0;
+                    return `<tr><td style="${td}">${escapeHtml(r.name)}</td><td style="${td} ${num} color:${MUTED};">${t ? money(t) : '—'}</td><td style="${td} ${num} font-weight:600;">${money(a)}</td><td style="${td} ${num} color:${over ? RED : (t ? GREEN : MUTED)};">${t ? (over ? 'חריגה ' + money(-diff) : 'נשאר ' + money(diff)) : '—'}</td></tr>`;
+                }).join('');
+                const tDiff = tT - tA;
+                return section(title, `<table style="width:100%; border-collapse:collapse;"><tr><th style="${th}">סעיף</th><th style="${th} ${num}">יעד</th><th style="${th} ${num}">בפועל</th><th style="${th} ${num}">מול היעד</th></tr>${body}`
+                    + `<tr><td style="${td} font-weight:700; background:${SOFT};">סה"כ</td><td style="${td} ${num} background:${SOFT};">${tT ? money(tT) : '—'}</td><td style="${td} ${num} font-weight:700; background:${SOFT};">${money(tA)}</td><td style="${td} ${num} font-weight:700; background:${SOFT}; color:${tT && tDiff < 0 ? RED : GREEN};">${tT ? (tDiff < 0 ? 'חריגה ' + money(-tDiff) : 'נשאר ' + money(tDiff)) : '—'}</td></tr></table>`);
+            };
+            html += expTable('הוצאות קבועות', fixed) + expTable('הוצאות משתנות', variable);
+            // הוצאות בין חודשים: מה ירד החודש אבל נספר בחודש אחר (ולהפך) — כדי שהסיכום לא יפתיע
+            const xm = (snapshot.cross_month || []).filter(x => !isSameMonthStr(x.countIn, monthName));
+            if (xm.length) {
+                html += section('הוצאות בין חודשים — לא נכללות בסיכום הזה', `<table style="width:100%; border-collapse:collapse;">`
+                    + xm.map(x => `<tr><td style="${td}">${escapeHtml(cleanStoreDisplay(x.store))}<div style="font-size:11px; color:${MUTED};">${isSameMonthStr(x.charged, monthName) ? 'ירדה החודש, נספרת ב' : 'שייכת לחודש הזה, נספרת ב'}${escapeHtml(x.countIn)}</div></td><td style="${td} ${num}">${money(x.amount)}</td></tr>`).join('') + `</table>`);
+            }
+            if (!income.length && !fixed.length && !variable.length) html += `<div style="color:${MUTED}; text-align:center; padding:30px;">אין עדיין נתונים לחודש הזה.</div>`;
+            html += `<div style="margin-top:18px; padding-top:10px; border-top:1px solid ${LINE}; font-size:11px; color:${MUTED}; text-align:center;">הכיס שלי · ניהול תקציב חכם</div></div>`;
+            return html;
+        }
+        // html2canvas מחשב מיקום שגוי לאלמנטים בדף rtl (הדוח יצא מוזז וחתוך). בעותק שהוא מצלם — ורק בו —
+        // הדף הופך ל-ltr; הדוח עצמו מגדיר direction:rtl בפנים, אז הטקסט נשאר מימין לשמאל.
+        function _pdfLtrClone(doc) {
+            try { doc.documentElement.setAttribute('dir', 'ltr'); doc.documentElement.style.direction = 'ltr'; doc.body.style.direction = 'ltr'; } catch (_e) {}
+        }
+        function generateAndDownloadPDF(monthName, snapshot, incSum, expSum, savings) {
+            const reportElement = document.createElement('div');
+            // רוחב = רוחב העמוד של html2pdf (A4 פחות שוליים, ~733px), ו-windowWidth קבוע כדי שגם בטלפון ייראה כמו במחשב
+            // העטיפה החיצונית ltr: בדף rtl ‏html2canvas ממקם את הדוח מוזז חצי עמוד ימינה וחותך אותו. התוכן עצמו נשאר rtl.
+            reportElement.style.cssText = 'width:720px; padding:14px; box-sizing:border-box; background:#fff; direction:ltr; text-align:right;';
+            reportElement.innerHTML = buildMonthReportHtml(monthName, snapshot, round1(incSum), round1(expSum), round1(savings));
+            return html2pdf().from(reportElement).set({
+                margin: [8, 8, 10, 8], filename: `סיכום_${String(monthName).replace(/\s+/g, '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, windowWidth: 720, x: 0, y: 0, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff', onclone: _pdfLtrClone }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.pdf-card'] }
+            }).save();
         }
 
         function getLiveSnapshot() {
-            const snapshot = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs };
+            const snapshot = { income: [], fixed: [], variable: [], daily_logs: dailyExpenseLogs, cross_month: crossMonthItems };
             document.querySelectorAll('#incomeBody tr').forEach(row => { snapshot.income.push({ name: row.querySelector('.name-input').value, amount: Number(row.querySelector('.val-input').value) || 0, source: row.getAttribute('data-source') || 'manual', date: row.getAttribute('data-date') || '' }); });
             const extract = (tbodyId, arr) => { document.querySelectorAll(`#${tbodyId} tr`).forEach(row => { arr.push({ name: row.querySelector('.name-input').value, target: Number(row.querySelector('.target-val').value) || 0, actual: Number(row.querySelector('.actual-val').value) || 0, logs: JSON.parse(row.getAttribute('data-logs') || "[]") }); }); };
             extract('fixedBody', snapshot.fixed); extract('variableBody', snapshot.variable); return snapshot;
@@ -8022,7 +8326,7 @@
         }
 
         function exportCurrentMonthExcelLive() {
-            const snap = getLiveSnapshot(); let wb = XLSX.utils.book_new(); let ws = XLSX.utils.aoa_to_sheet(buildExcelData(workingMonthStr, snap)); _prettifyBudgetSheet(ws); XLSX.utils.book_append_sheet(wb, ws, "תקציב_נוכחי"); XLSX.writeFile(wb, `תקציב_${workingMonthStr.replace(/\s+/g, '_')}.xlsx`);
+            const snap = getLiveSnapshot(); let wb = XLSX.utils.book_new(); wb.Workbook = { Views: [{ RTL: true }] }; let ws = XLSX.utils.aoa_to_sheet(buildExcelData(workingMonthStr, snap)); _prettifyBudgetSheet(ws); XLSX.utils.book_append_sheet(wb, ws, "תקציב_נוכחי"); XLSX.writeFile(wb, `תקציב_${workingMonthStr.replace(/\s+/g, '_')}.xlsx`);
         }
 
         // =========================================================
